@@ -1,0 +1,52 @@
+<script>
+(function() {
+  'use strict';
+
+  var B = window.multi = window.multi || {};
+
+  B.color = {
+
+    properties: {
+
+      /**
+       * `colorRange` output range of colors to be used for calculating the colorScale
+       */
+      colorRange: {
+        type: Array,
+        value: function() {
+          return d3.schemeCategory10;
+        }
+      },
+      
+      /**
+       * `colorDomain` input domain for or calculating the colorScale
+       */
+      colorDomain: {
+        type: Array
+      },
+
+      /**
+       * `colorScale` scale function for mapping the input colorDomain to the output colorRange. It is usually computed by a multi-scale element.
+       */
+      colorScale: {
+        type: Function
+      },
+
+
+      /**
+       * `colorAccessor` This function will be used to map a data point on crossfilter group to a specific color value on the color scale
+       */
+      colorAccessor: {
+        type: Function,
+        value: function() {
+          return function(d, i) {
+            return i;
+          };
+        }
+      }
+    }
+
+  };
+
+})();
+</script>

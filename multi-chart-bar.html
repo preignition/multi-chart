@@ -1,0 +1,201 @@
+<link rel="import" href="../polymer/polymer.html">
+
+<link rel="import" href="multi-base-behavior.html">
+<link rel="import" href="multi-shaper-behavior.html">
+<link rel="import" href="multi-color-behavior.html">
+<link rel="import" href="multi-selector-behavior.html">
+<!-- <link rel="import" href="multi-brush-behavior.html"> -->
+<link rel="import" href="multi-coordinate-grid-behavior.html">
+<link rel="import" href="multi-axis.html">
+<link rel="import" href="multi-scale.html">
+<!-- <link rel="import" href="multi-brush.html"> -->
+<link rel="import" href="multi-accessor.html">
+<link rel="import" href="multi-shared-styles.html">
+<!-- <link rel="import" href="multi-axis-behaviors.html"> -->
+<!--
+`multi-poly`
+polymer elements for multivariate analysis (depend on crossfilter, universe and reductio)
+
+@demo demo/index.html 
+-->
+<dom-module id="multi-chart-bar">
+  <template>
+    <style is="custom-style" include="multi-charts multi-charts-selector">
+      
+    </style>
+
+    <h2 class="title">[[title]]</h2>
+    <h3 class="subtitle">[[subtitle]]</h3>
+    <!-- Polymer has problem with handling namespace (https://github.com/Polymer/polymer/pull/3372): multi-axis is outside SVG -->
+    <multi-axis ellastic="[[ellasticX]]" ref="xAxis" width="[[chartWidth]]" height="[[chartHeight]]" family="{{xScaleFamily}}" scale="{{xScale}}" scale-type="scaleBand" padding="0.1" domain="[[xDomain]]" range="[[xRange]]" ></multi-axis>
+    <multi-axis ellastic="[[ellasticY]]" ref="yAxis" width="[[chartWidth]]" height="[[chartHeight]]" axis-type="left" domain="[[yDomain]]" range="[[yRange]]" scale="{{yScale}}" ></multi-axis>
+    <multi-scale scale-type="scaleOrdinal" range="[[colorRange]]" scale="{{colorScale}}"></multi-scale>
+    <multi-scale scale-type="scaleLinear" range="[[xRange]]" domain="[[xDomain]]" scale="{{xScaleContinuous}}"></multi-scale>
+    <multi-accessor accessor="{{xAccessor}}" accessor-path="key"></multi-accessor>
+    <multi-accessor accessor="{{yAccessor}}" series="[[series]]"></multi-accessor>
+    <!-- <multi-brush brush-type="[[brushType]]" brush="{{brush}}" extent="[[extent]]" ></multi-brush> -->
+
+    <svg id="svg">
+      <g id="chartContent">
+        <g id="chart" class="chart">
+        </g>
+        <g id="xAxis" class="axis x-axis">
+          <text id="xAxisText" class="axis-text x-axis" x="0" y="30" dx="0" text-anchor="end"></text>
+        </g>
+        <g id="yAxis" class="axis y-axis">
+          <text id="yAxisText" class="axis-text y-axis" transform="rotate(-90)" y="6" dy=".71em" text-anchor="end"></text>
+        </g>
+        <g id="brush" class="brush"></g>
+      </g>
+    </svg>
+<!--     <svg id="svg">
+      <g id="chartContent">
+        <g id="chart" class="chart">
+        </g>
+        <g id="xAxis" class="axis x-axis">
+          <text id="xAxisText" class="axis-text x-axis" x="0" y="30" dx="0" text-anchor="end"></text>
+        </g>
+        <g id="yAxis" class="axis y-axis">
+          <text id="yAxisText" class="axis-text y-axis" transform="rotate(-90)" y="6" dy=".71em" text-anchor="end"></text>
+        </g>
+        <g id="brush" class="brush"></g>
+      </g>
+    </svg> -->
+  </template>
+  <script>
+  Polymer({
+
+    is: 'multi-chart-bar',
+
+    properties: {
+        
+      selectionType : {
+        type: String,
+        value: 'brushX'
+      },
+
+      ellasticX: {
+        type: Boolean,
+        value: false
+      },
+
+      ellasticY: {
+        type: Boolean,
+        value: true
+      },
+
+      yAxisText: {
+        type: String,
+        value: 'yAxis',
+        observer: 'observeYAxisText'
+      },
+      xAxisText: {
+        type: String,
+        value: 'xAxis',
+        observer: 'observeXAxisText'
+      },
+
+      series: {
+        type: Array,
+        value: [{
+          'label': 'count',
+          'path': '+value.count'
+            // }, {
+            //   'label': 'average',
+            //   'path': '+value.average'
+        }]
+      },
+
+      chartElement: {
+        type: String,
+        value: 'g'
+      },
+
+      chartClass: {
+        type: String,
+        value: 'bar'
+      }
+
+    },
+    observeYAxisText: function(text) {
+      d3.select(this.$.yAxisText).text(text);
+    },
+
+    observeXAxisText: function(text) {
+      d3.select(this.$.xAxisText).text(text);
+    },
+
+    behaviors: [
+      multi.base,
+      multi.shaper,
+      multi.color,
+      multi.coordinateGrid,
+      multi.selector
+      // multi.brush,
+    ],
+
+    // getXDomain : function(data) {
+    //   return data.map( this.xAccessor);
+    // },
+
+    buildShaper: function(accessor, i) {
+
+      var xScale = this.xScale,
+        yScale = this.yScale,
+        xAccessor = this.xAccessor;
+      
+      return this.mixin(
+        this.buildBaseShaper(accessor, i),{
+        x: function(d) {
+          return xScale(xAccessor(d));
+        },
+        y: function(d) {
+          return yScale(accessor(d));
+        }
+      });
+    },
+
+    handleChart: function(chart, data) {
+
+      var me = this;
+      var height = me.chartHeight;
+      var colorScale = me.colorScale;
+      var colorAccessor = me.colorAccessor;
+      var shaper =  chart.datum();
+
+      chart = chart.selectAll('rect').data(data);
+      chart.exit().remove();
+
+      chart = chart.enter().append('rect')
+        .attr('class','chart-shape')
+        .merge(chart);
+     
+      chart.on('click', function(d) {
+          me.fire('multi-tap', d);
+        });
+
+      if (me.duration)  {
+        chart = chart.transition().duration(me.duration);
+      }  
+      
+      chart.attr('x', function(d) {
+          return shaper.x(d);
+        })
+        .attr('y', function(d) {
+          return shaper.y(d);
+        })
+        .attr('height', function(d) {
+          return height - shaper.y(d);
+        })
+        .attr('width', me.xScale.bandwidth())
+        .attr('key', shaper.key)
+        .attr('fill', function(d, i) {
+          // return colorScale(colorAccessor(d,i));
+          return colorScale(shaper.serie);
+        });
+
+    }
+
+  });
+  </script>
+</dom-module>

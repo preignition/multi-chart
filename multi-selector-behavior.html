@@ -1,0 +1,278 @@
+<!-- <link rel="import" href="multi-brush-behavior.html"> -->
+<script>
+(function() {
+  'use strict';
+
+  var B = window.multi = window.multi || {};
+
+  B.selector = {
+
+    properties: {
+      selectionType: {
+        type: String, // either `brushX`, `brushY`, `brush`, `multi`, `select` or kept undefined to disable selection bahaviors
+        observer: '__observeSelectionType'
+      },
+
+      /**
+       * `isSelection` is true when a selection is being done (e.g. by brushing). The attribute is used for css rules.
+       */
+      isSelecting: {
+        type: Boolean,
+        value: false,
+        readOnly: true,
+        reflectToAttribute: true
+      },
+
+      /**
+       * `hasSelection`  is true when a selection exists. The attribute is used for css rules.
+       */
+      hasSelection: {
+        type: Boolean,
+        value: false,
+        readOnly: true,
+        reflectToAttribute: true,
+        notify: true
+      },
+
+      /**
+       * `brush` brushing for mouse or touch event implementation [d3-brush](https://github.com/d3/d3-brush) 
+       */
+      brush: {
+        type: Function,
+        computed: '__computeBrush(selectionType, extent)'
+      },
+
+      extent: {
+        type: Array,
+        computed: '__computeExtent(chartHeight, chartWidth)'
+      },
+
+      /**
+       * `selectedItems` the list of items selected (when selectionType === 'select')
+       */
+      selectedItems: {
+        type: Array,
+        readOnly: true,
+        notify: true,
+        value: function() {
+          return [];
+        }
+      },
+
+      isRange: {
+        type: Boolean,
+        readOnly: true
+      },
+
+      /**
+       * `xContinuous` indicate true if we have a `continuous` scale on X when the xScale is `ordinal` (e.g. a scaleBand for bar charts)
+       */
+      xContinuous: {
+        type: Boolean,
+        value: false
+      },
+
+      yContinuous: {
+        type: Boolean,
+        value: true
+      }
+    },
+
+    observers: [
+      '__observeSelectedItems(selectedItems.splices)'
+    ],
+
+    listeners: {
+      'multi-tap': 'onMultiTap'
+    },
+
+    isBrush: function(type) {
+      return type === 'brushX' || type === 'brushY' || type === 'brush';
+    },
+
+    __observeSelectionType: function(type) {
+      if (type === 'multi' || type === 'select') {
+        this._setIsRange(false);
+      }
+    },
+
+    __observeSelectedItems: function(itemsSplices) {
+      if(itemsSplices) {
+        return this._setHasSelection(!!itemsSplices.indexSplices[0].object.length);
+      } 
+      this._setHasSelection(!!this.selectedItems.length);
+      
+    },
+
+    __computeExtent: function(h, w) {
+      return [[0, 0],[w, h]];
+    },
+
+    __computeBrush: function(type, extent) {
+      if (this.isBrush(type)) {
+        var brush = d3[type]().extent(extent);
+        var me = this;
+
+        brush
+          .on('start', function() {
+            me.onMultiBrushStart();
+          })
+          .on('end', function() {
+            me.onMultiBrushEnd();
+          })
+          .on('brush', function() {
+            me.onMultiBrush();
+          });
+
+        d3.select(this.$.brush).call(brush);
+        return brush;
+      }
+      d3.select(this.$.brush).selectAll('*').remove();
+      return null;
+    },
+
+    onMultiBrush: function() {
+      if (!d3.event.sourceEvent) {
+        return;
+      }
+      var selection = d3.event.selection;
+
+      if (!selection) {
+        return this.fire('multi-select', {
+          type: d3.event.type,
+          selection: null
+        });
+      }
+
+      var scale = this.effectiveScale;
+      var isRange = false;
+
+      var xScale = this.xScale; // we need the original 
+      var sel;
+
+      if (!scale) {
+        scale = this.__getEffectiveScale();
+      }
+
+      if (scale = scale.x) {
+        sel = scale.y ? selection[0] : selection;
+        if (scale.invert) {
+          isRange = true;
+          sel = sel.map(scale.invert);
+        } else {
+          sel = xScale.domain().filter(function(d) {
+            return sel[0] <= (d = xScale(d)) && d <= sel[1];
+          });
+        }
+      }
+
+      // console.info('SELECTION', selection);
+      // console.info('SEL', sel);
+      // TODO : handle yScale ...
+
+      // adjust isRange
+      this._setIsRange(isRange);
+      this._setSelectedItems(sel);
+
+      // notify the selection 
+      this.notifySelection();
+
+      // handle selected class
+      this.refreshSelection();
+
+    },
+    refreshSelection: function() {
+      var isRange = this.isRange;
+      var sel = this.selectedItems;
+      var accessor = this.xAccessor;
+
+      if (sel && sel.length) {
+        d3.select(this.$.chart).selectAll('.chart-shape')
+          .classed('selected', isRange ? function(d) {
+            return sel[0] <= (d = accessor(d.data || d)) && d <= sel[1];
+          } : function(d) {
+            return sel.indexOf(accessor(d.data || d)) > -1;
+          });
+      }
+      
+    },
+    notifySelection: function() {
+      this.fire('multi-select', {
+        type: d3.event.type,
+        isRange: this.isRange,
+        selection: this.selectedItems
+      });
+    },
+
+    onMultiBrushStart: function() {
+      if (this.isBrush(this.selectionType)) {
+        this._setIsSelecting(true);
+        // this._setHasSelection(false);
+        this.fire('multi-select', {
+          type: d3.event.type,
+          selection: null
+        });
+      }
+    },
+
+    onMultiBrushEnd: function() {
+      this._setIsSelecting(false);
+    },
+
+    onMultiTap: function(e, d) {
+      e.stopPropagation();
+      if (this.selectionType === 'select' || this.selectionType === 'multi') {
+        var key = this.xAccessor(d.data || d);
+        var index = this.selectedItems.indexOf(key);
+        if (index > -1) {
+          this.splice('selectedItems', index, 1);
+        } else {
+          if (this.selectionType === 'multi') {
+            this.push('selectedItems', key);
+          } else {
+            this._setSelectedItems([key]);
+          }
+        }
+      }
+      // notify the selection 
+      this.notifySelection();
+
+      // handle selected class
+      this.refreshSelection();
+    },
+
+    clearSelection: function() {
+      this._setSelectedItems([]);
+    },
+
+    __getEffectiveScale: function() {
+
+      var xScale, yScale;
+
+      if (this.selectionType !== 'brushX') {
+        yScale = this.yScale;
+        if (this.yContinuous && this.yScaleContinuous) {
+          yScale = this.yScaleContiuous;
+        }
+      }
+      if (this.selectionType !== 'brushY') {
+        xScale = this.xScale;
+        if (this.xContinuous && this.xScaleContinuous) {
+          xScale = this.xScaleContinuous;
+        }
+      }
+
+      return {
+        x: xScale,
+        y: yScale
+      };
+    },
+
+  };
+
+  // B.selector = [
+  //   multi.brush,
+  //   selector
+  // ];
+})();
+</script>

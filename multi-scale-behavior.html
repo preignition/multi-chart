@@ -1,0 +1,96 @@
+<script>
+(function() {
+  'use strict';
+
+  var B = window.multi = window.multi || {};
+
+  B.scale = {
+
+    properties: {
+
+      scale: {
+        type: Function,
+        notify: true,
+        computed: '__computeScale(scaleType)'
+      },
+
+      scaleType: {
+        type: String,
+        value: 'scaleLinear'
+      },
+
+      domain: {
+        type: Array
+      },
+
+      effectiveDomain: {
+        type: Array,
+        computed: '__computeDomain(domain,family)'
+      },
+
+      range: {
+        type: Array
+      },
+
+      padding: {
+        type: Number
+      },
+
+      family: {
+        type: String,
+        notify: true,
+        computed: '__computeFamily(scaleType)'
+      }
+
+    },
+
+    observers: [
+      'observeConfig(padding, "padding", "scale")',
+      'observeConfig(effectiveDomain, "domain", "scale")',
+      'observeConfig(range, "range", "scale")',
+    ],
+
+    observeConfig: function(value, name, obj) {
+      if (this[obj]) {
+        this[obj][name](value);
+      }
+    },
+
+    __computeScale: function(type) {
+      if (typeof d3[type] === 'function') {
+        return d3[type]();
+      }
+      this._error('scale type is not a valid d3 scale (type is ' + type + ')');
+    },
+
+    __computeDomain: function(domain, family) {
+      if(family === 'continuous') {
+        return d3.extent(domain);
+      }
+      return domain;
+    },
+
+    __computeFamily: function(type) {
+      if (type === 'scaleLinear' || type === 'scalePow' || type === 'scaleSqrt' || type === 'scaleLog' || type === 'scaleIdentity' || type === 'scaleTime') {
+        return 'continuous';
+      }
+      if (type === 'scaleSequential') {
+        return 'sequential';
+      }
+      if (type === 'scaleQuantize') {
+        return 'quantize';
+      }
+      if (type === 'scaleQuantile') {
+        return 'quantile';
+      }
+      if (type === 'scaleThreshold') {
+        return 'threshold'
+      }
+      if (type === 'scaleOrdinal'|| type === 'scaleBand' || type === 'scalePoint' || type === 'scaleCategory') {
+        return 'ordinal';
+      }
+      this._error('scale type is not a valid d3 scale (type is ' + type + ')');
+    }
+  };
+})();
+</script>

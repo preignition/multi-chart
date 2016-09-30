@@ -1,0 +1,54 @@
+<link rel="import" href="../polymer/polymer.html">
+<!--
+`multi-poly`
+polymer elements for multivariate analysis (depend on crossfilter, universe and reductio)
+
+@demo demo/index.html 
+-->
+<dom-module id="multi-accessor">
+  <script>
+  Polymer({
+
+    is: 'multi-accessor',
+
+    properties: {
+      accessor: {
+        type: Function,
+        notify: true,
+      },
+
+      accessorPath: {
+        type: String,
+        observer: 'observePath'
+      },
+
+      series: {
+        type: Array,
+        observer: 'observeSeries'
+      }
+    },
+
+    behaviors: [],
+
+    observePath: function(path) {
+      var isAdd = path.substring(0, 1) === '+';
+      var fn = new Function('d', isAdd ? ('return +d.' + path.substring(1)) : ('return d.' + path));
+      this.set('accessor', fn);
+    },
+    
+    observeSeries: function(series) {
+      this.set('accessor', series.map(function(s) {
+        var fn, isAdd;
+        if (s.path) {
+          isAdd = s.path.substring(0, 1) === '+';
+          fn = new Function('d', isAdd ? ('return +d.' + s.path.substring(1)) : ('return d.' + s.path));
+        } else {
+          fn = s.fn;
+        }
+        return  fn;
+      }));
+    }
+
+  });
+  </script>
+</dom-module>

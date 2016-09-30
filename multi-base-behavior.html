@@ -1,0 +1,121 @@
+<script>
+(function() {
+  'use strict';
+
+  var B = window.multi = window.multi || {};
+
+  B.base = {
+
+    properties: {
+      multichart: {
+        value: true,
+        type: Boolean,
+        readOnly: true,
+        reflectToAttribute: true
+      },
+
+      title: {
+        type: String
+      },
+
+      subtitle: {
+        type: String
+      },
+
+      duration: {
+        type: Number,
+        value: 200
+      },
+
+      data: {
+        type: Array,
+        observer: 'bindData'
+      },
+
+      isBound: {
+        type: Boolean,
+        readOnly: true
+      },
+
+      groupName: {
+        type: String
+      },
+
+      /**
+       * `registeredItems` and array containing all elements that need to be refreshed when data changes 
+       */
+      registeredDrawItems: {
+        type: Array,
+        value: function() {
+          return [];
+        }
+      }
+
+    },
+
+    attached: function() {
+      this.fire('multi-attached', this.groupName);
+      this.assignRef();
+    },
+
+    detached: function() {
+      this.fire('multi-detached', this.groupName);
+    },
+
+    listeners: {
+      'multi-resize': 'renderChart',
+      'multi-draw-register': '__onRegisterDraw',
+      'multi-brush-end': 'listenEvent'
+    },
+
+    assignRef: function() {
+      var sel = d3.select(this);
+      d3.selectAll('[ref]').each(function() {
+        var el = sel.select('#' + this.ref);
+        if (el.empty()) {
+          this._error('no refSelection could be found with the provided ref selector (' + this.ref + ')');
+        }
+        this._setRefSelection(el);
+      });
+    },
+
+    observeChart: function() {
+      this.debounce(this, this.renderChart, 100);
+    },
+
+    bindData: function(data) {
+      d3.select(this.$.chartContent).datum(data);
+      this._setIsBound(true);
+      this.renderChart();
+    },
+
+    renderChart: function() {
+      if (this.isBound && this.renderer) {
+        d3.select(this.$.chartContent).call(this.renderer);
+      }
+    },
+
+    drawRegistered(data, duration) {
+      this.registeredDrawItems.forEach(function(el) {
+        el.draw(data, duration, this)
+      }, this);
+    },
+
+    __onRegisterDraw: function(e, d) {
+      if (d === true) {
+        this.push('registeredDrawItems', e.srcElement);
+      }
+      if (d === false) {
+        this.splice('registeredDrawItems', this.registeredItems.indexOf(e.srcElement), 1);
+      }
+
+    },
+
+    listenEvent: function(e, detail) {
+      console.info('EVENT', e, detail);
+    }
+
+  };
+
+})();
+</script>

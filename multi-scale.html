@@ -1,0 +1,25 @@
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="multi-scale-behavior.html">
+<!--
+`multi-poly`
+polymer elements for multivariate analysis (depend on crossfilter, universe and reductio)
+
+@demo demo/index.html 
+-->
+<dom-module id="multi-scale">
+  <script>
+  Polymer({
+
+    is: 'multi-scale',
+
+    properties: {
+
+    },
+
+    behaviors: [
+      multi.scale
+    ]
+
+  });
+  </script>
+</dom-module>

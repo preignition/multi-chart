@@ -1,0 +1,116 @@
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="multi-scale-behavior.html">
+<link rel="import" href="multi-is-draw-behavior.html">
+<link rel="import" href="multi-ref-selector-behavior.html">
+<!--
+`multi-poly`
+polymer elements for multivariate analysis (depend on crossfilter, universe and reductio)
+
+@demo demo/index.html 
+-->
+<dom-module id="multi-axis">
+  <script>
+  Polymer({
+
+    is: 'multi-axis',
+
+
+    properties: {
+
+      axis: {
+        type: Function,
+        computed: '_computeAxis(axisType,scale)'
+      },
+
+      axisType: {
+        type: String,
+        value: 'bottom'
+      },
+
+      x: {
+        type: Number,
+        value: 0
+      },
+
+      y: {
+        type: Number,
+        value: 0
+      },
+
+      width: {
+        type: Number
+      },
+
+      height: {
+        type: Number
+      },
+
+      ellastic:  {
+        type: Boolean,
+        value: true
+      }
+
+    },
+
+    behaviors: [
+      multi.refSelector,
+      multi.isDraw,
+      multi.scale
+    ],
+
+    listeners: {
+      'multi-shaper-draw': 'onMultiDraw'
+    },
+
+    observers: [
+      '_observePosition(refSelection, x, y)',
+      '_observeHeight(height, axisType)',
+      '_observeWidth(width, axisType)'
+    ],
+
+    _computeAxis: function(type, scale) {
+      var axis = type === 'right' ? d3.axisRight() : type === 'left' ? d3.axisLeft() : type === 'top' ? d3.axisTop() : d3.axisBottom();
+
+      return axis.scale(scale);
+    },
+
+    _observePosition: function(sel, x, y) {
+      sel.attr('transform', 'translate(' + x + ',' + y + ')');
+    },
+
+    _observeWidth: function(w, type) {
+      if (type === 'right') {
+        this.x = w;
+      }
+      if(type === 'top' || type === 'bottom') {
+        this.range = [0, w];
+      }
+    },
+
+    _observeHeight: function(h, type) {
+      if (type === 'bottom') {
+        this.y = h;
+      }
+      if(type === 'right' || type === 'left') {
+        this.range = [h, 0];
+      }
+    },
+
+    draw: function(data, duration, host) {
+      if (!this.refSelection || this.refSelection.emtpy()) {
+        return;
+      }
+
+      if (duration) {
+        this.refSelection.transition(duration).call(this.axis.scale(this.scale));
+      } else {
+        this.refSelection.call(this.axis.scale(this.scale));
+      }
+    },
+    remove: function() {
+      this.refSelection.selectAll('*').remove();
+    }
+
+  });
+  </script>
+</dom-module>
