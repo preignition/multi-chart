@@ -22,13 +22,11 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
         observer: 'observePath'
       },
 
-      series: {
-        type: Array,
-        observer: 'observeSeries'
-      }
+      // series: {
+      //   type: Array,
+      //   observer: 'observeSeries'
+      // }
     },
-
-    behaviors: [],
 
     observePath: function(path) {
       var isAdd = path.substring(0, 1) === '+';
@@ -36,18 +34,18 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
       this.set('accessor', fn);
     },
     
-    observeSeries: function(series) {
-      this.set('accessor', series.map(function(s) {
-        var fn, isAdd;
-        if (s.path) {
-          isAdd = s.path.substring(0, 1) === '+';
-          fn = new Function('d', isAdd ? ('return +d.' + s.path.substring(1)) : ('return d.' + s.path));
-        } else {
-          fn = s.fn;
-        }
-        return  fn;
-      }));
-    }
+    // observeSeries: function(series) {
+    //   this.set('accessor', series.map(function(s) {
+    //     var fn, isAdd;
+    //     if (s.path) {
+    //       isAdd = s.path.substring(0, 1) === '+';
+    //       fn = new Function('d', isAdd ? ('return +d.' + s.path.substring(1)) : ('return d.' + s.path));
+    //     } else {
+    //       fn = s.fn;
+    //     }
+    //     return  fn;
+    //   }));
+    // }
 
   });
   </script>

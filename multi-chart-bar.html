@@ -2,14 +2,10 @@
 
 <link rel="import" href="multi-base-behavior.html">
 <link rel="import" href="multi-shape-bar.html">
-<link rel="import" href="multi-shaper-behavior.html">
 <link rel="import" href="multi-color-behavior.html">
 <link rel="import" href="multi-selector-behavior.html">
-<!-- <link rel="import" href="multi-brush-behavior.html"> -->
-<link rel="import" href="multi-coordinate-grid-behavior.html">
 <link rel="import" href="multi-axis.html">
 <link rel="import" href="multi-scale.html">
-<!-- <link rel="import" href="multi-brush.html"> -->
 <link rel="import" href="multi-accessor.html">
 <link rel="import" href="multi-shared-styles.html">
 <!-- <link rel="import" href="multi-axis-behaviors.html"> -->
@@ -34,12 +30,10 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
     <multi-scale scale-type="scaleLinear" range="[[xRange]]" domain="[[xDomain]]" scale="{{xScaleContinuous}}"></multi-scale>
     <multi-accessor accessor="{{xAccessor}}" accessor-path="key"></multi-accessor>
     <multi-accessor accessor="{{yAccessor}}" accessor-path="+value.count"></multi-accessor>
-    <!-- <multi-accessor accessor="{{yAccessor}}" series="[[series]]"></multi-accessor> -->
     <multi-shape-bar index="0" anchor="chart" height="[[chartHeight]]" x-accessor="[[xAccessor]]" y-accessor="[[yAccessor]]" x-scale="[[xScale]]" y-scale="[[yScale]]" color-scale="[[colorScale]]"></multi-shape-bar>
-    <!-- <multi-brush brush-type="[[brushType]]" brush="{{brush}}" extent="[[extent]]" ></multi-brush> -->
 
     <svg id="svg">
-      <g id="chartContent">
+      <g id="chartContent" transform$="[[translate(margin.left, margin.top)]]">
         <g id="chart" class="chart">
         </g>
         <g id="axisCt"></g>
@@ -75,25 +69,12 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
       xAxisText: {
         type: String
       },
-
-      chartElement: {
-        type: String,
-        value: 'g'
-      },
-
-      chartClass: {
-        type: String,
-        value: 'bar'
-      }
-
     },
 
     behaviors: [
-      multi.base,
-      multi.shaper,
-      multi.color,
-      multi.coordinateGrid,
-      multi.selector
+      Polymer.multi.base,
+      Polymer.multi.color,
+      Polymer.multi.selector
     ]
 
   });

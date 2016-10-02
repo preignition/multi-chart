@@ -1,0 +1,28 @@
+<link rel="import" href="../polymer/polymer.html">
+<script>
+/**
+ * `xCoordinate` behavior for documenting x-related coordinate
+ */
+(function() {
+  'use strict';
+
+
+  var B = Polymer.multi = Polymer.multi || {};
+
+  B.util = {
+    
+    translate : function(x,y) {
+      return 'translate(' + x + ',' + y +')';
+    },
+    rotate : function(angle) {
+      return 'rotate(' + angle + ')';
+    },
+    //TODO
+    matrix : function() {
+      return 'matrix(' +  + ')';
+    },
+
+  };
+
+})();
+</script>

@@ -1,10 +1,13 @@
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="multi-resizer-behavior.html">
+<link rel="import" href="multi-util-behavior.html">
 <script>
 (function() {
   'use strict';
 
-  var B = window.multi = window.multi || {};
+  var B = Polymer.multi = Polymer.multi || {};
 
-  B.base = {
+  var base = {
 
     properties: {
       multichart: {
@@ -29,12 +32,7 @@
 
       data: {
         type: Array,
-        observer: 'bindData'
-      },
-
-      isBound: {
-        type: Boolean,
-        readOnly: true
+        observer: 'renderChart'
       },
 
       groupName: {
@@ -55,8 +53,8 @@
 
     attached: function() {
       this.fire('multi-attached', this.groupName);
-      // this.assignRef();
       this.callRegistered('hostAttached');
+      this.draw();
     },
 
     detached: function() {
@@ -64,36 +62,34 @@
     },
 
     listeners: {
-      'multi-resize': 'renderChart',
-      'multi-register-item': '__onRegisterItem',
-      'multi-brush-end': 'listenEvent'
+      'multi-resize': '__onResize',
+      'multi-register-item': '__onRegisterItem'
     },
 
-    assignRef: function() {
-      var sel = d3.select(this);
-      d3.selectAll('[ref]').each(function() {
-        var el = sel.select('#' + this.ref);
-        if (el.empty()) {
-          this._error('no refSelection could be found with the provided ref selector (' + this.ref + ')');
-        }
-        this._setRefSelection(el);
-      });
-    },
-
-    observeChart: function() {
-      this.debounce(this, this.renderChart, 100);
-    },
-
-    bindData: function(data) {
-      d3.select(this.$.chartContent).datum(data);
-      this._setIsBound(true);
-      this.renderChart();
-    },
-
-    renderChart: function() {
-      if (this.isBound && this.renderer) {
-        d3.select(this.$.chartContent).call(this.renderer);
+    renderChart: function(data) {
+      if (this.renderer) {
+        this.renderer(data);
       }
+    },
+
+    draw: function() {
+      var me = this;
+
+      function draw(data) {
+
+        if (me.chartWidth === 0) {
+          return;
+        }
+
+        me.callRegistered('preDraw', data, me.duration);
+        me.callRegistered('draw', data, me.duration);
+        me.fire('multi-shaper-draw');
+
+      }
+      // this is the function that is called when we refresh the chart (base-behavior.renderChart(selection))
+      this.renderer = function(data) {
+        draw(data);
+      };
     },
 
     callRegistered(method) {
@@ -106,6 +102,12 @@
           el[method].apply(el, args);
         }
       }, this);
+    },
+
+    __onResize: function() {
+      if (this.data && this.renderer) {
+        this.renderer(this.data);
+      }
     },
 
     __onRegisterItem: function(e, d) {
@@ -121,14 +123,14 @@
           e.srcElement.afterUnregister(this);
         }
       }
-
-    },
-
-    listenEvent: function(e, detail) {
-      console.info('EVENT', e, detail);
     }
-
   };
+
+  B.base = [
+    Polymer.multi.util,
+    Polymer.multi.resizer,
+    base
+  ];
 
 })();
 </script>

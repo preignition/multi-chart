@@ -1,9 +1,10 @@
+<link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../iron-resizable-behavior/iron-resizable-behavior.html">
 <script>
 (function() {
   'use strict';
 
-  var B = window.multi = window.multi || {};
+  var B = Polymer.multi = Polymer.multi || {};
 
   var resizer = {
 
@@ -31,10 +32,6 @@
           };
         }
       }
-      // extent: {
-      //   type: Array,
-      //   computed: '__computeExtent(chartHeight, chartWidth)'
-      // }
     },
 
     listeners: {
@@ -47,7 +44,6 @@
 
     attached: function() {
       this.calculateSize();
-      // this.async(this.notifyResize, 1);
     },
 
     observeMargin: function(margin) {
@@ -58,23 +54,14 @@
 
       this.debounce(this, function() {
         var rect = this.$.svg.getBoundingClientRect();
-        // console.info('Rect', rect);
         this._setChartWidth(Math.floor(rect.width) - this.margin.top - this.margin.bottom);
         this._setChartHeight(Math.floor(rect.height) - this.margin.left - this.margin.right);
         this.fire('multi-resize');
       }, 10);
     },
 
-    // get parent() {
-    //   if (this.parentNode.nodeType === Node.DOCUMENT_FRAGMENT_NODE) {
-    //     return this.parentNode.host;
-    //   }
-
-    //   return this.parentNode;
-    // },
-
     __onIronResize: function() {
-      this.calculateSize()
+      this.calculateSize();
     },
 
   };

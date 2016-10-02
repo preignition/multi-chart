@@ -1,12 +1,11 @@
 <link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="../iron-flex-layout/iron-flex-layout.html">
+
 <link rel="import" href="multi-base-behavior.html">
-<link rel="import" href="multi-selector-behavior.html">
+<link rel="import" href="multi-shape-bar.html">
 <link rel="import" href="multi-color-behavior.html">
-<link rel="import" href="multi-coordinate-grid-behavior.html">
-<link rel="import" href="multi-shaper-behavior.html">
+<link rel="import" href="multi-selector-behavior.html">
 <link rel="import" href="multi-axis.html">
-<!-- <link rel="import" href="multi-brush.html"> -->
+<link rel="import" href="multi-scale.html">
 <link rel="import" href="multi-accessor.html">
 <link rel="import" href="multi-shared-styles.html">
 <!-- <link rel="import" href="multi-axis-behaviors.html"> -->
@@ -16,31 +15,28 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
 
 @demo demo/index.html 
 -->
-<dom-module id="multi-chart-line">
+<dom-module id="multi-chart-bar">
   <template>
-    <style is="custom-style" include="multi-charts multi-charts-line">
-
+    <style is="custom-style" include="multi-charts multi-charts-selector">
+      
     </style>
+
     <h2 class="title">[[title]]</h2>
     <h3 class="subtitle">[[subtitle]]</h3>
-    <multi-axis ref="xAxis" width="[[chartWidth]]" height="[[chartHeight]]" family="{{xScaleFamily}}" scale="{{xScale}}" domain="[[xDomain]]" range="[[xRange]]" ></multi-axis>
-    <multi-axis ref="yAxis" width="[[chartWidth]]" height="[[chartHeight]]" axis-type="left" domain="[[yDomain]]" range="[[yRange]]" scale="{{yScale}}"></multi-axis>
+    <!-- Polymer has problem with handling namespace (https://github.com/Polymer/polymer/pull/3372): multi-axis is outside SVG -->
+    <multi-axis anchor="axisCt" accessor="[[xAccessor]]" elastic="[[xElastic]]" text="[[xAxisText]]" ref="xAxis" width="[[chartWidth]]" height="[[chartHeight]]" family="{{xScaleFamily}}" scale="{{xScale}}" scale-type="scaleBand" padding="0.1" domain="{{xDomain}}" range="[[xRange]]" ></multi-axis>
+    <multi-axis anchor="axisCt" domain-min="0" accessor="[[yAccessor]]" elastic="[[yElastic]]" text="[[yAxisText]]"  ref="yAxis" width="[[chartWidth]]" height="[[chartHeight]]" position="left" domain="{{yDomain}}" range="[[yRange]]" scale="{{yScale}}" ></multi-axis>
     <multi-scale scale-type="scaleOrdinal" range="[[colorRange]]" scale="{{colorScale}}"></multi-scale>
+    <multi-scale scale-type="scaleLinear" range="[[xRange]]" domain="[[xDomain]]" scale="{{xScaleContinuous}}"></multi-scale>
     <multi-accessor accessor="{{xAccessor}}" accessor-path="key"></multi-accessor>
-    <multi-accessor accessor="{{yAccessor}}" series="[[series]]">
-      <!-- <multi-brush brush-type="brushX" brush="{{brush}}" extent="[[extent]]"></multi-brush> -->
-    </multi-accessor>
+    <multi-accessor accessor="{{yAccessor}}" accessor-path="+value.count"></multi-accessor>
+    <multi-shape-line index="0" anchor="chart" height="[[chartHeight]]" x-accessor="[[xAccessor]]" y-accessor="[[yAccessor]]" x-scale="[[xScale]]" y-scale="[[yScale]]" color-scale="[[colorScale]]"></multi-shape-line>
+
     <svg id="svg">
-      <g id="chartContent">
+      <g id="chartContent" transform$="[[translate(margin.left, margin.top)]]">
         <g id="chart" class="chart">
-          <!-- <path id="chartPath" class="chart line"></path> -->
         </g>
-        <g id="xAxis" class="axis x-axis">
-          <text id="xAxisText" class="axis-text x-axis" x="0" y="30" dx="0" text-anchor="end"></text>
-        </g>
-        <g id="yAxis" class="axis y-axis">
-          <text id="yAxisText" class="axis-text y-axis" transform="rotate(-90)" y="6" dy=".71em" text-anchor="end"></text>
-        </g>
+        <g id="axisCt"></g>
         <g id="brush" class="brush"></g>
       </g>
     </svg>
@@ -48,112 +44,38 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
   <script>
   Polymer({
 
-    is: 'multi-chart-line',
+    is: 'multi-chart-bar',
 
     properties: {
-      selectionType: {
+        
+      selectionType : {
         type: String,
         value: 'brushX'
       },
 
+      xElastic: {
+        type: Boolean,
+        value: false
+      },
+
+      yElastic: {
+        type: Boolean,
+        value: true
+      },
+
       yAxisText: {
-        type: String,
-        value: 'yAxis',
-        observer: 'observeYAxisText'
+        type: String
       },
       xAxisText: {
-        type: String,
-        value: 'xAxis',
-        observer: 'observeXAxisText'
+        type: String
       },
-
-
-
-      series: {
-        type: Array,
-        value: [{
-          'label': 'count',
-          'path': '+value.count'
-            // }, {
-            //   'label': 'average',
-            //   'path': '+value.average'
-        }]
-      },
-
-      // shaper: {
-      //   type: Function,
-      //   value: function() {
-      //     return d3.line
-      //   }
-      // },
-      chartElement: {
-        type: String,
-        value: 'path'
-      },
-      chartClass: {
-        type: String,
-        value: 'line'
-      }
-
-    },
-    observeYAxisText: function(text) {
-      d3.select(this.$.yAxisText).text(text)
-    },
-
-    observeXAxisText: function(text) {
-      d3.select(this.$.xAxisText).text(text)
     },
 
     behaviors: [
-      multi.base,
-      multi.shaper,
-      multi.color,
-      multi.coordinateGrid,
-      multi.selector
-      // multiverse.axis
-    ],
-
-    // getXDomain : function(data) {
-    //   return d3.extent(data, this.xAccessor);
-    // },
-
-    buildShaper: function(accessor, i) {
-      var me = this,
-        xScale = me.xScale,
-        yScale = me.yScale,
-        xAccessor = me.xAccessor;
-
-      return this.mixin(
-        this.buildBaseShaper(accessor, i), {
-          line: d3.line()
-            .x(function(d) {
-              return xScale(xAccessor(d));
-            })
-            .y(function(d) {
-              return yScale(accessor(d));
-            })
-        });
-    },
-
-    handleChart: function(chart, data) {
-      var me = this;
-
-      var colorScale = me.colorScale;
-      var colorAccessor = me.colorAccessor;
-      var shaper =  chart.datum();
-
-      if (me.duration) {
-        chart = chart.transition().duration(me.duration);
-      }
-      chart.style('stroke', function(d, i) {
-          return colorScale(colorAccessor(d, i));
-        })
-        .attr('key', shaper.key)
-        .attr('d', function(d, i) {
-          return d.line(data);
-        });
-    }
-
+      Polymer.multi.base,
+      Polymer.multi.color,
+      Polymer.multi.selector
+    ]
 
   });
   </script>
