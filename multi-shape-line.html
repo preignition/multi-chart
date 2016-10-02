@@ -17,8 +17,7 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
     }
     </style>
     <svg>
-      <g id="chart" class="shape line" >
-      </g>
+      <path id="chart" class="shape line chart-shape" > </path>
     </svg>
   </template>
   <script>
@@ -29,10 +28,6 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
 
     properties: {
       
-      shaper: {
-        type: Function
-      },
-
       x: {
         type: Function,
         computed: '_computeCoordinate(xScale, xAccessor)'
@@ -43,8 +38,9 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
         computed: '_computeCoordinate(yScale, yAccessor)'
       },
 
-      height: {
-        type: Number
+      line: {
+        type: Function,
+        computed: '_computeLine(x, y)'
       },
 
       index: {
@@ -60,10 +56,10 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
       Polymer.multi.yCoordinate,
     ],
 
-    listeners: {
-    },
-
-    attached: function() {
+    _computeLine: function(x, y) {
+      return  d3.line()
+            .x(x)
+            .y(y)
     },
 
     /**
@@ -73,42 +69,32 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
       this.targetElement = this.$.chart;
     },
 
-    observers: [
-      
-    ],
-
     draw: function(host, data, duration) {
 
-      var me = this;
-      var height = this.height;
-      var y = this.y;
+      // var me = this;
+      // var height = this.height;
+      // var y = this.y;
 
-      var chart = d3.select(this.targetElement).selectAll('rect').data(data);
+      var chart = d3.select(this.targetElement).datum(data);
       
-      chart.exit().remove();
+      // chart.exit().remove();
 
-      chart = chart.enter().append('rect')
-        .attr('class','chart-shape')
-        .merge(chart);
+      // chart = chart.enter().append('path')
+      //   .attr('class','chart-shape')
+      //   .merge(chart);
      
-      chart.on('click', function(d) {
-          host.fire('multi-tap', d);
-        });
+      // chart.on('click', function(d) {
+      //     host.fire('multi-tap', d);
+      //   });
 
       if (duration)  {
         chart = chart.transition().duration(duration);
       }  
       
-      chart.attr('x', this.x)
-        .attr('y', this.y)
-        .attr('height', function(d) {
-          return height - y(d);
-        })
-        .attr('width', this.xScale.bandwidth())
+      chart.attr('stroke',  this.colorScale(this.index))
         .attr('key', this.key)
-        .attr('fill', this.colorScale(this.index));
-    }
-
+        .attr('d', this.line);
+    },
 
   });
   </script>

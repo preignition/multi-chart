@@ -10,7 +10,7 @@
   <link rel="import" href="../../iron-demo-helpers/demo-snippet.html">
   <link rel="import" href="../../paper-button/paper-button.html">
   <link rel="import" href="../../d3-bundle/d3-v4-bundle-element-debug.html">
-  <!-- <link rel="import" href="../multi-chart-line.html"> -->
+  <link rel="import" href="../multi-chart-line.html">
   <link rel="import" href="../multi-chart-bar.html">
   <link rel="stylesheet" href="../multichart.css">
   <style is="custom-style" include="demo-pages-shared-styles">
@@ -26,7 +26,7 @@
     <demo-snippet>
       <template>
         <template is="dom-bind" id="app">
-          <!-- <multi-chart-line id="lineChart"  > </multi-chart-line> -->
+          <multi-chart-line id="lineChart"  > </multi-chart-line>
           <multi-chart-bar x-axis-text="my text" y-axis-text="yAxis" id="barChart"  > </multi-chart-bar>
          
           <paper-button raised on-tap="toggle">toggle data</paper-button>
@@ -43,12 +43,12 @@
     var d2 = [{"key":0,"value":{"count":200}},{"key":1,"value":{"count":40}},{"key":3,"value":{"count":156}},{"key":5,"value":{"count":4}},{"key":6,"value":{"count":142}},{"key":7,"value":{"count":1958}},{"key":8,"value":{"count":1917}},{"key":9,"value":{"count":1706}},{"key":10,"value":{"count":1634}},{"key":11,"value":{"count":1760}},{"key":12,"value":{"count":1814}},{"key":13,"value":{"count":1684}},{"key":14,"value":{"count":1744}},{"key":15,"value":{"count":1754}},{"key":16,"value":{"count":1745}},{"key":17,"value":{"count":2022}},{"key":18,"value":{"count":1877}},{"key":19,"value":{"count":5768}},{"key":20,"value":{"count":1604}},{"key":21,"value":{"count":130}},{"key":22,"value":{"count":393}},{"key":23,"value":{"count":126}}]
     var isD1 = false;
 
-    // app.$.lineChart.data = d1;
+    app.$.lineChart.data = d1;
     app.$.barChart.data = d2;
     
     app.toggle = function() {
       isD1 = !isD1
-      // this.$.lineChart.data = isD1 ? d2 : d1;
+      this.$.lineChart.data = isD1 ? d2 : d1;
       this.$.barChart.data = isD1 ? d1 : d2;
     }    
     
