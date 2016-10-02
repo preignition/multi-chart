@@ -44,7 +44,7 @@
       /**
        * `registeredItems` and array containing all elements that need to be refreshed when data changes 
        */
-      registeredDrawItems: {
+      registeredItems: {
         type: Array,
         value: function() {
           return [];
@@ -55,7 +55,8 @@
 
     attached: function() {
       this.fire('multi-attached', this.groupName);
-      this.assignRef();
+      // this.assignRef();
+      this.callRegistered('hostAttached');
     },
 
     detached: function() {
@@ -64,7 +65,7 @@
 
     listeners: {
       'multi-resize': 'renderChart',
-      'multi-draw-register': '__onRegisterDraw',
+      'multi-register-item': '__onRegisterItem',
       'multi-brush-end': 'listenEvent'
     },
 
@@ -95,18 +96,30 @@
       }
     },
 
-    drawRegistered(data, duration) {
-      this.registeredDrawItems.forEach(function(el) {
-        el.draw(data, duration, this)
+    callRegistered(method) {
+      // we replace `method name` with `this host` as the first argument 
+      // var args = [].splice.call(arguments, 0, 1, this);
+      [].splice.call(arguments, 0, 1, this);
+      var args = arguments;
+      this.registeredItems.forEach(function(el) {
+        if (el[method]) {
+          el[method].apply(el, args);
+        }
       }, this);
     },
 
-    __onRegisterDraw: function(e, d) {
+    __onRegisterItem: function(e, d) {
       if (d === true) {
-        this.push('registeredDrawItems', e.srcElement);
+        this.push('registeredItems', e.srcElement);
+        if (e.srcElement.afterRegister) {
+          e.srcElement.afterRegister(this);
+        }
       }
       if (d === false) {
-        this.splice('registeredDrawItems', this.registeredItems.indexOf(e.srcElement), 1);
+        this.splice('registeredItems', this.registeredItems.indexOf(e.srcElement), 1);
+        if (e.srcElement.afterUnregister) {
+          e.srcElement.afterUnregister(this);
+        }
       }
 
     },

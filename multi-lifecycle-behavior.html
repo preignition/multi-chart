@@ -1,0 +1,82 @@
+<link rel="import" href="../polymer/polymer.html">
+<script>
+/**
+ * `isDraw` behavior allow element to notify host than they exist. For instance an active `multi-axis` will notify its main chart that it exists and that changes in data must be reflected for this axis as well (calling the draw method)
+ */
+(function() {
+  'use strict';
+
+
+  var B = Polymer.multi = Polymer.multi || {};
+
+  B.lifecycle = {
+
+    properties: {
+
+      /**
+       * `isActive` set to false to inactivate this component. It will remove visual elements and inactivate its functionality.
+       */
+      isActive: {
+        type: Boolean,
+        value: true,
+        observer: '__observeIsActive'
+      },
+
+      /**
+       * @required
+       * `hostAnchor` the id of a host element under which this element will be appended (in `afterRegister` method).
+.       */
+      anchor: {
+        type: String
+      },
+
+    },
+
+    attached: function() {
+      this.setTargetElement();
+      if (this.isActive) {
+        this.fire('multi-register-item', true);
+      }
+    },
+
+    detached: function() {
+      this.fire('multi-register-item', false);
+
+      this.appendChild(this.targetElement);
+      this.targetElement = null;
+
+    },
+
+    __observeIsActive: function(isActive) {
+      this.fire('multi-register-register', isActive);
+      if (!isActive) {
+        this.remove();
+      }
+    },
+
+    /**
+     * `afterRegister` is called by the host once this element has been registered. It placed the axis element into the chart. 
+     */
+    afterRegister: function(host) {
+      if (!this.anchor) {
+        this._error('hostAnchor is missing');
+      }
+      host.$[this.anchor].appendChild(this.targetElement);
+    },
+
+    setTargetElement: function() {
+      this._error('setTargetElement method of isDraw component must be overridden');
+    },
+
+    draw: function() {
+      this._error('draw method of isDraw component must be overridden');
+    },
+
+    remove: function() {
+      d3.select(this.targetElement).selectAll('*').remove();
+    }
+
+  };
+
+})();
+</script>

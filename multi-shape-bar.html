@@ -1,0 +1,116 @@
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="multi-x-coordinate-behavior.html">
+<link rel="import" href="multi-y-coordinate-behavior.html">
+<link rel="import" href="multi-shape-behavior.html">
+<link rel="import" href="multi-lifecycle-behavior.html">
+<!--
+`multi-poly`
+polymer elements for multivariate analysis (depend on crossfilter, universe and reductio)
+
+@demo demo/index.html 
+-->
+<dom-module id="multi-shape-bar">
+  <template>
+    <style is="custom-style">
+    :host {
+      display: none;
+    }
+    </style>
+    <svg>
+      <g id="chart" class="shape bar" >
+      </g>
+    </svg>
+  </template>
+  <script>
+  Polymer({
+
+    is: 'multi-shape-bar',
+
+
+    properties: {
+      
+      shaper: {
+        type: Function
+      },
+
+      x: {
+        type: Function,
+        computed: '_computeCoordinate(xScale, xAccessor)'
+      },
+
+      y: {
+        type: Function,
+        computed: '_computeCoordinate(yScale, yAccessor)'
+      },
+
+      height: {
+        type: Number
+      },
+
+      index: {
+        type: Number
+      }
+     
+    },
+
+    behaviors: [
+      // multi.refSelector,
+      Polymer.multi.lifecycle,
+      Polymer.multi.shape,
+      Polymer.multi.xCoordinate,
+      Polymer.multi.yCoordinate,
+    ],
+
+    listeners: {
+    },
+
+    attached: function() {
+    },
+
+    /**
+     * `setTargetElement` override lifecycle Behavior and called during attached
+     */
+    setTargetElement: function() {
+      this.targetElement = this.$.chart;
+    },
+
+    observers: [
+      
+    ],
+
+    draw: function(host, data, duration) {
+
+      var me = this;
+      var height = this.height;
+      var y = this.y;
+
+      var chart = d3.select(this.targetElement).selectAll('rect').data(data);
+      
+      chart.exit().remove();
+
+      chart = chart.enter().append('rect')
+        .attr('class','chart-shape')
+        .merge(chart);
+     
+      chart.on('click', function(d) {
+          host.fire('multi-tap', d);
+        });
+
+      if (duration)  {
+        chart = chart.transition().duration(duration);
+      }  
+      
+      chart.attr('x', this.x)
+        .attr('y', this.y)
+        .attr('height', function(d) {
+          return height - y(d);
+        })
+        .attr('width', this.xScale.bandwidth())
+        .attr('key', this.key)
+        .attr('fill', this.colorScale(this.index));
+    }
+
+
+  });
+  </script>
+</dom-module>

@@ -1,0 +1,38 @@
+<link rel="import" href="../polymer/polymer.html">
+<script>
+/**
+ * `xCoordinate` behavior for documenting x-related coordinate
+ */
+(function() {
+  'use strict';
+
+
+  var B = Polymer.multi = Polymer.multi || {};
+
+  B.shape = {
+
+    properties: {
+
+      key: {
+        type: Function,
+        computed: '_computeKey(xAccessor)'
+      }
+
+    },
+    
+    _computeKey: function(accessor) {
+      return function(d,i) {
+        return accessor(d, i);
+      };
+    },
+
+    _computeCoordinate: function(scale, accessor) {
+      return function(d,i) {
+        return scale(accessor(d));
+      };
+    },
+
+  };
+
+})();
+</script>

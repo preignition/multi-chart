@@ -1,7 +1,6 @@
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="multi-scale-behavior.html">
-<link rel="import" href="multi-is-draw-behavior.html">
-<link rel="import" href="multi-ref-selector-behavior.html">
+<link rel="import" href="multi-lifecycle-behavior.html">
 <!--
 `multi-poly`
 polymer elements for multivariate analysis (depend on crossfilter, universe and reductio)
@@ -9,6 +8,18 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
 @demo demo/index.html 
 -->
 <dom-module id="multi-axis">
+  <template>
+    <style is="custom-style">
+    :host {
+      display: none;
+    }
+    </style>
+    <svg>
+      <g id="axis" class="axis" transform$="[[transform]]">
+        <text class="axis-text" transform$="[[textTransform]]" x$="[[xText]]" y$="[[yText]]" dx$="[[dx]]" dy$="[[dy]]" text-anchor="end">[[text]]</text>
+      </g>
+    </svg>
+  </template>
   <script>
   Polymer({
 
@@ -19,12 +30,13 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
 
       axis: {
         type: Function,
-        computed: '_computeAxis(axisType,scale)'
+        computed: '_computeAxis(position,scale)'
       },
 
-      axisType: {
+      position: {
         type: String,
-        value: 'bottom'
+        value: 'bottom',
+        observer: '_setPositionAttribute'
       },
 
       x: {
@@ -45,16 +57,44 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
         type: Number
       },
 
-      ellastic:  {
+      elastic: {
         type: Boolean,
         value: true
+      },
+      text: {
+        type: String
+      },
+
+      xText: {
+        type: Number
+      },
+
+      yText: {
+        type: Number
+      },
+
+      dx: {
+        type: String
+      },
+
+      dy: {
+        type: String
+      },
+
+      transform: {
+        type: String,
+        computed: '_computeTransform(x,y)'
+      },
+
+      textTransform: {
+        type: String
       }
 
     },
 
     behaviors: [
-      multi.refSelector,
-      multi.isDraw,
+      // multi.refSelector,
+      Polymer.multi.lifecycle,
       multi.scale
     ],
 
@@ -62,11 +102,54 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
       'multi-shaper-draw': 'onMultiDraw'
     },
 
+    attached: function() {
+      this.async(this.initProp, 20);
+    },
+
+    /**
+     * `setTargetElement` override lifecycle Behavior and called during attached
+     */
+    setTargetElement: function() {
+      this.targetElement = this.$.axis;
+    },
+
     observers: [
-      '_observePosition(refSelection, x, y)',
-      '_observeHeight(height, axisType)',
-      '_observeWidth(width, axisType)'
+      // '_observePosition(position)',
+      '_observeHeight(height, position)',
+      '_observeWidth(width, position)'
     ],
+
+
+    // *
+    //  * `afterRegister` is called by the host once this element has been registered. It placed the axis element into the chart. 
+     
+    // afterRegister: function(host) {
+    //   host.$.chartContent.appendChild(this.$.axis);
+    // },
+
+    get isY() {
+      return this.position === 'left' || this.position === 'right';
+    },
+
+    get isX() {
+      return this.position === 'top' || this.position === 'bottom';
+    },
+
+    initProp: function() {
+      if (this.isY) {
+
+        if (!this.textTransform) {
+          this.textTransform = 'rotate(-90)';
+        }
+        if (!this.yText) {
+          this.yText = 6;
+          this.dy = '0.7em';
+        }
+      }
+      if (this.isX) {
+        this.dy = '2.7em';
+      }
+    },
 
     _computeAxis: function(type, scale) {
       var axis = type === 'right' ? d3.axisRight() : type === 'left' ? d3.axisLeft() : type === 'top' ? d3.axisTop() : d3.axisBottom();
@@ -74,42 +157,50 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
       return axis.scale(scale);
     },
 
-    _observePosition: function(sel, x, y) {
-      sel.attr('transform', 'translate(' + x + ',' + y + ')');
+    _computeTransform: function(x, y) {
+      return 'translate(' + x + ',' + y + ')';
     },
 
-    _observeWidth: function(w, type) {
-      if (type === 'right') {
-        this.x = w;
+    _observeWidth: function(w, position) {
+      if (this.isY) {
+        this.x = position === 'right' ? w : 0;
       }
-      if(type === 'top' || type === 'bottom') {
+      if (this.isX) {
         this.range = [0, w];
+        this.xText = w;
       }
     },
 
-    _observeHeight: function(h, type) {
-      if (type === 'bottom') {
-        this.y = h;
+    _observeHeight: function(h, position) {
+      if (this.isX) {
+        this.y = position === 'bottom' ? h : 0;
       }
-      if(type === 'right' || type === 'left') {
+
+      if (this.isY) {
         this.range = [h, 0];
       }
     },
 
-    draw: function(data, duration, host) {
-      if (!this.refSelection || this.refSelection.emtpy()) {
-        return;
-      }
+    _setPositionAttribute: function(position) {
+      d3.select(this.$.axis).attr(this.isX ? 'x-axis' : 'y-axis','');
+    },
+
+
+    draw: function(host, data, duration) {
+
+      var sel = d3.select(this.$.axis);
 
       if (duration) {
-        this.refSelection.transition(duration).call(this.axis.scale(this.scale));
+        sel.transition(duration).call(this.axis.scale(this.scale));
       } else {
-        this.refSelection.call(this.axis.scale(this.scale));
+        sel.call(this.axis.scale(this.scale));
       }
-    },
-    remove: function() {
-      this.refSelection.selectAll('*').remove();
     }
+
+    // remove: function() {
+    //   d3.select(this.$.axis).selectAll('*').remove();
+    // }
+  
 
   });
   </script>

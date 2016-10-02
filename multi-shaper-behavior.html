@@ -21,16 +21,18 @@
     draw: function() {
       var me = this;
 
-      var chartSel = d3.select(me.$.chart);
+      // var chartSel = d3.select(me.$.chart);
       var contentSel = d3.select(me.$.chartContent);
 
-      var yAccessor = me.yAccessor;
-      if (!(yAccessor instanceof Array)) {
-        yAccessor = [yAccessor];
-      }
-      var shaper = yAccessor.map(function(accessor, i) {
-        return me.buildShaper(accessor, i);
-      });
+      // var yAccessor = me.yAccessor;
+      // if (!(yAccessor instanceof Array)) {
+      //   yAccessor = [yAccessor];
+      // }
+      // var shaper = yAccessor.map(function(accessor, i) {
+      //   return me.buildShaper(accessor, i);
+      // });
+
+      // me.callRegistered('buildShape');      
 
       function draw(data, i) {
 
@@ -38,21 +40,23 @@
           return;
         }
 
-        me.handleDomain(data, yAccessor);
+        me.callRegistered('preDraw',data, me.duration);
+        
+        // me.handleDomain(data, yAccessor);
         me.handleChartContent(contentSel);
 
-        var chart = chartSel.selectAll('.chart.' + me.chartClass).data(shaper);
+        // var chart = chartSel.selectAll('.chart.' + me.chartClass).data(shaper);
         
-        chart.exit().remove();
+        // chart.exit().remove();
 
-        chart = chart.enter()
-          .append(me.chartElement)
-          .attr('class', 'chart ' + me.chartClass)
-          .merge(chart);
+        // chart = chart.enter()
+        //   .append(me.chartElement)
+        //   .attr('class', 'chart ' + me.chartClass)
+        //   .merge(chart);
 
-        me.handleChart(chart, data);
+        // me.handleChart(chart, data);
         
-        me.drawRegistered(data, me.duration);
+        me.callRegistered('draw',data, me.duration);
         me.fire('multi-shaper-draw');
           // me.handleAxis();
         

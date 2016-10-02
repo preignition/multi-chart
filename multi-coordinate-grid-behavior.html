@@ -23,33 +23,19 @@
 
     },
 
-    handleDomain: function(data, yAccessor) {
-      var me = this;
 
-      if (me.ellasticX || !me.xDomain) {
-        me.xDomain = me.getXDomain(data);
-      }
-      if (me.ellasticY || !me.yDomain) {
-        me.yDomain = [0, d3.max(yAccessor.map(function(accessor) {
-          return d3.max(data, accessor);
-        }))];
-      }
-
-      // me.xRange = [0, me.chartWidth];
-      // me.yRange = [me.chartHeight, 0];
-    },
 
     handleChartContent: function(contentSel) {
       contentSel
         .attr('transform', 'translate(' + this.margin.left + ',' + this.margin.top + ')');
     },
 
-    getXDomain: function(data) {
-    	if( this.xScaleFamily === 'ordinal') {
-    		return data.map(this.xAccessor);
-    	}
-      return d3.extent(data, this.xAccessor);
-    },
+    // getXDomain: function(data) {
+    // 	if( this.xScaleFamily === 'ordinal') {
+    // 		return data.map(this.xAccessor);
+    // 	}
+    //   return d3.extent(data, this.xAccessor);
+    // },
 
     // handleAxis: function() {
 
