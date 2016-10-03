@@ -1,12 +1,8 @@
 <link rel="import" href="../polymer/polymer.html">
-
 <link rel="import" href="multi-base-behavior.html">
 <link rel="import" href="multi-shape-bar.html">
-<link rel="import" href="multi-color-behavior.html">
-<link rel="import" href="multi-selector-behavior.html">
-<link rel="import" href="multi-axis.html">
-<link rel="import" href="multi-scale.html">
 <link rel="import" href="multi-accessor.html">
+<link rel="import" href="multi-container-coordinate.html">
 <link rel="import" href="multi-shared-styles.html">
 <!-- <link rel="import" href="multi-axis-behaviors.html"> -->
 <!--
@@ -17,40 +13,49 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
 -->
 <dom-module id="multi-chart-bar">
   <template>
-    <style is="custom-style" include="multi-charts multi-charts-selector">
-      
-    </style>
+    <style is="custom-style" include="multi-chart multi-chart-selector">
 
+    </style>
     <h2 class="title">[[title]]</h2>
     <h3 class="subtitle">[[subtitle]]</h3>
-    <!-- Polymer has problem with handling namespace (https://github.com/Polymer/polymer/pull/3372): multi-axis is outside SVG -->
-    <multi-axis anchor="axisCt" accessor="[[xAccessor]]" elastic="[[xElastic]]" text="[[xAxisText]]" ref="xAxis" width="[[chartWidth]]" height="[[chartHeight]]" family="{{xScaleFamily}}" scale="{{xScale}}" scale-type="scaleBand" padding="0.1" domain="{{xDomain}}" range="[[xRange]]" ></multi-axis>
-    <multi-axis anchor="axisCt" domain-min="0" accessor="[[yAccessor]]" elastic="[[yElastic]]" text="[[yAxisText]]"  ref="yAxis" width="[[chartWidth]]" height="[[chartHeight]]" position="left" domain="{{yDomain}}" range="[[yRange]]" scale="{{yScale}}" ></multi-axis>
-    <multi-scale scale-type="scaleOrdinal" range="[[colorRange]]" scale="{{colorScale}}"></multi-scale>
-    <multi-scale scale-type="scaleLinear" range="[[xRange]]" domain="[[xDomain]]" scale="{{xScaleContinuous}}"></multi-scale>
-    <multi-accessor accessor="{{xAccessor}}" accessor-path="key"></multi-accessor>
-    <multi-accessor accessor="{{yAccessor}}" accessor-path="+value.count"></multi-accessor>
-    <multi-shape-bar index="0" anchor="chart" height="[[chartHeight]]" x-accessor="[[xAccessor]]" y-accessor="[[yAccessor]]" x-scale="[[xScale]]" y-scale="[[yScale]]" color-scale="[[colorScale]]"></multi-shape-bar>
-
-    <svg id="svg">
-      <g id="chartContent" transform$="[[translate(margin.left, margin.top)]]">
-        <g id="chart" class="chart">
-        </g>
-        <g id="axisCt"></g>
-        <g id="brush" class="brush"></g>
-      </g>
-    </svg>
+    <multi-accessor accessor="{{xAccessor}}" accessor-path="[[xAccessorPath]]"></multi-accessor>
+    <multi-accessor accessor="{{yAccessor}}" accessor-path="[[yAccessorPath]]"></multi-accessor>
+    <multi-container-coordinate 
+      selection-type="[[selectionType]]" 
+      selectedItems="[[selectedItems]]" 
+      chart-height="{{_height}}" 
+      data="[[data]]" 
+      x-accessor="[[xAccessor]]" 
+      y-accessor="[[yAccessor]]" 
+      x-scale="{{xScale}}" 
+      y-scale="{{yScale}}" 
+      x-axis-text="{{xAxisText}}" 
+      y-axis-text="{{yAxisText}}" 
+      x-elastic="{{xElastic}}" 
+      y-elastic="{{yElastic}}" 
+      color-scale="{{colorScale}}">
+      <multi-shape-bar index="0" height="[[_height]]" x-accessor="[[xAccessor]]" y-accessor="[[yAccessor]]" x-scale="[[xScale]]" y-scale="[[yScale]]" color-scale="[[colorScale]]"></multi-shape-bar>
+    </multi-container-coordinate>
   </template>
   <script>
   Polymer({
 
     is: 'multi-chart-bar',
 
+    hostAttributes: {
+      multichart: ''
+    },
+
     properties: {
-        
-      selectionType : {
+
+      selectionType: {
         type: String,
         value: 'brushX'
+      },
+
+      selectedItems: {
+        type: Array,
+        notify: true
       },
 
       xElastic: {
@@ -69,12 +74,21 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
       xAxisText: {
         type: String
       },
+
+      xAccessorPath: {
+        type: String,
+        value: 'key'
+      },
+      yAccessorPath: {
+        type: String,
+        value: '+value.count'
+      }
     },
 
     behaviors: [
-      Polymer.multi.base,
-      Polymer.multi.color,
-      Polymer.multi.selector
+      // Polymer.multi.base,
+      // Polymer.multi.color,
+      // Polymer.multi.selector
     ]
 
   });

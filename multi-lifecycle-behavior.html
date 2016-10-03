@@ -58,10 +58,10 @@
      * `afterRegister` is called by the host once this element has been registered. It placed the axis element into the chart. 
      */
     afterRegister: function(host) {
-      if (!this.anchor) {
-        this._error('hostAnchor is missing');
+      if (!this.anchor && !host.chartInsertionPoint) {
+        this._error('insertionPoint is missing. specify either and anchor or a chartInsertionPoint.');
       }
-      host.$[this.anchor].appendChild(this.targetElement);
+      host.$[this.anchor || host.chartInsertionPoint].appendChild(this.targetElement);
     },
 
     setTargetElement: function() {

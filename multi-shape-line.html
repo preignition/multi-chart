@@ -25,7 +25,6 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
 
     is: 'multi-shape-line',
 
-
     properties: {
       
       x: {
@@ -57,9 +56,7 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
     ],
 
     _computeLine: function(x, y) {
-      return  d3.line()
-            .x(x)
-            .y(y)
+      return  d3.line().x(x).y(y);
     },
 
     /**
@@ -71,18 +68,8 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
 
     draw: function(host, data, duration) {
 
-      // var me = this;
-      // var height = this.height;
-      // var y = this.y;
-
       var chart = d3.select(this.targetElement).datum(data);
       
-      // chart.exit().remove();
-
-      // chart = chart.enter().append('path')
-      //   .attr('class','chart-shape')
-      //   .merge(chart);
-     
       // chart.on('click', function(d) {
       //     host.fire('multi-tap', d);
       //   });

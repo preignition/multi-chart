@@ -120,10 +120,10 @@
           this.domain = data.map(this.accessor);
         } else {
           var extent = d3.extent(data, this.accessor);
-          if (this.domainMin) {
+          if (this.domainMin || this.domainMin === 0) {
             extent[0] = this.domainMin;
           }
-          if (this.domainMax) {
+          if (this.domainMax || this.domainMax === 0) {
             extent[1] = this.domainMax;
           }
           this.domain = extent;

@@ -8,8 +8,11 @@
   B.selector = {
 
     properties: {
+      /**
+       * `selectionType` the type of selection,  either `brushX`, `brushY`, `brush`, `multi`, `select` or kept undefined to disable selection behaviors.
+       */
       selectionType: {
-        type: String, // either `brushX`, `brushY`, `brush`, `multi`, `select` or kept undefined to disable selection bahaviors
+        type: String,
         observer: '__observeSelectionType'
       },
 
@@ -41,6 +44,7 @@
         type: Function,
         computed: '__computeBrush(selectionType, extent)'
       },
+
 
       extent: {
         type: Array,
@@ -75,6 +79,14 @@
       yContinuous: {
         type: Boolean,
         value: true
+      },
+
+      /**
+       * `brushAnchor` the id of the element to be used as the d3-brush element.
+       */
+      brushAnchor: {
+        type: String,
+        value: 'brush'
       }
     },
 
@@ -86,9 +98,12 @@
       'multi-tap': 'onMultiTap'
     },
 
-    isBrush: function(type) {
-      return type === 'brushX' || type === 'brushY' || type === 'brush';
+    get isBrush() {
+      return this.selectionType === 'brushX' || this.selectionType === 'brushY' || this.selectionType === 'brush';
     },
+    // isBrush: function(selectionType) {
+    //   return type === 'brushX' || type === 'brushY' || type === 'brush';
+    // },
 
     __observeSelectionType: function(type) {
       if (type === 'multi' || type === 'select') {
@@ -97,19 +112,22 @@
     },
 
     __observeSelectedItems: function(itemsSplices) {
-      if(itemsSplices) {
+      if (itemsSplices) {
         return this._setHasSelection(!!itemsSplices.indexSplices[0].object.length);
-      } 
+      }
       this._setHasSelection(!!this.selectedItems.length);
-      
+
     },
 
     __computeExtent: function(h, w) {
-      return [[0, 0],[w, h]];
+      return [
+        [0, 0],
+        [w, h]
+      ];
     },
 
     __computeBrush: function(type, extent) {
-      if (this.isBrush(type)) {
+      if (this.isBrush) {
         var brush = d3[type]().extent(extent);
         var me = this;
 
@@ -124,10 +142,10 @@
             me.onMultiBrush();
           });
 
-        d3.select(this.$.brush).call(brush);
+        d3.select(this.$[this.brushAnchor]).call(brush);
         return brush;
       }
-      d3.select(this.$.brush).selectAll('*').remove();
+      d3.select(this.$[this.brushAnchor]).selectAll('*').remove();
       return null;
     },
 
@@ -194,7 +212,7 @@
             return sel.indexOf(accessor(d.data || d)) > -1;
           });
       }
-      
+
     },
     notifySelection: function() {
       this.fire('multi-select', {
@@ -205,9 +223,8 @@
     },
 
     onMultiBrushStart: function() {
-      if (this.isBrush(this.selectionType)) {
+      if (this.isBrush) {
         this._setIsSelecting(true);
-        // this._setHasSelection(false);
         this.fire('multi-select', {
           type: d3.event.type,
           selection: null
@@ -270,9 +287,5 @@
 
   };
 
-  // B.selector = [
-  //   multi.brush,
-  //   selector
-  // ];
 })();
 </script>

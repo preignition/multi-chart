@@ -10,20 +10,20 @@
   var base = {
 
     properties: {
-      multichart: {
-        value: true,
-        type: Boolean,
-        readOnly: true,
-        reflectToAttribute: true
-      },
+      // multichart: {
+      //   value: true,
+      //   type: Boolean,
+      //   readOnly: true,
+      //   reflectToAttribute: true
+      // },
 
-      title: {
-        type: String
-      },
+      // title: {
+      //   type: String
+      // },
 
-      subtitle: {
-        type: String
-      },
+      // subtitle: {
+      //   type: String
+      // },
 
       duration: {
         type: Number,
@@ -83,7 +83,7 @@
 
         me.callRegistered('preDraw', data, me.duration);
         me.callRegistered('draw', data, me.duration);
-        me.fire('multi-shaper-draw');
+        me.fire('multi-draw');
 
       }
       // this is the function that is called when we refresh the chart (base-behavior.renderChart(selection))
@@ -92,14 +92,14 @@
       };
     },
 
-    callRegistered(method) {
-      // we replace `method name` with `this host` as the first argument 
+    callRegistered(methodName) {
+      // we replace `methodName`` with `this host` as the first argument 
       // var args = [].splice.call(arguments, 0, 1, this);
       [].splice.call(arguments, 0, 1, this);
       var args = arguments;
       this.registeredItems.forEach(function(el) {
-        if (el[method]) {
-          el[method].apply(el, args);
+        if (el[methodName]) {
+          el[methodName].apply(el, args);
         }
       }, this);
     },
