@@ -1,9 +1,11 @@
-<link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="multi-base-behavior.html">
-<link rel="import" href="multi-shape-bar.html">
-<link rel="import" href="multi-accessor.html">
-<link rel="import" href="multi-container-coordinate.html">
-<link rel="import" href="multi-shared-styles.html">
+<link rel="import" href="../../polymer/polymer.html">
+<link rel="import" href="../properties/multi-x-coordinates-behavior.html">
+<link rel="import" href="../properties/multi-y-coordinates-behavior.html">
+<link rel="import" href="../shape/multi-shape-bar.html">
+<link rel="import" href="../multi-scale.html">
+<link rel="import" href="../multi-accessor.html">
+<link rel="import" href="../multi-container-coordinate.html">
+<link rel="import" href="../multi-shared-styles.html">
 <!-- <link rel="import" href="multi-axis-behaviors.html"> -->
 <!--
 `multi-poly`
@@ -20,6 +22,7 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
     <h3 class="subtitle">[[subtitle]]</h3>
     <multi-accessor accessor="{{xAccessor}}" accessor-path="[[xAccessorPath]]"></multi-accessor>
     <multi-accessor accessor="{{yAccessor}}" accessor-path="[[yAccessorPath]]"></multi-accessor>
+  
     <multi-container-coordinate 
       selection-type="[[selectionType]]" 
       selectedItems="[[selectedItems]]" 
@@ -34,7 +37,8 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
       x-elastic="{{xElastic}}" 
       y-elastic="{{yElastic}}" 
       color-scale="{{colorScale}}">
-      <multi-shape-bar index="0" height="[[_height]]" x-accessor="[[xAccessor]]" y-accessor="[[yAccessor]]" x-scale="[[xScale]]" y-scale="[[yScale]]" color-scale="[[colorScale]]"></multi-shape-bar>
+      <multi-scale scale-type="scaleOrdinal" range="[[colorRange]]" scale="{{colorScale}}"></multi-scale>
+      <multi-shape-bar index="2" height="[[_height]]" x-accessor="[[xAccessor]]" y-accessor="[[yAccessor]]" x-scale="[[xScale]]" y-scale="[[yScale]]" color-scale="[[colorScale]]"></multi-shape-bar>
     </multi-container-coordinate>
   </template>
   <script>
@@ -57,37 +61,12 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
         type: Array,
         notify: true
       },
-
-      xElastic: {
-        type: Boolean,
-        value: false
-      },
-
-      yElastic: {
-        type: Boolean,
-        value: true
-      },
-
-      yAxisText: {
-        type: String
-      },
-      xAxisText: {
-        type: String
-      },
-
-      xAccessorPath: {
-        type: String,
-        value: 'key'
-      },
-      yAccessorPath: {
-        type: String,
-        value: '+value.count'
-      }
     },
 
     behaviors: [
-      // Polymer.multi.base,
-      // Polymer.multi.color,
+      Polymer.multi.xCoordinates,
+      Polymer.multi.yCoordinates,
+      // Polymer.multi.color
       // Polymer.multi.selector
     ]
 

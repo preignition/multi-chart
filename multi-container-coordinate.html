@@ -1,8 +1,8 @@
 <link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="properties/multi-x-coordinates-behavior.html">
+<link rel="import" href="properties/multi-y-coordinates-behavior.html">
 <link rel="import" href="multi-base-behavior.html">
-<link rel="import" href="multi-shape-bar.html">
-<link rel="import" href="multi-shape-line.html">
-<link rel="import" href="multi-color-behavior.html">
+<!-- <link rel="import" href="multi-color-behavior.html"> -->
 <link rel="import" href="multi-selector-behavior.html">
 <link rel="import" href="multi-axis.html">
 <link rel="import" href="multi-scale.html">
@@ -21,9 +21,9 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
 
     </style>
     <!-- Polymer has problem with handling namespace (https://github.com/Polymer/polymer/pull/3372): multi-axis is outside SVG -->
-    <multi-axis anchor="axisGroup" accessor="[[xAccessor]]" elastic="[[xElastic]]" text="[[xAxisText]]" ref="xAxis" width="[[chartWidth]]" height="[[chartHeight]]" family="{{xScaleFamily}}" scale="{{xScale}}" scale-type="scaleBand" padding="0.1" domain="{{xDomain}}" range="[[xRange]]"></multi-axis>
-    <multi-axis anchor="axisGroup" domain-min="0" accessor="[[yAccessor]]" elastic="[[yElastic]]" text="[[yAxisText]]" ref="yAxis" width="[[chartWidth]]" height="[[chartHeight]]" position="left" domain="{{yDomain}}" range="[[yRange]]" scale="{{yScale}}"></multi-axis>
-    <multi-scale scale-type="scaleOrdinal" range="[[colorRange]]" scale="{{colorScale}}"></multi-scale>
+    <multi-axis anchor="axisGroup" dy="2.7em" accessor="[[xAccessor]]" elastic="[[xElastic]]" text="[[xAxisText]]" ref="xAxis" width="[[chartWidth]]" height="[[chartHeight]]" family="{{xScaleFamily}}" scale="{{xScale}}" scale-type="scaleBand" padding="0.1" domain="{{xDomain}}" range="[[xRange]]"></multi-axis>
+    <multi-axis anchor="axisGroup"  text-angle="-90" y-text="6" dy="0.7em" domain-min="0" accessor="[[yAccessor]]" elastic="[[yElastic]]" text="[[yAxisText]]" ref="yAxis" width="[[chartWidth]]" height="[[chartHeight]]" position="left" domain="{{yDomain}}" range="[[yRange]]" scale="{{yScale}}"></multi-axis>
+
     <multi-scale scale-type="scaleLinear" range="[[xRange]]" domain="[[xDomain]]" scale="{{xScaleContinuous}}"></multi-scale>
     <content></content>
     <svg id="svg">
@@ -33,6 +33,7 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
         <g id="axisGroup"></g>
         <g id="brush" class="brush"></g>
       </g>
+      <g id="legend"></g>
     </svg>
   </template>
   <script>
@@ -59,42 +60,6 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
         value: 'brushX'
       },
 
-      xElastic: {
-        type: Boolean,
-        value: false
-      },
-
-      yElastic: {
-        type: Boolean,
-        value: true
-      },
-
-      yAxisText: {
-        type: String
-      },
-
-      xAxisText: {
-        type: String
-      },
-
-      xAccessor: {
-        type: Function,
-      },
-
-      yAccessor: {
-        type: Function,
-      },
-
-      xScale: {
-        type: Function,
-        notify: true
-      },
-
-      yScale: {
-        type: Function,
-        notify: true
-      },
-
       colorScale: {
         type: Function,
         notify: true
@@ -104,8 +69,10 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
 
     behaviors: [
       Polymer.multi.base,
-      Polymer.multi.color,
-      Polymer.multi.selector
+      // Polymer.multi.color,
+      Polymer.multi.selector,
+      Polymer.multi.xCoordinates,
+      Polymer.multi.yCoordinates
     ]
 
   });

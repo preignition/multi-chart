@@ -1,6 +1,6 @@
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="multi-resizer-behavior.html">
-<link rel="import" href="multi-util-behavior.html">
+<link rel="import" href="multi-svg-util-behavior.html">
 <script>
 (function() {
   'use strict';
@@ -62,6 +62,7 @@
     },
 
     listeners: {
+      'multi-refresh': '__onRefresh',
       'multi-resize': '__onResize',
       'multi-register-item': '__onRegisterItem'
     },
@@ -100,6 +101,8 @@
       this.registeredItems.forEach(function(el) {
         if (el[methodName]) {
           el[methodName].apply(el, args);
+
+          if (methodName === 'draw' && !el.isDrawn) {el._setIsDrawn(true);}
         }
       }, this);
     },
@@ -107,6 +110,13 @@
     __onResize: function() {
       if (this.data && this.renderer) {
         this.renderer(this.data);
+      }
+    },
+
+    __onRefresh: function(e, detail) {
+      if (this.data && this.renderer && e.srcElement.isDrawn && this.registeredItems.indexOf(e.srcElement) > -1) {
+        e.srcElement.draw(this, this.data, this.duration);
+        // this.renderer(this.data);
       }
     },
 
@@ -127,7 +137,7 @@
   };
 
   B.base = [
-    Polymer.multi.util,
+    Polymer.multi.svgUtil,
     Polymer.multi.resizer,
     base
   ];

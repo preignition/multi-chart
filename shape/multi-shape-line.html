@@ -1,8 +1,6 @@
-<link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="multi-x-coordinate-behavior.html">
-<link rel="import" href="multi-y-coordinate-behavior.html">
-<link rel="import" href="multi-shape-behavior.html">
-<link rel="import" href="multi-lifecycle-behavior.html">
+<link rel="import" href="../../polymer/polymer.html">
+<link rel="import" href="../multi-shape-behavior.html">
+<link rel="import" href="../multi-lifecycle-behavior.html">
 <!--
 `multi-poly`
 polymer elements for multivariate analysis (depend on crossfilter, universe and reductio)
@@ -17,7 +15,7 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
     }
     </style>
     <svg>
-      <path id="chart" class="shape line chart-shape" > </path>
+      <path id="shape" class="shape line chart-shape" > </path>
     </svg>
   </template>
   <script>
@@ -27,16 +25,25 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
 
     properties: {
       
+      /**
+       * `x` the x accessor to be applied to the line generator
+       */
       x: {
         type: Function,
-        computed: '_computeCoordinate(xScale, xAccessor)'
+        computed: 'computeAccessor(xScale, xAccessor)'
       },
-
+      
+      /**
+       * `y` the y accessor to be applied to the line generator
+       */
       y: {
         type: Function,
-        computed: '_computeCoordinate(yScale, yAccessor)'
+        computed: 'computeAccessor(yScale, yAccessor)'
       },
 
+      /**
+       * `line` the line generator with the default settings as in [d3-shape](https://github.com/d3/d3-shape#lines).
+       */
       line: {
         type: Function,
         computed: '_computeLine(x, y)'
@@ -51,19 +58,22 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
     behaviors: [
       Polymer.multi.lifecycle,
       Polymer.multi.shape,
-      Polymer.multi.xCoordinate,
-      Polymer.multi.yCoordinate,
+      // Polymer.multi.xCoordinate,
+      // Polymer.multi.yCoordinate,
     ],
 
     _computeLine: function(x, y) {
-      return  d3.line().x(x).y(y);
+        var line = this.line || d3.line() ;
+        line.x(x).y(y);
+        this.fire('multi-refresh');
+        return line;
     },
 
     /**
-     * `setTargetElement` override lifecycle Behavior and called during attached
+     * `targetElement` getter override lifecycle Behavior and called during attached
      */
-    setTargetElement: function() {
-      this.targetElement = this.$.chart;
+     get targetElement() {
+      return this.$.shape;
     },
 
     draw: function(host, data, duration) {

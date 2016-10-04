@@ -1,10 +1,12 @@
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="multi-lifecycle-behavior.html">
 <script>
 (function() {
   'use strict';
 
   var B = Polymer.multi = Polymer.multi || {};
 
-  B.scale = {
+  var scale = {
 
     properties: {
 
@@ -67,11 +69,36 @@
       'observeConfig(padding, "padding", "scale")',
       'observeConfig(effectiveDomain, "domain", "scale")',
       'observeConfig(range, "range", "scale")',
+      'observeConfig(domain, "domain", "scale")',
     ],
 
     observeConfig: function(value, name, obj) {
       if (this[obj]) {
         this[obj][name](value);
+      }
+    },
+
+    get targetElement() {
+      return null;
+    },
+
+    /**
+     * `preDraw` re-calculate the domain if/when needed - called by the host 
+     */
+    preDraw: function(host, data, duration) {
+      if (this.elastic === true || !this.domain) {
+        if (this.family === 'ordinal') {
+          this.domain = data.map(this.accessor);
+        } else {
+          var extent = d3.extent(data, this.accessor);
+          if (this.domainMin || this.domainMin === 0) {
+            extent[0] = this.domainMin;
+          }
+          if (this.domainMax || this.domainMax === 0) {
+            extent[1] = this.domainMax;
+          }
+          this.domain = extent;
+        }
       }
     },
 
@@ -103,33 +130,18 @@
         return 'quantile';
       }
       if (type === 'scaleThreshold') {
-        return 'threshold'
+        return 'threshold';
       }
       if (type === 'scaleOrdinal' || type === 'scaleBand' || type === 'scalePoint' || type === 'scaleCategory') {
         return 'ordinal';
       }
       this._error('scale type is not a valid d3 scale (type is ' + type + ')');
-    },
-
-    /**
-     * `preDraw` re-calculate the domain if/when needed - called by the host 
-     */
-    preDraw: function(host, data, duration) {
-      if (this.elastic === true || !this.domain) {
-        if (this.family === 'ordinal') {
-          this.domain = data.map(this.accessor);
-        } else {
-          var extent = d3.extent(data, this.accessor);
-          if (this.domainMin || this.domainMin === 0) {
-            extent[0] = this.domainMin;
-          }
-          if (this.domainMax || this.domainMax === 0) {
-            extent[1] = this.domainMax;
-          }
-          this.domain = extent;
-        }
-      }
-    },
+    }
   };
+
+  B.scale = [
+    Polymer.multi.lifecycle,
+    scale
+  ];
 })();
 </script>

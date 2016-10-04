@@ -1,5 +1,6 @@
 <link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="multi-scale-behavior.html">
+<link rel="import" href="multi-svg-util-behavior.html">
+<!-- <link rel="import" href="multi-scale-behavior.html"> -->
 <link rel="import" href="multi-lifecycle-behavior.html">
 <!--
 `multi-poly`
@@ -15,8 +16,8 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
     }
     </style>
     <svg>
-      <g id="axis" class="axis" transform$="[[transform]]">
-        <text class="axis-text" transform$="[[textTransform]]" x$="[[xText]]" y$="[[yText]]" dx$="[[dx]]" dy$="[[dy]]" text-anchor="end">[[text]]</text>
+      <g id="axis" class="axis" transform$="[[translate(x,y)]]">
+        <text class="axis-text" transform$="[[rotate(textAngle)]]" x$="[[xText]]" y$="[[yText]]" dx$="[[dx]]" dy$="[[dy]]" text-anchor="end">[[text]]</text>
       </g>
     </svg>
   </template>
@@ -61,56 +62,71 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
         type: Boolean,
         value: true
       },
+      
+      /**
+       * `text` text for the axis 
+       */
       text: {
         type: String
       },
 
+      /**
+       * `xText` value to be set to the axisText x attribute
+       */
       xText: {
         type: Number
       },
 
+      /**
+       * `yText` value to be set to the axisText `y` attribute
+       */
       yText: {
         type: Number
       },
 
+      /**
+       * `dx` value to be set to the axisText `dx` attribute
+       */
       dx: {
         type: String
-      },
-
+      },  
+      
+      /**
+       * `dy` value to be set to the axisText `dy` attribute
+       */
       dy: {
         type: String
       },
 
-      transform: {
-        type: String,
-        computed: '_computeTransform(x,y)'
+      /**
+       * `textAngle` rotation angle to be applied to text axis
+       */
+      textAngle: {
+        type: Number,
+        value: 0
       },
-
-      textTransform: {
-        type: String
-      }
-
+ 
     },
 
     behaviors: [
       // multi.refSelector,
-      Polymer.multi.lifecycle,
+      Polymer.multi.svgUtil,
       Polymer.multi.scale
     ],
 
-    listeners: {
-      'multi-shaper-draw': 'onMultiDraw'
-    },
+    // listeners: {
+    //   'multi-shaper-draw': 'onMultiDraw'
+    // },
 
-    attached: function() {
-      this.async(this.initProp, 20);
-    },
+    // attached: function() {
+      // this.async(this.initProp, 20);
+    // },
 
     /**
-     * `setTargetElement` override lifecycle Behavior and called during attached
+     * `targetElement` getter override lifecycle Behavior and called during attached
      */
-    setTargetElement: function() {
-      this.targetElement = this.$.axis;
+     get targetElement() {
+      return this.$.axis;
     },
 
     observers: [
@@ -135,21 +151,21 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
       return this.position === 'top' || this.position === 'bottom';
     },
 
-    initProp: function() {
-      if (this.isY) {
+    // initProp: function() {
+    //   if (this.isY) {
 
-        if (!this.textTransform) {
-          this.textTransform = 'rotate(-90)';
-        }
-        if (!this.yText) {
-          this.yText = 6;
-          this.dy = '0.7em';
-        }
-      }
-      if (this.isX) {
-        this.dy = '2.7em';
-      }
-    },
+    //     if (!this.textTransform) {
+    //       this.textTransform = 'rotate(-90)';
+    //     }
+    //     if (!this.yText) {
+    //       this.yText = 6;
+    //       this.dy = '0.7em';
+    //     }
+    //   }
+    //   if (this.isX) {
+    //     this.dy = '2.7em';
+    //   }
+    // },
 
     _computeAxis: function(type, scale) {
       var axis = type === 'right' ? d3.axisRight() : type === 'left' ? d3.axisLeft() : type === 'top' ? d3.axisTop() : d3.axisBottom();
@@ -157,9 +173,9 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
       return axis.scale(scale);
     },
 
-    _computeTransform: function(x, y) {
-      return 'translate(' + x + ',' + y + ')';
-    },
+    // _computeTransform: function(x, y) {
+    //   return 'translate(' + x + ',' + y + ')';
+    // },
 
     _observeWidth: function(w, position) {
       if (this.isY) {
@@ -182,13 +198,13 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
     },
 
     _setPositionAttribute: function(position) {
-      d3.select(this.$.axis).attr(this.isX ? 'x-axis' : 'y-axis','');
+      d3.select(this.targetElement).attr(this.isX ? 'x-axis' : 'y-axis','');
     },
 
 
     draw: function(host, data, duration) {
 
-      var sel = d3.select(this.$.axis);
+      var sel = d3.select(this.targetElement);
 
       if (duration) {
         sel.transition(duration).call(this.axis.scale(this.scale));

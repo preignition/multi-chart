@@ -1,0 +1,218 @@
+<link rel="import" href="../../polymer/polymer.html">
+<link rel="import" href="../multi-shape-behavior.html">
+<link rel="import" href="../multi-lifecycle-behavior.html">
+<!--
+`multi-poly`
+polymer elements for multivariate analysis (depend on crossfilter, universe and reductio)
+
+@demo demo/index.html 
+-->
+<dom-module id="multi-shape-pie">
+  <template>
+    <style is="custom-style">
+    :host {
+      display: none;
+    }
+    </style>
+    <svg>
+      <g id="shape" class="shape pie">
+      </g>
+    </svg>
+  </template>
+  <script>
+  (function() {
+    'use strict';
+
+    var identity = function(d) {
+      return d;
+    }
+
+    Polymer({
+
+      is: 'multi-shape-pie',
+
+      properties: {
+
+        value: {
+          type: Function,
+          computed: 'computeAccessor(valueScale, valueAccessor)'
+        },
+
+        valueScale: {
+          type: Function,
+          value: function() {
+            return identity;
+          }
+        },
+
+        valueAccessor: {
+          type: Function
+        },
+
+        /**
+         * `padAngle` as in [padAngle](https://github.com/d3/d3-shape#pie_padAngle) to be applied to the pie. 
+         */
+        padAngle: {
+          value: 0,
+        },
+
+        /**
+         * `sort` as in [sort](https://github.com/d3/d3-shape#pie_sort). It is null by default so as to render arcs in the provided order (same order as bound data)
+         */
+        sort: {
+          type: Function,
+          value: null
+        },
+
+        /**
+         * `sortValue` as in [sortValues](https://github.com/d3/d3-shape#pie_sortValues). It is null by default so as to render arcs in the provided order (same order as bound data)
+         */
+        sortValues: {
+          type: Function,
+          value: null
+        },
+
+
+        pie: {
+          type: Function,
+          // computed: '_computePie(value, padAngle)'
+          value: function() {
+            var pie = d3.pie();
+            this.applyConfig(pie, ['value', 'padAngle', 'sort', 'sortValues']);
+
+            return pie;
+          }
+        },
+
+        innerRadius: {
+          value: 0
+        },
+
+        outerRadius: {
+          type: Function,
+          computed: '_computeRadius(width, height)'
+        },
+
+        arc: {
+          type: Function,
+          computed: '_computeArc(innerRadius, outerRadius)'
+        },
+
+        height: {
+          type: Number
+        },
+
+        width: {
+          type: Number
+        },
+
+        index: {
+          type: Number
+        },
+
+        colorAccessor: {
+          type: Function
+        },
+
+        color: {
+          type: Function,
+          computed: 'computeDataAccessor(colorScale, colorAccessor)'
+        },
+
+        key: {
+          type: Function,
+          computed: 'computeDataKey(colorAccessor)'
+        }
+
+      },
+
+      observers: [
+        'observeConfig(padAngle, "padAngle", "pie", "refresh")',
+        'observeConfig(value, "value", "pie", "refresh")',
+        'observeConfig(sort, "sort", "pie", "refresh")',
+        'observeConfig(sortValues, "sortValues", "pie", "refresh")'
+      ],
+
+      behaviors: [
+        Polymer.multi.lifecycle,
+        Polymer.multi.shape
+      ],
+
+      /**
+       * `targetElement` getter override lifecycle Behavior and called during attached
+       */
+      get targetElement() {
+        return this.$.shape;
+      },
+
+      // _computePie: function(value, padAngle) {
+      //   var pie = this.pie || d3.pie();
+      //   pie.value(value).padAngle(padAngle);
+      //   this.fire('multi-refresh');
+      //   return pie;
+      // },
+
+      _computeArc: function(innerRadius, outerRadius) {
+        var arc = this.arc || d3.arc();
+        arc.innerRadius(innerRadius).outerRadius(outerRadius);
+        this.fire('multi-refresh');
+        return arc;
+      },
+
+      _computeRadius: function(w, h) {
+        return Math.min(w, h) / 2;
+      },
+
+      draw: function(host, data, duration) {
+
+        var chart = d3.select(this.targetElement).selectAll('path');
+
+        if (duration) {
+          chart.each(function(d) {
+            this._current = d;
+          });
+        }
+
+        var arcs = this.pie(data);
+        var arc = this.arc;
+        chart = chart.data(arcs);
+
+        chart.exit().remove();
+
+        chart = chart.enter().append('path')
+          .attr('class', 'chart-shape')
+          .merge(chart);
+
+        chart.on('click', function(d) {
+          host.fire('multi-tap', d);
+        });
+
+        if (duration) {
+
+          //as in https://bl.ocks.org/mbostock/5100636
+          function arcTween(a) {
+            var i = d3.interpolate(this._current, a);
+            this._current = i(0);
+            return function(t) {
+              return arc(i(t));
+            };
+          }
+
+          chart = chart.transition().duration(duration);
+
+          chart
+            .attrTween('d', arcTween)
+
+        } else {
+          chart
+            .attr('d', arc);
+        }
+
+        chart.attr('key', this.key)
+            .attr('fill', this.color);
+      }
+
+    });
+  })();
+  </script>
+</dom-module>

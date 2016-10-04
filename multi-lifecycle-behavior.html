@@ -30,21 +30,30 @@
         type: String
       },
 
+      /**
+       * `isDrawn` flag to know if this element is drawn. 
+       */
+      isDrawn: {
+        type:Boolean,
+        readOnly: true 
+      }, 
+
     },
 
     attached: function() {
-      this.setTargetElement();
       if (this.isActive) {
         this.fire('multi-register-item', true);
       }
     },
 
+    get targetElement() {
+       this._error('targetElement getter must be overridden');
+      // return this.$.chart;
+    },
+
     detached: function() {
       this.fire('multi-register-item', false);
-
       this.appendChild(this.targetElement);
-      this.targetElement = null;
-
     },
 
     __observeIsActive: function(isActive) {
@@ -61,19 +70,18 @@
       if (!this.anchor && !host.chartInsertionPoint) {
         this._error('insertionPoint is missing. specify either and anchor or a chartInsertionPoint.');
       }
-      host.$[this.anchor || host.chartInsertionPoint].appendChild(this.targetElement);
-    },
-
-    setTargetElement: function() {
-      this._error('setTargetElement method of isDraw component must be overridden');
+      if (this.targetElement) {
+        host.$[this.anchor || host.chartInsertionPoint].appendChild(this.targetElement);
+      }
     },
 
     draw: function() {
-      this._error('draw method of isDraw component must be overridden');
     },
 
     remove: function() {
-      d3.select(this.targetElement).selectAll('*').remove();
+      if (this.targetElement) {
+        d3.select(this.targetElement).selectAll('*').remove();
+      }
     }
 
   };

@@ -1,7 +1,9 @@
 <link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="multi-config-behavior.html">
+
 <script>
 /**
- * `xCoordinate` behavior for documenting x-related coordinate
+ * `shape` behavior 
  */
 (function() {
   'use strict';
@@ -9,30 +11,46 @@
 
   var B = Polymer.multi = Polymer.multi || {};
 
-  B.shape = {
+  var shape = {
 
     properties: {
 
       key: {
         type: Function,
-        computed: '_computeKey(xAccessor)'
+        computed: 'computeKey(xAccessor)'
       }
 
     },
-    
-    _computeKey: function(accessor) {
-      return function(d,i) {
+
+    computeKey: function(accessor) {
+      return function(d, i) {
         return accessor(d, i);
       };
     },
 
-    _computeCoordinate: function(scale, accessor) {
-      return function(d,i) {
-        return scale(accessor(d));
+    computeDataKey: function(accessor) {
+      return function(d, i) {
+        return accessor(d.data, i);
       };
     },
 
+    computeAccessor: function(scale, accessor) {
+      return function(d, i) {
+        return scale(accessor(d, i));
+      };
+    },
+
+    computeDataAccessor: function(scale, accessor) {
+      return function(d, i) {
+        return scale(accessor(d.data, i));
+      };
+    },
   };
+
+    B.shape = [
+     Polymer.multi.config,
+    shape
+  ]
 
 })();
 </script>

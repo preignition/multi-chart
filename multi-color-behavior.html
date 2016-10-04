@@ -1,4 +1,3 @@
-
 <link rel="import" href="../polymer/polymer.html">
 <script>
 (function() {
@@ -19,12 +18,15 @@
           return d3.schemeCategory10;
         }
       },
-      
+
       /**
        * `colorDomain` input domain for or calculating the colorScale
        */
       colorDomain: {
         type: Array
+          // value: function() {
+          //   return [0,10];
+          // }
       },
 
       /**
@@ -45,6 +47,15 @@
             return i;
           };
         }
+      }
+
+    },
+    attached: function() {
+      // compute the domain from the range if it does not exist
+      if (!this.colorDomain && this.colorRange) {
+        this.colorDomain = this.colorRange.map(function(d, i) {
+          return i;
+        })
       }
     }
 

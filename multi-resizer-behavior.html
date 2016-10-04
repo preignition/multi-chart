@@ -33,7 +33,19 @@
             bottom: 20
           };
         }
+      },
+
+      xCenter: {
+        type: Number,
+        computed: '__computeCenter(margin.right, chartWidth)'
+      },
+
+      yCenter: {
+        type: Number,
+        computed: '__computeCenter(margin.top, chartHeight)'
       }
+
+
     },
 
     listeners: {
@@ -65,7 +77,11 @@
     __onIronResize: function() {
       this.calculateSize();
     },
-
+    
+    __computeCenter: function(margin, size) {
+      // return margin + size / 2;
+      return margin + size / 2;
+    }
   };
 
   B.resizer = [
