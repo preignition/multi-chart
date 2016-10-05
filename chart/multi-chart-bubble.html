@@ -31,11 +31,11 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
       y-accessor="[[yAccessor]]" 
       x-scale="{{xScale}}" 
       y-scale="{{yScale}}" 
-      x-axis-text="{{xAxisText}}" 
-      y-axis-text="{{yAxisText}}" 
-      x-elastic="{{xElastic}}" 
-      y-elastic="{{yElastic}}" 
-      color-scale="{{colorScale}}">
+      x-axis-text="[[xAxisText]]" 
+      y-axis-text="[[yAxisText]]" 
+      x-elastic="[[xElastic]]" 
+      y-elastic="[[yElastic]]" 
+      color-scale="[[colorScale]]">
       <multi-scale scale-type="scaleOrdinal" accessor="[[xAccessor]]"  range="[[colorRange]]" scale="{{colorScale}}"></multi-scale>
       <multi-scale scale-type="scaleSqrt" accessor="[[yAccessor]]"  range="[1,15]" scale="{{zScale}}"></multi-scale>
       <multi-shape-bubble index="1" 

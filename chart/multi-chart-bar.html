@@ -22,23 +22,30 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
     <h3 class="subtitle">[[subtitle]]</h3>
     <multi-accessor accessor="{{xAccessor}}" accessor-path="[[xAccessorPath]]"></multi-accessor>
     <multi-accessor accessor="{{yAccessor}}" accessor-path="[[yAccessorPath]]"></multi-accessor>
-  
     <multi-container-coordinate 
-      selection-type="[[selectionType]]" 
-      selectedItems="[[selectedItems]]" 
-      chart-height="{{_height}}" 
-      data="[[data]]" 
+      selection-type="[[selectionType]]"
+     selected-items="[[selectedItems]]"
+     serie-items="{{serieItems}}"
+     chart-height="{{_height}}"
+     data="[[data]]"
+     x-accessor="[[xAccessor]]"
+     y-accessor="[[yAccessor]]" 
+     x-scale="{{xScale}}"
+     y-scale="{{yScale}}"
+     x-axis-text="[[xAxisText]]" 
+     y-axis-text="[[yAxisText]]" 
+     x-elastic="[[xElastic]]" 
+     y-elastic="[[yElastic]]" 
+     color-scale="{{colorScale}}">
+      <multi-scale scale-type="scaleOrdinal" domain="[[serieItems]]" range="[[colorRange]]" scale="{{colorScale}}"></multi-scale>
+      <multi-shape-bar 
+      index="1" 
+      height="[[_height]]" 
       x-accessor="[[xAccessor]]" 
       y-accessor="[[yAccessor]]" 
-      x-scale="{{xScale}}" 
-      y-scale="{{yScale}}" 
-      x-axis-text="{{xAxisText}}" 
-      y-axis-text="{{yAxisText}}" 
-      x-elastic="{{xElastic}}" 
-      y-elastic="{{yElastic}}" 
-      color-scale="{{colorScale}}">
-      <multi-scale scale-type="scaleOrdinal" range="[[colorRange]]" scale="{{colorScale}}"></multi-scale>
-      <multi-shape-bar index="2" height="[[_height]]" x-accessor="[[xAccessor]]" y-accessor="[[yAccessor]]" x-scale="[[xScale]]" y-scale="[[yScale]]" color-scale="[[colorScale]]"></multi-shape-bar>
+      x-scale="[[xScale]]" 
+      y-scale="[[yScale]]" 
+      color-scale="[[colorScale]]"></multi-shape-bar>
     </multi-container-coordinate>
   </template>
   <script>
@@ -60,6 +67,26 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
       selectedItems: {
         type: Array,
         notify: true
+      },
+    
+       yAccessorPath: {
+        type: String,
+        value: '+value.count'
+      },
+      xAccessorPath: {
+        type: String,
+        value: 'key'
+      },
+
+
+      /**
+       * `colorRange` output range of colors to be used for calculating the colorScale
+       */
+      colorRange: {
+        type: Array,
+        value: function() {
+          return d3.schemeCategory10;
+        }
       },
     },
 

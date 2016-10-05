@@ -34,11 +34,20 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
 
       y: {
         type: Function,
-        computed: 'computeAccessor(yScale, yAccessor)'
+        computed: 'computeAccessor(yScale, yAccessor)',
+        notify: true 
+      },
+
+      y0: {
+        type: Function,
+        value: function() {
+          return this.constant(0);
+        }
       },
 
       height: {
-        type: Number
+        type: Number,
+        // observer: '_observeHeight'
       },
 
       index: {
@@ -61,10 +70,17 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
       return this.$.shape;
     },
 
+    _observeHeight: function (height) {
+        if(!this.y0) {
+          this.y0 = this.constant(height);
+        }
+    },
+
     draw: function(host, data, duration) {
 
       var height = this.height;
       var y = this.y;
+      var y0 = this.y0;
 
       var chart = d3.select(this.targetElement).selectAll('rect').data(data);
       
@@ -85,7 +101,8 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
       chart.attr('x', this.x)
         .attr('y', this.y)
         .attr('height', function(d) {
-          return height - y(d);
+          // return y0(d) - y(d) ;
+          return height - y(d) ;
         })
         .attr('width', this.xScale.bandwidth())
         .attr('key', this.key)

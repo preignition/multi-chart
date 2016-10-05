@@ -1,5 +1,5 @@
 <link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="multi-base-behavior.html">
+<link rel="import" href="multi-container-behavior.html">
 <link rel="import" href="multi-selector-behavior.html">
 <link rel="import" href="multi-axis.html">
 <link rel="import" href="multi-scale.html">
@@ -17,7 +17,7 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
     <style is="custom-style" include="multi-container multi-chart-selector">
 
     </style>
-      <content></content>
+      <content id="content"></content>
 
     <svg id="svg">
       <g id="chartContent" transform$="[[translate(xCenter, yCenter)]]">
@@ -56,7 +56,7 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
     },
 
     behaviors: [
-      Polymer.multi.base,
+      Polymer.multi.container,
       // Polymer.multi.color,
       Polymer.multi.selector
     ]

@@ -7,7 +7,7 @@
 
   var B = Polymer.multi = Polymer.multi || {};
 
-  var base = {
+  var container = {
 
     properties: {
       // multichart: {
@@ -47,14 +47,29 @@
         value: function() {
           return [];
         }
-      }
+      },
 
+      attrForSerie: {
+        type: String,
+        value: 'index'
+      },
+
+      serieItems: {
+        type: Array,
+        notify: true,
+        value: function() {
+          return [];
+        }
+      }
     },
 
     attached: function() {
-      this.fire('multi-attached', this.groupName);
-      this.callRegistered('hostAttached');
+      // this.callRegistered('hostAttached');
+      var boundHandler = this.__childNodesChanged.bind(this);
+      this._observer = Polymer.dom(this.$.content).observeNodes(boundHandler);
+
       this.draw();
+      this.fire('multi-attached', this.groupName);
     },
 
     detached: function() {
@@ -64,7 +79,7 @@
     listeners: {
       'multi-refresh': '__onRefresh',
       'multi-resize': '__onResize',
-      'multi-register-item': '__onRegisterItem'
+      // 'multi-register-item': '__onRegisterItem'
     },
 
     renderChart: function(data) {
@@ -98,11 +113,15 @@
       // var args = [].splice.call(arguments, 0, 1, this);
       [].splice.call(arguments, 0, 1, this);
       var args = arguments;
-      this.registeredItems.forEach(function(el) {
+      this.registeredItems.filter(function(el) {
+        return el.isActive;
+      }).forEach(function(el) {
         if (el[methodName]) {
           el[methodName].apply(el, args);
 
-          if (methodName === 'draw' && !el.isDrawn) {el._setIsDrawn(true);}
+          if (methodName === 'draw' && !el.isDrawn) {
+            el._setIsDrawn(true);
+          }
         }
       }, this);
     },
@@ -120,26 +139,62 @@
       }
     },
 
-    __onRegisterItem: function(e, d) {
-      if (d === true) {
-        this.push('registeredItems', e.srcElement);
-        if (e.srcElement.afterRegister) {
-          e.srcElement.afterRegister(this);
+    __childNodesChanged: function(nodeInfo) {
+      this.__processNewNodes(nodeInfo.addedNodes);
+      this.__processRemovedNodes(nodeInfo.removedNodes);
+    },
+
+    __processNewNodes: function(nodes) {
+      var me = this;
+      nodes.filter(function(node) {
+        return node.shallRegister;
+      }).forEach(function(node) {
+        me.push('registeredItems', node);
+        if (node.isSerie) {
+          me.serieItems.push(node.getAttribute(me.attrForSerie));
         }
-      }
-      if (d === false) {
-        this.splice('registeredItems', this.registeredItems.indexOf(e.srcElement), 1);
-        if (e.srcElement.afterUnregister) {
-          e.srcElement.afterUnregister(this);
+        if (node.afterRegister) {
+          node.afterRegister(me);
         }
-      }
-    }
+      });
+    },
+
+    __processRemovedNodes: function(nodes) {
+      var me = this;
+      nodes.filter(function(node) {
+        return node.shallRegister;
+      }).forEach(function(node) {
+        me.splice('registeredItems', me.registeredItems.indexOf(node), 1);
+        me.push('registeredItems', node);
+        if (node.isSerie) {
+          me.splice('serieItems', me.serieItems.indexOf(node.getAttribute(me.attrForSerie)), 1);
+        }
+        if (node.afterUnregister) {
+          node.afterUnregister(me);
+        }
+      });
+
+    },
+    // __onRegisterItem: function(e, d) {
+    //   if (d === true) {
+    //     this.push('registeredItems', e.srcElement);
+    //     if (e.srcElement.afterRegister) {
+    //       e.srcElement.afterRegister(this);
+    //     }
+    //   }
+    //   if (d === false) {
+    //     this.splice('registeredItems', this.registeredItems.indexOf(e.srcElement), 1);
+    //     if (e.srcElement.afterUnregister) {
+    //       e.srcElement.afterUnregister(this);
+    //     }
+    //   }
+    // }
   };
 
-  B.base = [
+  B.container = [
     Polymer.multi.svgUtil,
     Polymer.multi.resizer,
-    base
+    container
   ];
 
 })();

@@ -23,6 +23,14 @@
       },
 
       /**
+       * `shallRegister` is a flag to know if this element need to be registered when it is added to a chart-container
+       */
+      shallRegister: {
+        type: Boolean,
+        value: true
+      },
+
+      /**
        * @required
        * `hostAnchor` the id of a host element under which this element will be appended (in `afterRegister` method).
 .       */
@@ -40,11 +48,11 @@
 
     },
 
-    attached: function() {
-      if (this.isActive) {
-        this.fire('multi-register-item', true);
-      }
-    },
+    // attached: function() {
+    //   if (this.isActive) {
+    //     this.fire('multi-register-item', true);
+    //   }
+    // },
 
     get targetElement() {
        this._error('targetElement getter must be overridden');
@@ -52,12 +60,12 @@
     },
 
     detached: function() {
-      this.fire('multi-register-item', false);
+      // this.fire('multi-register-item', false);
       this.appendChild(this.targetElement);
     },
 
     __observeIsActive: function(isActive) {
-      this.fire('multi-register-register', isActive);
+      // this.fire('multi-register-register', isActive);
       if (!isActive) {
         this.remove();
       }

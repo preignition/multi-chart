@@ -1,7 +1,7 @@
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="properties/multi-x-coordinates-behavior.html">
 <link rel="import" href="properties/multi-y-coordinates-behavior.html">
-<link rel="import" href="multi-base-behavior.html">
+<link rel="import" href="multi-container-behavior.html">
 <!-- <link rel="import" href="multi-color-behavior.html"> -->
 <link rel="import" href="multi-selector-behavior.html">
 <link rel="import" href="multi-axis.html">
@@ -25,7 +25,7 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
     <multi-axis anchor="axisGroup"  text-angle="-90" y-text="6" dy="0.7em" domain-min="0" accessor="[[yAccessor]]" elastic="[[yElastic]]" text="[[yAxisText]]" ref="yAxis" width="[[chartWidth]]" height="[[chartHeight]]" position="left" domain="{{yDomain}}" range="[[yRange]]" scale="{{yScale}}"></multi-axis>
 
     <multi-scale scale-type="scaleLinear" range="[[xRange]]" domain="[[xDomain]]" scale="{{xScaleContinuous}}"></multi-scale>
-    <content></content>
+    <content id="content"></content>
     <svg id="svg">
       <g id="chartContent" transform$="[[translate(margin.left, margin.top)]]">
         <g id="chart" class="chart">
@@ -68,7 +68,7 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
     },
 
     behaviors: [
-      Polymer.multi.base,
+      Polymer.multi.container,
       // Polymer.multi.color,
       Polymer.multi.selector,
       Polymer.multi.xCoordinates,

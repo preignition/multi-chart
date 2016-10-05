@@ -1,6 +1,6 @@
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="multi-config-behavior.html">
-
+<link rel="import" href="multi-label-behavior.html">
 <script>
 /**
  * `shape` behavior 
@@ -18,7 +18,14 @@
       key: {
         type: Function,
         computed: 'computeKey(xAccessor)'
-      }
+      },
+       /**
+       * `isSerie` is a flag to know if this element need to be registered as a serie (e.g. added to serieItems) when it is added to a chart-container
+       */
+      isSerie: {
+        type: Boolean,
+        value: true
+      },
 
     },
 
@@ -28,6 +35,9 @@
       };
     },
 
+    /**
+     * `computeDataKey` as computewKey except that we pass d.data (to be used for pie where d3.arc return initial data point under d.data)
+     */
     computeDataKey: function(accessor) {
       return function(d, i) {
         return accessor(d.data, i);
@@ -40,15 +50,30 @@
       };
     },
 
+    /**
+     * `computeDataAccessor` as computeAccessor except that we pass d.data (to be used for pie where d3.arc return initial data point under d.data)
+     */
     computeDataAccessor: function(scale, accessor) {
       return function(d, i) {
         return scale(accessor(d.data, i));
       };
     },
+
+    constant: function(x) {
+      return function() {
+        return x;
+      };
+    },
+
+    functor: function(x) {
+      return typeof x === 'function' ? x : this.constant(x);
+    }
+
   };
 
-    B.shape = [
-     Polymer.multi.config,
+  B.shape = [
+    Polymer.multi.config,
+    Polymer.multi.label,
     shape
   ]
 
