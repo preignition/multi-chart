@@ -36,65 +36,18 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
       },
 
 
-      // x: {
-      //   type: Function,
-      //   computed: 'computeAccessor(xScale, xAccessor)'
-      // },
-
-      // y: {
-      //   type: Function,
-      //   computed: 'computeAccessor(yScale, yAccessor)',
-      //   notify: true 
-      // },
-
-      height: {
-        type: Number,
-        observer: '_observeHeight'
-      },
 
       keys: {
         type: Array,
         value: function(){
-          return ['count', 'count', 'count'];
+          return [];
         }
       },
-
-      // valuePath: {
-      //   type: String,
-      // },
-
-      // value: {
-      //   type: Function
-      // },
-
-      // order: {
-      //   type: Function
-      // },
-
-      // offset: {
-      //   type: Function
-      // },
-
-       /**
-       * `domainMin` the minimum value for the calculated domain
-       */
-      // domainMin: {
-      //   type: Number,
-      // },
-
-      // index: {
-        // type: Number
-      // }
-      
-
-
     },
 
     behaviors: [
       Polymer.multi.lifecycle,
       Polymer.multi.shape
-      // Polymer.multi.xCoordinate,
-      // Polymer.multi.yCoordinate,
     ],
 
     /**
@@ -102,12 +55,6 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
      */
      get targetElement() {
       return this.$.shape;
-    },
-
-    _observeHeight: function (height) {
-        if(!this.y0) {
-          this.y0 = this.constant(height);
-        }
     },
 
     // preDraw: function(host, data, duration) {
@@ -121,12 +68,9 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
         this._error('stack is not provided')
       }
 
-      var height = this.height;
-      var y = this.y;
-      var x = this.x;
+      var stack = this.stack;
       var xScale = this.xScale;
       var yScale = this.yScale;
-      var stack = this.stack;
       var colorScale = this.colorScale;
 
       var series =  d3.select(this.targetElement).selectAll('.serie')
@@ -147,6 +91,7 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
       chart.exit().remove();
 
       chart = chart.enter().append('rect')
+        .attr('class', 'chart-shape')
         .merge(chart);
 
       chart.on('click', function(d) {
@@ -162,7 +107,6 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
         .attr('y', function(d) { return yScale(d[1]); })
         .attr('height', function(d) { return yScale(d[0]) - yScale(d[1]); })
         .attr('width', this.xScale.bandwidth());  
-
 
     }
 
