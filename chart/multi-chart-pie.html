@@ -20,8 +20,8 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
     </style>
     <h2 class="title">[[title]]</h2>
     <h3 class="subtitle">[[subtitle]]</h3>
-    <multi-accessor accessor="{{valueAccessor}}" accessor-path="[[valueAccessorPath]]"></multi-accessor>
-    <multi-accessor accessor="{{keyAccessor}}" accessor-path="[[keyAccessorPath]]"></multi-accessor>
+    <!-- <multi-accessor accessor="{{valueAccessor}}" path="[[valueAccessorPath]]"></multi-accessor> -->
+    <multi-accessor accessor="{{keyAccessor}}" path="[[keyAccessorPath]]"></multi-accessor>
       
       <multi-container-simple 
       selection-type="[[selectionType]]" 
@@ -37,7 +37,7 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
         width="[[_width]]" 
         pad-angle="[[padAngle]]" 
         inner-radius="[[innerRadius]]"
-        value-accessor="[[valueAccessor]]" 
+        value-path="[[valueAccessorPath]]" 
         color-accessor="[[keyAccessor]]" 
         color-scale="[[colorScale]]"></multi-shape-pie>
     </multi-container-simple>

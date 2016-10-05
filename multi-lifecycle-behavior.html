@@ -31,6 +31,14 @@
       },
 
       /**
+       * `isDrawn` flag to know if this element is drawn. 
+       */
+      isDrawn: {
+        type:Boolean,
+        readOnly: true 
+      }, 
+
+      /**
        * @required
        * `hostAnchor` the id of a host element under which this element will be appended (in `afterRegister` method).
 .       */
@@ -38,13 +46,6 @@
         type: String
       },
 
-      /**
-       * `isDrawn` flag to know if this element is drawn. 
-       */
-      isDrawn: {
-        type:Boolean,
-        readOnly: true 
-      }, 
 
     },
 
@@ -55,7 +56,8 @@
     // },
 
     get targetElement() {
-       this._error('targetElement getter must be overridden');
+      return null;
+       // this._error('targetElement getter must be overridden');
       // return this.$.chart;
     },
 
@@ -67,7 +69,13 @@
     __observeIsActive: function(isActive) {
       // this.fire('multi-register-register', isActive);
       if (!isActive) {
-        this.remove();
+        this._setIsDrawn(false);
+        return this.remove();
+      } 
+
+      if(this.isDrawn === false) {
+        // the chart container will call a draw method if need be
+        this.fire('multi-refresh')
       }
     },
 

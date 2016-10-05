@@ -1,8 +1,9 @@
 <link rel="import" href="../../polymer/polymer.html">
 <link rel="import" href="../properties/multi-x-coordinates-behavior.html">
 <link rel="import" href="../properties/multi-y-coordinates-behavior.html">
-<link rel="import" href="../shape/multi-shape-bar.html">
+<link rel="import" href="../shape/multi-shape-stack.html">
 <link rel="import" href="../multi-scale.html">
+<link rel="import" href="../multi-shape-container.html">
 <link rel="import" href="../multi-accessor.html">
 <link rel="import" href="../multi-container-coordinate.html">
 <link rel="import" href="../multi-shared-styles.html">
@@ -13,7 +14,7 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
 
 @demo demo/index.html 
 -->
-<dom-module id="multi-chart-bar">
+<dom-module id="multi-chart-stack">
   <template>
     <style is="custom-style" include="multi-chart multi-chart-selector">
 
@@ -29,6 +30,7 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
      chart-height="{{_height}}"
      data="[[data]]"
      x-accessor="[[xAccessor]]"
+     y-domain="[[yDomain]]"
      y-accessor="[[yAccessor]]" 
      x-scale="{{xScale}}"
      y-scale="{{yScale}}"
@@ -37,22 +39,23 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
      x-elastic="[[xElastic]]" 
      y-elastic="[[yElastic]]" 
      color-scale="{{colorScale}}">
-      
+
       <multi-scale scale-type="scaleOrdinal" domain="[[serieItems]]" range="[[colorRange]]" scale="{{colorScale}}"></multi-scale>
-      <multi-shape-bar 
-      index="1" 
-      height="[[_height]]" 
-      x-accessor="[[xAccessor]]" 
-      y-accessor="[[yAccessor]]" 
-      x-scale="[[xScale]]" 
-      y-scale="[[yScale]]" 
-      color-scale="[[colorScale]]"></multi-shape-bar>
+      <!-- <multi-shape-container> -->
+        <multi-d3-stack id="shaper" domain="{{yDomain}}"  keys="[[keys]]" data="{{stack}}" domain-min="[[domainMin]]" value="[[value]]" value-path="[[valuePath]]" order="[[order]]" offset="[[offset]]" keys="[[keys]]"></multi-d3-stack>
+        <multi-shape-stack 
+        keys="[[keys]]"
+        stack="[[stack]]"
+        x-scale="[[xScale]]" 
+        y-scale="[[yScale]]" 
+        color-scale="[[colorScale]]"></multi-shape-stack>
+      <!-- </multi-shape-container> -->
     </multi-container-coordinate>
   </template>
   <script>
   Polymer({
 
-    is: 'multi-chart-bar',
+    is: 'multi-chart-stack',
 
     hostAttributes: {
       multichart: ''

@@ -1,5 +1,5 @@
 <link rel="import" href="../../polymer/polymer.html">
-<link rel="import" href="../multi-shape-behavior.html">
+<link rel="import" href="multi-shape-behavior.html">
 <link rel="import" href="../multi-lifecycle-behavior.html">
 <!--
 `multi-poly`
@@ -26,7 +26,7 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
 
 
     properties: {
-      
+
       x: {
         type: Function,
         computed: 'computeAccessor(xScale, xAccessor)'
@@ -38,16 +38,9 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
         notify: true 
       },
 
-      y0: {
-        type: Function,
-        value: function() {
-          return this.constant(0);
-        }
-      },
-
       height: {
         type: Number,
-        // observer: '_observeHeight'
+        observer: '_observeHeight'
       },
 
       index: {
@@ -76,7 +69,7 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
         }
     },
 
-    draw: function(host, data, duration) {
+    draw: function(host, data, duration, isStack) {
 
       var height = this.height;
       var y = this.y;

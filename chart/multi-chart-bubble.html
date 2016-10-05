@@ -20,8 +20,8 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
     </style>
     <h2 class="title">[[title]]</h2>
     <h3 class="subtitle">[[subtitle]]</h3>
-    <multi-accessor accessor="{{xAccessor}}" accessor-path="[[xAccessorPath]]"></multi-accessor>
-    <multi-accessor accessor="{{yAccessor}}" accessor-path="[[yAccessorPath]]"></multi-accessor>
+    <multi-accessor accessor="{{xAccessor}}" path="[[xAccessorPath]]"></multi-accessor>
+    <multi-accessor accessor="{{yAccessor}}" path="[[yAccessorPath]]"></multi-accessor>
     <multi-container-coordinate 
       selection-type="[[selectionType]]" 
       selectedItems="[[selectedItems]]" 
@@ -76,6 +76,18 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
         type: Array,
         notify: true
       },
+
+      yAccessorPath: {
+        type: String,
+        value: '+value.count'
+      },
+    
+      xAccessorPath: {
+        type: String,
+        value: 'key'
+      },
+
+
        /**
        * `colorRange` output range of colors to be used for calculating the colorScale
        */

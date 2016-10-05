@@ -1,0 +1,40 @@
+<link rel="import" href="../polymer/polymer.html">
+
+<script>
+(function() {
+  'use strict';
+
+  var B = Polymer.multi = Polymer.multi || {};
+
+  B.observeNodes = {
+
+    get observeNodes() {
+      return this.$.observeNodes;
+    },
+
+    ready: function() {
+      var boundHandler = this.__childNodesChanged.bind(this);
+      this.__observer = Polymer.dom(this.observeNodes).observeNodes(boundHandler);
+    },
+
+    detached: function() {
+      Polymer.dom(this.observeNodes).unobserveNodes(this.__observer);
+    },
+
+    __childNodesChanged: function(nodeInfo) {
+      this.processNewNodes(nodeInfo.addedNodes);
+      this.processRemovedNodes(nodeInfo.removedNodes);
+    },
+
+    processNewNodes: function(nodes) {
+      // do something
+    },
+
+    processRemovedNodes: function(nodes) {
+      // do something
+    }
+
+  };
+
+})();
+</script>

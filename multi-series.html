@@ -1,0 +1,104 @@
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="multi-observeNodes-behavior.html">
+<!--
+`multi-poly`
+polymer elements for multivariate analysis (depend on crossfilter, universe and reductio)
+
+@demo demo/index.html 
+-->
+<dom-module id="multi-series">
+  <template>
+    <content id="observeNodes"></content>
+  </template>
+  <script>
+  Polymer({
+
+    is: 'multi-series',
+
+
+    properties: {
+      /**
+       * `series` Array of items with the following structure: 
+       *  {
+       *    key: 'theSerieKey'
+       *    label: 'theSerieLabel'
+       *    accessor: 'theAccessorFunction ' //(e.g. function(d){return d.data.count})
+       *  }
+       *
+       * individual series can be added with the <multi-serie> element
+       */
+      series: {
+        type: Array,
+        notify: true,
+        value: function() {
+          return [];
+        }
+      }
+
+    },
+
+    behaviors: [
+      Polymer.multi.observeNodes
+
+    ],
+
+    listeners: {
+      'multi-serie-change': 'onSerieChange'
+    },
+
+    onSerieChange: function(e, key) {
+      e.stopPropagation();
+      if (key) {
+        var index = this.getSerieIndex(key);
+        this.set('serie.' + index + 'label', e.srcElement.label);
+        this.set('serie.' + index + 'accessor', e.srcElement.accessor);
+      }
+    },
+
+    getSerieIndex: function(key) {
+      this.series.map(function(serie) {
+        return serie.key;
+      }).indexOf(key);
+    },
+
+    /**
+     * @override
+     * `processNewNodes` process new nodes than have been added to the observedNode
+     */
+    processNewNodes: function(nodes) {
+      var me = this;
+      nodes.filter(function(node) {
+        return node.localName === 'multi-serie';
+      }).forEach(function(node) {
+        me.push('series', {
+          key: node.key,
+          accessor: node.accessor,
+          // path: node.path,
+          label: node.label
+        });
+
+      });
+    },
+
+    /**
+     * @override
+     * `processRemovedNodes` process nodes than have been removed from observedNode
+     */
+    processRemovedNodes: function(nodes) {
+      var me = this;
+
+      nodes.filter(function(node) {
+        return node.localName === 'multi-serie';
+      }).forEach(function(node) {
+
+        var index = me.getSerieIndex(node.key);
+        if (index > -1) {
+          me.splice('series', index, 1);
+        }
+
+      });
+
+    }
+  });
+  </script>
+</dom-module>

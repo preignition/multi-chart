@@ -1,5 +1,6 @@
 <link rel="import" href="../../polymer/polymer.html">
-<link rel="import" href="../multi-shape-behavior.html">
+<link rel="import" href="multi-shape-behavior.html">
+<link rel="import" href="../shaper/multi-d3-pie.html">
 <link rel="import" href="../multi-lifecycle-behavior.html">
 <!--
 `multi-poly`
@@ -14,6 +15,7 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
       display: none;
     }
     </style>
+    <multi-d3-pie id="shaper" data="{{arcs}}" value="[[value]]" value-path="[[valuePath]]" pad-angle="[[padAngle]]" sort="[[sort]]" sort-values="[[sortValues]]"></multi-d3-pie>
     <svg>
       <g id="shape" class="shape pie">
       </g>
@@ -34,54 +36,37 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
       properties: {
 
         value: {
-          type: Function,
-          computed: 'computeAccessor(valueScale, valueAccessor)'
-        },
-
-        valueScale: {
-          type: Function,
-          value: function() {
-            return identity;
-          }
-        },
-
-        valueAccessor: {
           type: Function
+          // computed: 'computeAccessor(valueScale, valueAccessor)'
         },
 
+        valuePath: {
+          type:String
+        },
+ 
         /**
          * `padAngle` as in [padAngle](https://github.com/d3/d3-shape#pie_padAngle) to be applied to the pie. 
          */
         padAngle: {
-          value: 0,
+                    
         },
 
         /**
          * `sort` as in [sort](https://github.com/d3/d3-shape#pie_sort). It is null by default so as to render arcs in the provided order (same order as bound data)
          */
         sort: {
-          type: Function,
-          value: null
+          type: Function
         },
 
         /**
          * `sortValue` as in [sortValues](https://github.com/d3/d3-shape#pie_sortValues). It is null by default so as to render arcs in the provided order (same order as bound data)
          */
         sortValues: {
-          type: Function,
-          value: null
+          type: Function
         },
 
-
-        pie: {
-          type: Function,
-          // computed: '_computePie(value, padAngle)'
-          value: function() {
-            var pie = d3.pie();
-            this.applyConfig(pie, ['value', 'padAngle', 'sort', 'sortValues']);
-
-            return pie;
-          }
+        arcs: {
+          type: Array
         },
 
         innerRadius: {
@@ -163,6 +148,10 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
         return Math.min(w, h) / 2;
       },
 
+      preDraw: function(host, data, duration) {
+        this.$.shaper.computeData(data);
+      },
+
       draw: function(host, data, duration) {
 
         var chart = d3.select(this.targetElement).selectAll('path');
@@ -173,7 +162,8 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
           });
         }
 
-        var arcs = this.pie(data);
+        // var arcs = this.pie(data);
+        var arcs = this.arcs; //this.$.shaper.shapedData;
         var arc = this.arc;
         chart = chart.data(arcs);
 

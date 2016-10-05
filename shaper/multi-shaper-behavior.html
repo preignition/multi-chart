@@ -1,0 +1,107 @@
+<link rel="import" href="../../polymer/polymer.html">
+<link rel="import" href="../multi-config-behavior.html">
+<script>
+/**
+ * `shaper` behavior takes data as input and shape them for easier handling in charts.an example is d3.stack that build a matrix of x,y coordinates
+ */
+(function() {
+  'use strict';
+
+
+  var B = Polymer.multi = Polymer.multi || {};
+
+  var shaper = {
+
+    properties: {
+
+      /**
+       * `isShaper` making sure elements usins this behavior (`multi-stak` or `multi-nest`) are recognized as shaper
+       */
+      // isShaper: {
+      //   type: true,
+      //   reflectToAttributes: true,
+      //   value: true
+
+      // },
+
+      shaper: {
+        type: Function,
+        value: function() {
+          //identity function by default
+          return function(x) {
+            return x;
+          };
+        }
+
+      },
+
+      /**
+       * `series` the series for the chart
+       */
+      series: {
+        type: Array
+      },
+
+      /**
+       * `data` the result of the shaper function when initial data is passed
+       */
+      data: {
+        type: Array,
+        notify: true
+      },
+
+      /**
+       * `shapedData` the result of the stack function
+       */
+
+       /**
+       * `isActive` set to false to inactivate this component. It will remove visual elements and inactivate its functionality.
+       */
+      isActive: {
+        type: Boolean,
+        readOnly: true,
+        value: true
+      },
+
+      /**
+       * `shallRegister` is a flag to know if this element need to be registered when it is added to a chart-container
+       */
+      shallRegister: {
+        type: Boolean,
+        readOnly: true,
+        value: true
+      },
+
+      /**
+       * `isDrawn` flag to know if this element is drawn. 
+       */
+      isDrawn: {
+        type: Boolean,
+        readOnly: true
+      },
+
+
+    },
+
+    computeData: function(data) {
+      return this.data = this.shaper(data);
+    },
+
+    onRefresh: function(data) {
+      this.debounce('refreshing', function() {
+        this.computeData(data);
+        // this.__observeData(data);// this._setShapedData(this.__computeData(data));
+        this.domHost.fire('multi-refresh');
+      }, 10);
+    },
+
+
+  };
+
+  B.shaper = [
+    Polymer.multi.config,
+    shaper
+  ];
+
+})();
+</script>
