@@ -11,6 +11,10 @@
 
   B.svgUtil = {
     
+    translateCenter: function(w, h) {
+      return 'translate(' + w / 2 + ',' + h / 2 +')';
+    },
+
     translate : function(x,y) {
       return 'translate(' + x + ',' + y +')';
     },

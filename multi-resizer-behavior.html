@@ -43,8 +43,13 @@
       yCenter: {
         type: Number,
         computed: '__computeCenter(margin.top, height)'
-      }
+      },
 
+      center: {
+        type: Array, 
+        notify: true, 
+        computed: '__computeCenterArray(xCenter, yCenter)'
+      }
 
     },
 
@@ -81,6 +86,10 @@
     __computeCenter: function(margin, size) {
       // return margin + size / 2;
       return margin + size / 2;
+    },
+
+     __computeCenterArray: function(x, y) {
+      return [x,y];
     }
   };
 

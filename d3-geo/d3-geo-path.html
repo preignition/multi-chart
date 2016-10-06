@@ -37,7 +37,6 @@ a new geographic path generator with the default settings as in [d3.geoPath](htt
        */
       projection: {
         type: Function
-
       },
 
       /**
@@ -76,8 +75,14 @@ a new geographic path generator with the default settings as in [d3.geoPath](htt
 
     observers: [
       'observeConfig(projection, "projection", "path")',
-      'observeConfig(context, "context", "path")'
-    ]
+      'observeConfig(context, "context", "path")',
+      'observeChanged(projection.changed)'
+    ],
+
+    observeChanged: function(pr){
+      this.notifyChanged('path');
+    }
+    
 
   });
   </script>

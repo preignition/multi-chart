@@ -1,5 +1,4 @@
 <link rel="import" href="../polymer/polymer.html">
-
 <script>
 /**
  * `xCoordinate` behavior for documenting x-related coordinate
@@ -13,7 +12,7 @@
   B.config = {
 
     properties: {
-   
+
     },
 
     applyConfig: function(obj, properties) {
@@ -29,7 +28,11 @@
       if (target && target[name]) {
         target[name](value);
         if (eventName) {
-          this.fire('multi-' + eventName, {value: value, name: name, target: targetName});
+          this.fire('multi-' + eventName, {
+            value: value,
+            name: name,
+            target: targetName
+          });
         }
       }
     },
@@ -39,19 +42,22 @@
       if (target && target[name]) {
         target[name](value);
         if (eventName) {
-          this.fire('multi-' + eventName, {value: value, name: name, target: targetName});
+          this.fire('multi-' + eventName, {
+            value: value,
+            name: name,
+            target: targetName
+          });
         }
       }
+    },
+
+    /**
+     * `notifyChanged` makes sure changes 
+     */
+    notifyChanged: function(name) {
+      this.set(name + '.changed', !this[name].changed);
     }
-    // observeHostConfig: function(value, name, targetName, eventName) {
-    //   var target = this[targetName] || this._config[targetName];
-    //   if (target && target[name]) {
-    //     target[name](value);
-    //     if (eventName) {
-    //       this.domHost.fire('multi-' + eventName, {value: value, name: name, target: targetName});
-    //     }
-    //   }
-    // }
+    
   };
 
 })();

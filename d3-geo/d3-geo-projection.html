@@ -77,7 +77,8 @@ a new geographic path generator with the default settings as in [d3.geoPath](htt
          * [`translate`](https:github.com/d3/d3-geo#projection_translate)
          */
         translate: {
-          type: Array
+          type: Array,
+          computed: '_computeTranslate(width, height)'
         },
         /**
          * [`center`](https:github.com/d3/d3-geo#projection_center)
@@ -96,6 +97,20 @@ a new geographic path generator with the default settings as in [d3.geoPath](htt
          */
         precision: {
           type: Number
+        },
+
+        /**
+         * `width` the width for the layer. 
+         */
+        width: {
+          type: Number
+        },
+
+        /**
+         * `height` the height for the layer. 
+         */
+        height: {
+          type: Number
         }
 
       },
@@ -113,7 +128,7 @@ a new geographic path generator with the default settings as in [d3.geoPath](htt
       fitSize: function(size, object) {
         return this.projection.fitSize(size, object);
       },
-      
+
       /**
        * [`invert`](https://github.com/d3/d3-geo#projection_invert) Returns a new array [longitude, latitude] in degrees representing the unprojected point of the given projected point.
        */
@@ -131,19 +146,32 @@ a new geographic path generator with the default settings as in [d3.geoPath](htt
         return projection;
       },
 
+      _computeTranslate: function(w, h) {
+        return [w / 2, h / 2];
+      },
+
       behaviors: [
         Polymer.multi.config
       ],
 
       observers: [
         'observeConfig(clipAngle, "clipAngle", "projection")',
-        'observeConfig(clipExtent, "clipExtent", "projection")',
-        'observeConfig(scale, "scale", "projection")',
-        'observeConfig(translate, "translate", "projection")',
-        'observeConfig(center, "center", "projection")',
-        'observeConfig(rotate, "rotate", "projection")',
+        'observeConfig(scale, "scale", "projection", "refresh")',
         'observeConfig(precision, "precision", "projection")',
-      ]
+        'observeConfig(rotate, "rotate", "projection")',
+        'observeConfigSplices(clipExtent.*, "clipExtent", "projection")',
+        'observeConfigSplices(translate.*, "translate", "projection")',
+        'observeConfigSplices(center.*, "center", "projection")',
+        // 'observeProjectionChanged(projection.*)'
+      ],
+
+      onRefresh: function() {
+        this.notifyChanged('projection');
+      },
+      // observeProjectionChanged(pr) {
+      //   console.info('PP');
+      // }
+
 
     });
   })();
