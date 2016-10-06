@@ -1,10 +1,12 @@
 <link rel="import" href="../../polymer/polymer.html">
 <link rel="import" href="../properties/multi-x-coordinates-behavior.html">
 <link rel="import" href="../properties/multi-y-coordinates-behavior.html">
+<link rel="import" href="../d3-shape/d3-stack.html">
 <link rel="import" href="../shape/multi-shape-stack.html">
 <link rel="import" href="../multi-scale.html">
 <link rel="import" href="../multi-series.html">
 <link rel="import" href="../multi-accessor.html">
+<link rel="import" href="../multi-legend.html">
 <link rel="import" href="../multi-container-coordinate.html">
 <link rel="import" href="../multi-shared-styles.html">
 <!-- <link rel="import" href="multi-axis-behaviors.html"> -->
@@ -26,7 +28,8 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
     <multi-container-coordinate 
       selection-type="[[selectionType]]"
      selected-items="[[selectedItems]]"
-     chart-height="{{_height}}"
+     height="{{height}}"
+     width="{{width}}"
      data="[[data]]"
      x-accessor="[[xAccessor]]"
      y-domain="[[yDomain]]"
@@ -38,16 +41,17 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
      x-elastic="[[xElastic]]" 
      y-elastic="[[yElastic]]" 
      color-scale="{{colorScale}}">
-      <multi-series keys="{{keys}}" series ="{{series}}">
+      <multi-series keys="{{keys}}" series="{{series}}">
         <content></content>
       </multi-series>
-      <multi-scale scale-type="scaleOrdinal"  range="[[colorRange]]" scale="{{colorScale}}"></multi-scale>
-        <multi-d3-stack id="shaper" domain="{{yDomain}}" data="{{stack}}" domain-min="[[domainMin]]" value="[[value]]" value-path="[[valuePath]]" order="[[order]]" offset="[[offset]]" keys="[[keys]]"></multi-d3-stack>
+      <multi-scale scale-type="scaleOrdinal" domain="[[keys]]" range="[[colorRange]]" scale="{{colorScale}}"></multi-scale>
+        <d3-stack domain="{{yDomain}}" data="{{stack}}" domain-min="[[domainMin]]" value="[[value]]" value-path="[[valuePath]]" order="[[order]]" offset="[[offset]]" keys="[[keys]]"></d3-stack>
         <multi-shape-stack 
         stack="[[stack]]"
         x-scale="[[xScale]]" 
         y-scale="[[yScale]]" 
         color-scale="[[colorScale]]"></multi-shape-stack>
+      <multi-legend   chart-height="{{height}}"  chart-width="{{width}}" scale="[[colorScale]]" position="top-right" ></multi-legend>
     </multi-container-coordinate>
   </template>
   <script>

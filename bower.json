@@ -1,9 +1,28 @@
 {
-  "name": "multichart",
-  "description": "polymer elements for multiple charts (based on d3.js v4). It aimed to work in conjunction with multiverse",
-  "main": "multi-linechart.html",
+  "name": "multi-block",
+  "description": "polymer building blocks elements for [multi-chart](https://github.com/polymerEl/multi-chart) (based on d3.js v4).",
+   "authors": [
+    "christophe.geiser <christophe.geiser@e-smile.org>"
+  ],
+  "main": "multi-block.html",
+  "repository": "https://github.com/polymerEl/multi-block",
+  "keywords": [
+    "web-component",
+    "web-components",
+    "d3.js",
+    "charts",
+    "polymer",
+    "analytics",
+    "mapping",
+    "dataviz"
+  ],
   "dependencies": {
-    "polymer": "Polymer/polymer#^1.4.0"
+    "polymer": "Polymer/polymer#^1.6.0",
+    "paper-styles": "PolymerElements/paper-styles#^1.1.4",
+    "d3-bundle-element": "^1.1.0",
+    "paper-input": "^1.1.11",
+    "paper-button": "^1.0.18"
+
   },
   "devDependencies": {
     "iron-component-page": "PolymerElements/iron-component-page#^1.0.0",

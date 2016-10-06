@@ -16,8 +16,8 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
       display: none;
     }
     </style>
-    <svg >
-      <g id="legendG" transform$="[[translate(x,y)]][[svgScale(scaleFactor)]]"  class="legend">
+    <svg>
+      <g id="legendG" transform$="[[translate(x,y)]][[svgScale(scaleFactor)]]" class="legend">
       </g>
     </svg>
   </template>
@@ -46,6 +46,37 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
         value: 0.7
       },
 
+      /**
+       * `position` this position within the chart. The observer will look for words like `top`, `bottom`, `right` and `left`and calculate `x`  and `y` position accordingly.
+       */
+      position: {
+        type: String
+      },
+
+      /**
+       * `padding` the padding to be applied when calculation the position
+       */
+      padding: {
+        type: Number,
+        value: 0
+      },
+
+      /**
+       * `chartWidth` the width of the containing chart. If not set, will pick-it up on attached
+       */
+      chartWidth: {
+        type: Number
+
+      },
+
+      /**
+       * `chartHeight` the height of the containing chart. If not set, will pick-it up on attached
+       */
+      chartHeight: {
+        type: Number
+
+      },
+
       x: {
         type: Number,
         value: 0
@@ -60,6 +91,8 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
         type: Function,
         computed: '_computeLegend(legendType)'
       },
+
+      // API Properties
       scale: {
         type: Function
       },
@@ -67,8 +100,8 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
         type: Number
       },
       orient: {
-        type: String,
-        value: 'horizontal'
+        type: String
+          // value: 'horizontal'
       },
       ascending: {
         type: Boolean
@@ -121,6 +154,7 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
     ],
 
     observers: [
+      '_observePosition(position, padding,chartWidth, chartHeight)',
       'observeConfig(scale, "scale", "legend", "refresh")',
       'observeConfig(cells, "cells", "legend", "refresh")',
       'observeConfig(orient, "orient", "legend", "refresh")',
@@ -140,10 +174,33 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
       'observeConfig(labelDelimiter, "labelDelimiter", "legend", "refresh")'
     ],
 
+    // attached: function() {
+    //   if (!this.chartWidth) {
+    //     this.chartWidth = this.domHost.width;
+    //   }
+    //   if (!this.chartWidth) {
+    //     this.chartWidth = this.domHost.height;
+    //   }
+    // },
+
+    _observePosition: function(position, padding , chartWidth, chartHeight) {
+      var isRight = ~position.indexOf('right');
+      var isBottom = ~position.indexOf('bottom');
+
+      var size = this.getBoundingClientRect();
+      if (isRight) {
+        this.x = chartWidth - size.width - padding;
+      }
+
+      if (isBottom) {
+        this.y = chartHeight - size.height - padding;
+      }
+    },
+
     /**
      * `targetElement` getter override lifecycle Behavior and called during attached
      */
-    get targetElement() {
+      get targetElement() {
       return this.$.legendG;
     },
 

@@ -9,14 +9,14 @@
   var resizer = {
 
     properties: {
-      chartHeight: {
+      height: {
         type: Number,
         readOnly: true,
         notify: true,
         value: 0
       },
 
-      chartWidth: {
+      width: {
         type: Number,
         readOnly: true,
         notify: true,
@@ -37,12 +37,12 @@
 
       xCenter: {
         type: Number,
-        computed: '__computeCenter(margin.right, chartWidth)'
+        computed: '__computeCenter(margin.right, width)'
       },
 
       yCenter: {
         type: Number,
-        computed: '__computeCenter(margin.top, chartHeight)'
+        computed: '__computeCenter(margin.top, height)'
       }
 
 
@@ -68,10 +68,10 @@
 
       this.debounce(this, function() {
         var rect = this.$.svg.getBoundingClientRect();
-        this._setChartWidth(Math.floor(rect.width) - this.margin.top - this.margin.bottom);
-        this._setChartHeight(Math.floor(rect.height) - this.margin.left - this.margin.right);
+        this._setWidth(Math.floor(rect.width) - this.margin.right - this.margin.left);
+        this._setHeight(Math.floor(rect.height) - this.margin.top - this.margin.bottom);
         this.fire('multi-resize');
-      }, 10);
+      }, 20);
     },
 
     __onIronResize: function() {

@@ -109,18 +109,10 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
     },
 
     behaviors: [
-      // multi.refSelector,
       Polymer.multi.svgUtil,
       Polymer.multi.scale
     ],
 
-    // listeners: {
-    //   'multi-shaper-draw': 'onMultiDraw'
-    // },
-
-    // attached: function() {
-      // this.async(this.initProp, 20);
-    // },
 
     /**
      * `targetElement` getter override lifecycle Behavior and called during attached
@@ -136,13 +128,6 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
     ],
 
 
-    // *
-    //  * `afterRegister` is called by the host once this element has been registered. It placed the axis element into the chart. 
-     
-    // afterRegister: function(host) {
-    //   host.$.chartContent.appendChild(this.$.axis);
-    // },
-
     get isY() {
       return this.position === 'left' || this.position === 'right';
     },
@@ -151,31 +136,11 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
       return this.position === 'top' || this.position === 'bottom';
     },
 
-    // initProp: function() {
-    //   if (this.isY) {
-
-    //     if (!this.textTransform) {
-    //       this.textTransform = 'rotate(-90)';
-    //     }
-    //     if (!this.yText) {
-    //       this.yText = 6;
-    //       this.dy = '0.7em';
-    //     }
-    //   }
-    //   if (this.isX) {
-    //     this.dy = '2.7em';
-    //   }
-    // },
-
     _computeAxis: function(type, scale) {
       var axis = type === 'right' ? d3.axisRight() : type === 'left' ? d3.axisLeft() : type === 'top' ? d3.axisTop() : d3.axisBottom();
 
       return axis.scale(scale);
     },
-
-    // _computeTransform: function(x, y) {
-    //   return 'translate(' + x + ',' + y + ')';
-    // },
 
     _observeWidth: function(w, position) {
       if (this.isY) {

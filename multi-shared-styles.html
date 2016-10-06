@@ -100,11 +100,13 @@
   <template>
     <style>
     :host[is-selecting] ::content .chart-shape, :host[has-selection] ::content .chart-shape  {
-      fill: var(--secondary-text-color, grey);
+      fill-opacity: 0.25;
+      /*fill: var(--secondary-text-color, grey);*/
     }  
     
     :host[is-selecting] ::content .selected, :host[has-selection] ::content .selected { {
-      fill: var(--multi-chart-selected-color, #0B5D86);
+      fill-opacity: 1;
+      /*fill: var(--multi-chart-selected-color, #0B5D86);*/
     }  
 
     </style>

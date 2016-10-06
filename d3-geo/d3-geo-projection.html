@@ -1,0 +1,151 @@
+<link rel="import" href="../../polymer/polymer.html">
+<!-- <link rel="import" href="../multi-accessor.html"> -->
+<link rel="import" href="../multi-config-behavior.html">
+<!-- <link rel="import" href="d3-shape-behavior.html"> -->
+<!-- <link rel="import" href="multi-lifecyle-behavior.html"> -->
+<!--
+`d3-geo-path`
+a new geographic path generator with the default settings as in [d3.geoPath](https://github.com/d3/d3-geo#geoPath)
+
+@demo demo/index.html 
+-->
+<dom-module id="d3-geo-projection">
+  <template>
+    <multi-accessor accessor="{{value}}" path="[[valuePath]]"></multi-accessor>
+  </template>
+  <script>
+  (function() {
+    'use strict';
+
+    var projections = [
+      'geoAlbers',
+      'geoAlbersUsa',
+      'geoAzimuthalEqualArea',
+      'geoAzimuthalEquidistant',
+      'geoConicConformal',
+      'geoConicEqualArea',
+      'geoConicEquidistant',
+      'geoEquirectangular',
+      'geoGnomonic',
+      'geoProjection',
+      'geoMercator',
+      'geoOrthographic',
+      'geoStereographic',
+      'geoTransverseMercator'
+    ];
+
+    Polymer({
+
+      is: 'd3-geo-projection',
+
+      properties: {
+        /**
+         * `path` the [path](https://github.com/d3/d3-geo#geoPath) generator function
+         */
+        projection: {
+          type: Function,
+          notify: true,
+          computed: '_computeProjection(projectionType)'
+        },
+
+        /**
+         * `projectionType` the type of the projection, one of `geoAlbers`,`geoAlbersUsa`,`geoAzimuthalEqualArea`,`geoAzimuthalEquidistant`,`geoConicConformal`,`geoConicEqualArea`,`geoConicEquidistant`,`geoEquirectangular`,`geoGnomonic`,`geoProjection`,`geoMercator`,`geoOrthographic`,`geoStereographic`,`geoTransverseMercator`
+         */
+        projectionType: {
+          type: String
+        },
+
+        /**
+         * [`clipAngle`](https:github.com/d3/d3-geo#projection_clipAngle)
+         */
+        clipAngle: {
+          type: Number
+        },
+        /**
+         * [`clipExtent`](https:github.com/d3/d3-geo#projection_clipExtent)
+         */
+        clipExtent: {
+          type: Array
+        },
+        /**
+         * [`scale`](https:github.com/d3/d3-geo#projection_scale)
+         */
+        scale: {
+          type: Number
+        },
+        /**
+         * [`translate`](https:github.com/d3/d3-geo#projection_translate)
+         */
+        translate: {
+          type: Array
+        },
+        /**
+         * [`center`](https:github.com/d3/d3-geo#projection_center)
+         */
+        center: {
+          type: Array
+        },
+        /**
+         * [`rotate`](https:github.com/d3/d3-geo#projection_rotate)
+         */
+        rotate: {
+          type: Number
+        },
+        /**
+         * [`precision`](https:github.com/d3/d3-geo#projection_precision)
+         */
+        precision: {
+          type: Number
+        }
+
+      },
+
+      /**
+       * [`fitExtent`](https://github.com/d3/d3-geo#projection_fitExtent) Sets the projection’s scale and translate to fit the specified GeoJSON object in the center of the given `extent`. 
+       */
+      fitExtent: function(extent, object) {
+        return this.projection.fitExtent(extent, object);
+      },
+
+      /**
+       * [`fitSize`](https://github.com/d3/d3-geo#projection_fitSize) A convenience method for projection.fitExtent where the top-left corner of the extent is `[0,0]`.
+       */
+      fitSize: function(size, object) {
+        return this.projection.fitSize(size, object);
+      },
+      
+      /**
+       * [`invert`](https://github.com/d3/d3-geo#projection_invert) Returns a new array [longitude, latitude] in degrees representing the unprojected point of the given projected point.
+       */
+      invert: function(point) {
+        return this.projection.invert(point);
+      },
+
+      _computeProjection: function(projectionType) {
+        if (projections.indexOf(projectionType) < 0) {
+          this._error('provided projectionType is not a d3.js projection');
+        }
+        var projection = d3[projectionType]();
+        this.applyConfig(projection, ['clipAngle', 'clipExtent', 'scale', 'translate', 'center', 'rotate', 'precision']);
+
+        return projection;
+      },
+
+      behaviors: [
+        Polymer.multi.config
+      ],
+
+      observers: [
+        'observeConfig(clipAngle, "clipAngle", "projection")',
+        'observeConfig(clipExtent, "clipExtent", "projection")',
+        'observeConfig(scale, "scale", "projection")',
+        'observeConfig(translate, "translate", "projection")',
+        'observeConfig(center, "center", "projection")',
+        'observeConfig(rotate, "rotate", "projection")',
+        'observeConfig(precision, "precision", "projection")',
+      ]
+
+    });
+  })();
+  </script>
+</dom-module>

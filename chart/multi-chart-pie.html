@@ -1,7 +1,7 @@
 <link rel="import" href="../../polymer/polymer.html">
 <link rel="import" href="../multi-color-behavior.html">
 <link rel="import" href="../shape/multi-shape-pie.html">
-<link rel="import" href="../shaper/multi-d3-pie.html">
+<link rel="import" href="../d3-shape/d3-pie-element.html">
 <link rel="import" href="../multi-scale.html">
 <link rel="import" href="../multi-accessor.html">
 <link rel="import" href="../multi-legend.html">
@@ -27,13 +27,13 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
       <multi-container-simple 
       selection-type="[[selectionType]]" 
       selectedItems="[[selectedItems]]" 
-      chart-height="{{_height}}" 
-      chart-width="{{_width}}" 
+      height="{{_height}}" 
+      width="{{_width}}" 
       data="[[data]]" 
       >
       <multi-legend scale="[[colorScale]]"> </multi-legend>
       <multi-scale scale-type="scaleOrdinal" accessor="[[keyAccessor]]" range="[[colorRange]]" scale="{{colorScale}}"></multi-scale>
-      <multi-d3-pie  data="{{arcs}}" value="[[value]]" value-path="[[valueAccessorPath]]" pad-angle="[[padAngle]]" sort="[[sort]]" sort-values="[[sortValues]]"></multi-d3-pie>
+      <d3-pie-element  data="{{arcs}}" value="[[value]]" value-path="[[valueAccessorPath]]" pad-angle="[[padAngle]]" sort="[[sort]]" sort-values="[[sortValues]]"></d3-pie-element>
     
       <multi-shape-pie 
         height="[[_height]]" 

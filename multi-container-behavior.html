@@ -4,239 +4,219 @@
 <link rel="import" href="multi-observe-nodes-behavior.html">
 <script>
 (function() {
-  'use strict';
+    'use strict';
 
-  var B = Polymer.multi = Polymer.multi || {};
+    var B = Polymer.multi = Polymer.multi || {};
 
-  var container = {
+    var container = {
 
-    properties: {
-      // multichart: {
-      //   value: true,
-      //   type: Boolean,
-      //   readOnly: true,
-      //   reflectToAttribute: true
-      // },
+        properties: {
+          // multichart: {
+          //   value: true,
+          //   type: Boolean,
+          //   readOnly: true,
+          //   reflectToAttribute: true
+          // },
 
-      // title: {
-      //   type: String
-      // },
+          // title: {
+          //   type: String
+          // },
 
-      // subtitle: {
-      //   type: String
-      // },
+          // subtitle: {
+          //   type: String
+          // },
 
-      duration: {
-        type: Number,
-        value: 200
-      },
+          duration: {
+            type: Number,
+            value: 200
+          },
 
-      data: {
-        type: Array,
-        observer: 'renderChart'
-      },
+          data: {
+            type: Array,
+            observer: 'renderChart'
+          },
 
-      groupName: {
-        type: String
-      },
+          groupName: {
+            type: String
+          },
 
-      /**
-       * `registeredItems` and array containing all elements that need to be refreshed when data changes 
-       */
-      registeredItems: {
-        type: Array,
-        value: function() {
-          return [];
-        }
-      },
-
-      attrForSerie: {
-        type: String,
-        value: 'index'
-      },
-
-      serieItems: {
-        type: Array,
-        notify: true,
-        value: function() {
-          return [];
-        }
-      },
-
-      /**
-       * `shaper` an element that will transform data in a form easier to draw (e.g [d3-stack](https://github.com/d3/d3-shape/blob/master/README.md#stack)).. 
-       */
-      shaper: {
-        type: Object,
-        readOnly: true
-      }
-
-    },
-
-    // ready: function() {
-    //   var boundHandler = this.__childNodesChanged.bind(this);
-    //   this._observer = Polymer.dom(this.$.observeNodes).observeNodes(boundHandler);
-    // },
-
-    attached: function() {
-      // this.callRegistered('hostAttached');
-
-      this.draw();
-      this.fire('multi-attached', this.groupName);
-    },
-
-    detached: function() {
-      this.fire('multi-detached', this.groupName);
-    },
-
-    listeners: {
-      'multi-refresh': '__onRefresh',
-      'multi-resize': '__onResize',
-    },
-
-    renderChart: function(data) {
-      if (this.renderer) {
-        this.renderer(data);
-      }
-    },
-
-    draw: function() {
-      var me = this;
-
-      function draw(data) {
-
-        if (me.chartWidth === 0) {
-          return;
-        }
-        // var shapedData;
-        // if (me.shaper) {
-        //   me.shaper.set('data', data)
-        //   shapedData = me.shaper.data;
-        // }
-        // me.callRegistered('preDraw', data, me.duration, shapedData);
-        // me.callRegistered('preDraw', data, me.duration, shapedData);
-        me.callRegistered('preDraw', data, me.duration);
-        me.callRegistered('draw', data, me.duration);
-        me.fire('multi-draw');
-
-      }
-      // this is the function that is called when we refresh the chart (base-behavior.renderChart(selection))
-      this.renderer = function(data) {
-        draw(data);
-      };
-    },
-
-    callRegistered(methodName) {
-      // we replace `methodName`` with `this host` as the first argument 
-      // var args = [].splice.call(arguments, 0, 1, this);
-      [].splice.call(arguments, 0, 1, this);
-      var args = arguments;
-      this.registeredItems.filter(function(el) {
-        return el.isActive;
-      }).forEach(function(el) {
-        if (el[methodName]) {
-          if (methodName === 'draw') {
-            el._setIsDrawn(true);
-            if(!el.isDrawing) {
-              el[methodName].apply(el, args);
+          /**
+           * `registeredItems` and array containing all elements that need to be refreshed when data changes 
+           */
+          registeredItems: {
+            type: Array,
+            value: function() {
+              return [];
             }
-          }  
-          else {
-            el[methodName].apply(el, args);
+          },
+
+          attrForSerie: {
+            type: String,
+            value: 'index'
+          },
+
+          serieItems: {
+            type: Array,
+            notify: true,
+            value: function() {
+              return [];
+            }
+          },
+
+          /**
+           * `shaper` an element that will transform data in a form easier to draw (e.g [d3-stack](https://github.com/d3/d3-shape/blob/master/README.md#stack)).. 
+           */
+          shaper: {
+            type: Object,
+            readOnly: true
+          }
+
+        },
+
+        // ready: function() {
+        //   var boundHandler = this.__childNodesChanged.bind(this);
+        //   this._observer = Polymer.dom(this.$.observeNodes).observeNodes(boundHandler);
+        // },
+
+        attached: function() {
+          // this.callRegistered('hostAttached');
+
+          this.draw();
+          this.fire('multi-attached', this.groupName);
+        },
+
+        detached: function() {
+          this.fire('multi-detached', this.groupName);
+        },
+
+        listeners: {
+          'multi-refresh': '__onRefresh',
+          'multi-resize': '__onResize',
+        },
+
+        renderChart: function(data) {
+          if (this.renderer) {
+            this.renderer(data);
+          }
+        },
+
+        draw: function() {
+          var me = this;
+
+          function draw(data) {
+
+            if (me.width === 0) {
+              return;
+            }
+            // var shapedData;
+            // if (me.shaper) {
+            //   me.shaper.set('data', data)
+            //   shapedData = me.shaper.data;
+            // }
+            // me.callRegistered('preDraw', data, me.duration, shapedData);
+            // me.callRegistered('preDraw', data, me.duration, shapedData);
+            me.callRegistered('preDraw', data, me.duration);
+            me.callRegistered('draw', data, me.duration);
+            me.fire('multi-draw');
+
+          }
+          // this is the function that is called when we refresh the chart (base-behavior.renderChart(selection))
+          this.renderer = function(data) {
+            draw(data);
+          };
+        },
+
+        callRegistered(methodName) {
+          // we replace `methodName`` with `this host` as the first argument 
+          // var args = [].splice.call(arguments, 0, 1, this);
+          [].splice.call(arguments, 0, 1, this);
+          var args = arguments;
+          this.registeredItems.filter(function(el) {
+            return el.isActive;
+          }).forEach(function(el) {
+            if (el[methodName]) {
+              if (methodName === 'draw') {
+                el._setIsDrawn(true);
+                if (!el.isDrawing) {
+                  el[methodName].apply(el, args);
+                }
+              } else {
+                el[methodName].apply(el, args);
+              }
+            }
+          }, this);
+        },
+
+        __onResize: function() {
+          if (this.data && this.renderer) {
+            // this.debounce('onresize', function() {
+              this.renderer(this.data);
+            // }, 200);
+        }
+      },
+
+      __onRefresh: function(e, detail) {
+        e.stopPropagation();
+        if (this.data && this.renderer) {
+          var el = e.srcElement;
+          if (el.onRefresh) {
+            // shaper web-component
+            return el.onRefresh(this.data);
+          }
+          if (el.isDrawn && this.registeredItems.indexOf(el) > -1) {
+            el.draw(this, this.data, this.duration);
           }
         }
-      }, this);
-    },
+      },
 
-    __onResize: function() {
-      if (this.data && this.renderer) {
-        this.renderer(this.data);
-      }
-    },
+      /**
+       * @override
+       * `processNewNodes` process new nodes than have been added to the observedNode
+       */
+      processNewNodes: function(nodes) {
+        var me = this;
+        nodes.filter(function(node) {
+          return node.shallRegister;
+        }).forEach(function(node) {
+          me.push('registeredItems', node);
+          // if (node.isShaper) {
+          //   // we set the stack 
+          //   this._setShaper(node);
+          // }
+          if (node.isSerie) {
+            me.serieItems.push(node.getAttribute(me.attrForSerie));
+          }
+          if (node.afterRegister) {
+            node.afterRegister(me);
+          }
+        });
+      },
 
-    __onRefresh: function(e, detail) {
-      e.stopPropagation();
-      if (this.data && this.renderer) {
-        var el = e.srcElement;
-        if (el.onRefresh) {
-          // shaper web-component
-          return el.onRefresh(this.data);
-        }
-        if (el.isDrawn && this.registeredItems.indexOf(el) > -1) {
-          el.draw(this, this.data, this.duration);
-        }
-        // else {
-            //this.callRegistered('draw', this.data, this.duration);
-        // }
-      }
-    },
+      /**
+       * @override
+       * `processRemovedNodes` process nodes than have been removed from observedNode
+       */
+      processRemovedNodes: function(nodes) {
+        var me = this;
+        nodes.filter(function(node) {
+          return node.shallRegister;
+        }).forEach(function(node) {
+          me.splice('registeredItems', me.registeredItems.indexOf(node), 1);
+          me.push('registeredItems', node);
+          // if (node.isShaper) {
+          //   // we remove the stack 
+          //   this._setShaper(null);
+          // }
+          if (node.isSerie) {
+            me.splice('serieItems', me.serieItems.indexOf(node.getAttribute(me.attrForSerie)), 1);
+          }
+          if (node.afterUnregister) {
+            node.afterUnregister(me);
+          }
+        });
 
-    // __childNodesChanged: function(nodeInfo) {
-    //   this.__processNewNodes(nodeInfo.addedNodes);
-    //   this.__processRemovedNodes(nodeInfo.removedNodes);
-    // },
+      },
 
-    /**
-     * @override
-     * `processNewNodes` process new nodes than have been added to the observedNode
-     */
-    processNewNodes: function(nodes) {
-      var me = this;
-      nodes.filter(function(node) {
-        return node.shallRegister;
-      }).forEach(function(node) {
-        me.push('registeredItems', node);
-        // if (node.isShaper) {
-        //   // we set the stack 
-        //   this._setShaper(node);
-        // }
-        if (node.isSerie) {
-          me.serieItems.push(node.getAttribute(me.attrForSerie));
-        }
-        if (node.afterRegister) {
-          node.afterRegister(me);
-        }
-      });
-    },
-
-    /**
-     * @override
-     * `processRemovedNodes` process nodes than have been removed from observedNode
-     */
-    processRemovedNodes: function(nodes) {
-      var me = this;
-      nodes.filter(function(node) {
-        return node.shallRegister;
-      }).forEach(function(node) {
-        me.splice('registeredItems', me.registeredItems.indexOf(node), 1);
-        me.push('registeredItems', node);
-        // if (node.isShaper) {
-        //   // we remove the stack 
-        //   this._setShaper(null);
-        // }
-        if (node.isSerie) {
-          me.splice('serieItems', me.serieItems.indexOf(node.getAttribute(me.attrForSerie)), 1);
-        }
-        if (node.afterUnregister) {
-          node.afterUnregister(me);
-        }
-      });
-
-    },
-    // __onRegisterItem: function(e, d) {
-    //   if (d === true) {
-    //     this.push('registeredItems', e.srcElement);
-    //     if (e.srcElement.afterRegister) {
-    //       e.srcElement.afterRegister(this);
-    //     }
-    //   }
-    //   if (d === false) {
-    //     this.splice('registeredItems', this.registeredItems.indexOf(e.srcElement), 1);
-    //     if (e.srcElement.afterUnregister) {
-    //       e.srcElement.afterUnregister(this);
-    //     }
-    //   }
-    // }
   };
 
   B.container = [

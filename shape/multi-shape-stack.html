@@ -1,6 +1,5 @@
 <link rel="import" href="../../polymer/polymer.html">
 <link rel="import" href="multi-shape-behavior.html">
-<link rel="import" href="../shaper/multi-d3-stack.html">
 <link rel="import" href="../multi-lifecycle-behavior.html">
 <!--
 `multi-poly`
@@ -15,9 +14,8 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
       display: none;
     }
     </style>
-    
     <svg>
-      <g id="shape" class="shape bar" >
+      <g id="shape" class="shape bar">
       </g>
     </svg>
   </template>
@@ -38,7 +36,7 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
 
       keys: {
         type: Array,
-        value: function(){
+        value: function() {
           return [];
         }
       },
@@ -52,7 +50,7 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
     /**
      * `targetElement` getter override lifecycle Behavior and called during attached
      */
-     get targetElement() {
+    get targetElement() {
       return this.$.shape;
     },
 
@@ -64,7 +62,7 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
     draw: function(host, data, duration) {
 
       if (!this.stack) {
-        this._error('stack is not provided')
+        this._error('stack is not provided');
       }
 
       var stack = this.stack;
@@ -72,21 +70,26 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
       var yScale = this.yScale;
       var colorScale = this.colorScale;
 
-      var series =  d3.select(this.targetElement).selectAll('.serie')
-          .data(stack)
+      var series = d3.select(this.targetElement).selectAll('.serie')
+        .data(stack)
 
-      series.exit().remove();    
+      series.exit().remove();
 
       series = series.enter().append('g')
         .attr('class', 'serie')
-        .attr('fill', function(d) { 
-          return colorScale(d.key); 
+        .attr('key', function(d) {
+          return d.key;
+        })
+        .attr('fill', function(d) {
+          return colorScale(d.key);
         })
         .merge(series);
 
-     var chart =  series.selectAll('rect')
-        .data(function(d) { return d; })   
-    
+      var chart = series.selectAll('rect')
+        .data(function(d) {
+          return d;
+        });
+
       chart.exit().remove();
 
       chart = chart.enter().append('rect')
@@ -94,18 +97,27 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
         .merge(chart);
 
       chart.on('click', function(d) {
-         host.fire('multi-tap', d);
-       });  
+        host.fire('multi-tap', d);
+      });
 
-      if (duration)  {
+      if (duration) {
         chart = this.setTransition(chart, duration);
-      } 
+      }
 
       chart
-        .attr('x', function(d) { return xScale(d.data.key); })
-        .attr('y', function(d) { return yScale(d[1]); })
-        .attr('height', function(d) { return yScale(d[0]) - yScale(d[1]); })
-        .attr('width', this.xScale.bandwidth());  
+        .attr('x', function(d) {
+          return xScale(d.data.key);
+        })
+        .attr('y', function(d) {
+          return yScale(d[1]);
+        })
+        .attr('key', function(d) {
+          return d.data.key;
+        })
+        .attr('height', function(d) {
+          return yScale(d[0]) - yScale(d[1]);
+        })
+        .attr('width', this.xScale.bandwidth());
 
     }
 
