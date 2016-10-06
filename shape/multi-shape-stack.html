@@ -32,10 +32,9 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
        * `stack` stacked data
        */
       stack: {
-        type: Array
+        type: Array,
+        observer: 'fireRefresh'
       },
-
-
 
       keys: {
         type: Array,
@@ -99,7 +98,7 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
        });  
 
       if (duration)  {
-        chart = chart.transition().duration(duration);
+        chart = this.setTransition(chart, duration);
       } 
 
       chart

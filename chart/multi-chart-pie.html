@@ -1,6 +1,7 @@
 <link rel="import" href="../../polymer/polymer.html">
 <link rel="import" href="../multi-color-behavior.html">
 <link rel="import" href="../shape/multi-shape-pie.html">
+<link rel="import" href="../shaper/multi-d3-pie.html">
 <link rel="import" href="../multi-scale.html">
 <link rel="import" href="../multi-accessor.html">
 <link rel="import" href="../multi-legend.html">
@@ -32,10 +33,12 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
       >
       <multi-legend scale="[[colorScale]]"> </multi-legend>
       <multi-scale scale-type="scaleOrdinal" accessor="[[keyAccessor]]" range="[[colorRange]]" scale="{{colorScale}}"></multi-scale>
+      <multi-d3-pie  data="{{arcs}}" value="[[value]]" value-path="[[valueAccessorPath]]" pad-angle="[[padAngle]]" sort="[[sort]]" sort-values="[[sortValues]]"></multi-d3-pie>
+    
       <multi-shape-pie 
         height="[[_height]]" 
+        arcs="[[arcs]]"
         width="[[_width]]" 
-        pad-angle="[[padAngle]]" 
         inner-radius="[[innerRadius]]"
         value-path="[[valueAccessorPath]]" 
         color-accessor="[[keyAccessor]]" 

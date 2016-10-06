@@ -74,16 +74,12 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
       // Polymer.multi.lifecycle
     ],
 
-    preDraw: function(host, data,duration) {
-       this.computeData(data);
-    },
-
     observers: [
-      'observeConfig(keys, "keys", "shaper", "refresh")',
+      'observeConfigSplices(keys.splices, "keys", "shaper", "refresh")',
       'observeConfig(value, "value", "shaper", "refresh")',
       'observeConfig(order, "order", "shaper", "refresh")',
-      'observeConfig(offset, "offset", "shaper", "refresh")',
-      'computeDomain(data, domainMin)'
+      'observeConfig(offset, "offset", "shaper", "refresh")'
+      // 'computeDomain(data, domainMin)'
     ],
 
     computeDomain: function(data, domainMin) {

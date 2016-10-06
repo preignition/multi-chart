@@ -19,13 +19,39 @@
         type: Function,
         computed: 'computeKey(xAccessor)'
       },
-       /**
+
+      /**
+       * `isDrawning` flag to know if this element is being drawn (e.g. animating). 
+       */
+      isDrawing: {
+        type: Boolean,
+        readOnly: true,
+        value: false
+      },
+
+      /**
        * `isSerie` is a flag to know if this element need to be registered as a serie (e.g. added to serieItems) when it is added to a chart-container
        */
-      isSerie: {
-        type: Boolean,
-        value: true
-      },
+      // isSerie: {
+      //   type: Boolean,
+      //   value: true
+      // },
+
+    },
+
+    fireRefresh: function() {
+      this.fire('multi-refresh');
+    },
+
+    setTransition: function(chart, duration) {
+      var me = this;
+      this._setIsDrawing(true);
+
+      chart = chart.transition().duration(duration)
+        .on('end', function() {
+          me._setIsDrawing(false);
+        });
+      return chart;
 
     },
 

@@ -32,6 +32,16 @@
           this.fire('multi-' + eventName, {value: value, name: name, target: targetName});
         }
       }
+    },
+    observeConfigSplices: function(splice, name, targetName, eventName) {
+      var value = this[name];
+      var target = this[targetName] || this._config[targetName];
+      if (target && target[name]) {
+        target[name](value);
+        if (eventName) {
+          this.fire('multi-' + eventName, {value: value, name: name, target: targetName});
+        }
+      }
     }
     // observeHostConfig: function(value, name, targetName, eventName) {
     //   var target = this[targetName] || this._config[targetName];

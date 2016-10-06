@@ -83,6 +83,10 @@
 
     },
 
+    preDraw: function(host, data,duration) {
+       this.computeData(data);
+    },
+
     computeData: function(data) {
       return this.data = this.shaper(data);
     },

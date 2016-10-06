@@ -3,6 +3,7 @@
 <link rel="import" href="../properties/multi-y-coordinates-behavior.html">
 <link rel="import" href="../shape/multi-shape-stack.html">
 <link rel="import" href="../multi-scale.html">
+<link rel="import" href="../multi-series.html">
 <link rel="import" href="../multi-accessor.html">
 <link rel="import" href="../multi-container-coordinate.html">
 <link rel="import" href="../multi-shared-styles.html">
@@ -25,7 +26,6 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
     <multi-container-coordinate 
       selection-type="[[selectionType]]"
      selected-items="[[selectedItems]]"
-     serie-items="{{serieItems}}"
      chart-height="{{_height}}"
      data="[[data]]"
      x-accessor="[[xAccessor]]"
@@ -38,11 +38,12 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
      x-elastic="[[xElastic]]" 
      y-elastic="[[yElastic]]" 
      color-scale="{{colorScale}}">
-
-      <multi-scale scale-type="scaleOrdinal" domain="[[serieItems]]" range="[[colorRange]]" scale="{{colorScale}}"></multi-scale>
-        <multi-d3-stack id="shaper" domain="{{yDomain}}"  keys="[[keys]]" data="{{stack}}" domain-min="[[domainMin]]" value="[[value]]" value-path="[[valuePath]]" order="[[order]]" offset="[[offset]]" keys="[[keys]]"></multi-d3-stack>
+      <multi-series keys="{{keys}}" series ="{{series}}">
+        <content></content>
+      </multi-series>
+      <multi-scale scale-type="scaleOrdinal"  range="[[colorRange]]" scale="{{colorScale}}"></multi-scale>
+        <multi-d3-stack id="shaper" domain="{{yDomain}}" data="{{stack}}" domain-min="[[domainMin]]" value="[[value]]" value-path="[[valuePath]]" order="[[order]]" offset="[[offset]]" keys="[[keys]]"></multi-d3-stack>
         <multi-shape-stack 
-        keys="[[keys]]"
         stack="[[stack]]"
         x-scale="[[xScale]]" 
         y-scale="[[yScale]]" 

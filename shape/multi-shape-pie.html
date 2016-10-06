@@ -15,7 +15,6 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
       display: none;
     }
     </style>
-    <multi-d3-pie id="shaper" data="{{arcs}}" value="[[value]]" value-path="[[valuePath]]" pad-angle="[[padAngle]]" sort="[[sort]]" sort-values="[[sortValues]]"></multi-d3-pie>
     <svg>
       <g id="shape" class="shape pie">
       </g>
@@ -35,38 +34,10 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
 
       properties: {
 
-        value: {
-          type: Function
-          // computed: 'computeAccessor(valueScale, valueAccessor)'
-        },
-
-        valuePath: {
-          type:String
-        },
- 
-        /**
-         * `padAngle` as in [padAngle](https://github.com/d3/d3-shape#pie_padAngle) to be applied to the pie. 
-         */
-        padAngle: {
-                    
-        },
-
-        /**
-         * `sort` as in [sort](https://github.com/d3/d3-shape#pie_sort). It is null by default so as to render arcs in the provided order (same order as bound data)
-         */
-        sort: {
-          type: Function
-        },
-
-        /**
-         * `sortValue` as in [sortValues](https://github.com/d3/d3-shape#pie_sortValues). It is null by default so as to render arcs in the provided order (same order as bound data)
-         */
-        sortValues: {
-          type: Function
-        },
-
+       
         arcs: {
-          type: Array
+          type: Array,
+          observer: 'fireRefresh'
         },
 
         innerRadius: {
@@ -91,31 +62,10 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
           type: Number
         },
 
-        index: {
-          type: Number
-        },
-
-        colorAccessor: {
-          type: Function
-        },
-
-        color: {
-          type: Function,
-          computed: 'computeDataAccessor(colorScale, colorAccessor)'
-        },
-
-        key: {
-          type: Function,
-          computed: 'computeDataKey(colorAccessor)'
-        }
-
       },
 
       observers: [
-        'observeConfig(padAngle, "padAngle", "pie", "refresh")',
-        'observeConfig(value, "value", "pie", "refresh")',
-        'observeConfig(sort, "sort", "pie", "refresh")',
-        'observeConfig(sortValues, "sortValues", "pie", "refresh")'
+
       ],
 
       behaviors: [
@@ -130,13 +80,6 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
         return this.$.shape;
       },
 
-      // _computePie: function(value, padAngle) {
-      //   var pie = this.pie || d3.pie();
-      //   pie.value(value).padAngle(padAngle);
-      //   this.fire('multi-refresh');
-      //   return pie;
-      // },
-
       _computeArc: function(innerRadius, outerRadius) {
         var arc = this.arc || d3.arc();
         arc.innerRadius(innerRadius).outerRadius(outerRadius);
@@ -148,11 +91,11 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
         return Math.min(w, h) / 2;
       },
 
-      preDraw: function(host, data, duration) {
-        this.$.shaper.computeData(data);
-      },
-
       draw: function(host, data, duration) {
+
+        if (!this.arcs) {
+          this._error('arcs is not provided')
+        }
 
         var chart = d3.select(this.targetElement).selectAll('path');
 
@@ -165,6 +108,9 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
         // var arcs = this.pie(data);
         var arcs = this.arcs; //this.$.shaper.shapedData;
         var arc = this.arc;
+        var colorScale = this.colorScale;
+  
+
         chart = chart.data(arcs);
 
         chart.exit().remove();
@@ -177,6 +123,7 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
           host.fire('multi-tap', d);
         });
 
+
         if (duration) {
 
           //as in https://bl.ocks.org/mbostock/5100636
@@ -188,7 +135,7 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
             };
           }
 
-          chart = chart.transition().duration(duration);
+          chart = this.setTransition(chart, duration);
 
           chart
             .attrTween('d', arcTween)
@@ -198,8 +145,8 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
             .attr('d', arc);
         }
 
-        chart.attr('key', this.key)
-            .attr('fill', this.color);
+        chart.attr('key',function(d) {return d.data.key})
+          .attr('fill', function(d) {return colorScale(d.data.key)});
       }
 
     });

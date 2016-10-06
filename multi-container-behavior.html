@@ -135,10 +135,14 @@
         return el.isActive;
       }).forEach(function(el) {
         if (el[methodName]) {
-          el[methodName].apply(el, args);
-
-          if (methodName === 'draw' && !el.isDrawn) {
+          if (methodName === 'draw') {
             el._setIsDrawn(true);
+            if(!el.isDrawing) {
+              el[methodName].apply(el, args);
+            }
+          }  
+          else {
+            el[methodName].apply(el, args);
           }
         }
       }, this);
@@ -151,17 +155,19 @@
     },
 
     __onRefresh: function(e, detail) {
+      e.stopPropagation();
       if (this.data && this.renderer) {
         var el = e.srcElement;
         if (el.onRefresh) {
-          el.onRefresh(this.data);
+          // shaper web-component
+          return el.onRefresh(this.data);
         }
         if (el.isDrawn && this.registeredItems.indexOf(el) > -1) {
-
-          // e.srcElement.preDraw(this, this.data, this.duration);
           el.draw(this, this.data, this.duration);
-          // this.renderer(this.data);
         }
+        // else {
+            //this.callRegistered('draw', this.data, this.duration);
+        // }
       }
     },
 
