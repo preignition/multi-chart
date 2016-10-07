@@ -52,7 +52,10 @@
     },
 
     /**
-     * `notifyChanged` makes sure changes 
+     * `notifyChanged` update the `changed` attribute of the `name` object. 
+     * This is used to propagate changes on Function properties that other element need to react on. 
+     * For instance, a setting a new scale in `d3-geo-projection` Function should trigger a redraw of the map. 
+     * In this case, we will have an observer like `observeProjection(projection.changed)` 
      */
     notifyChanged: function(name) {
       this.set(name + '.changed', !this[name].changed);

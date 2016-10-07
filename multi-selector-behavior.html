@@ -205,7 +205,7 @@
       var accessor = this.xAccessor;
 
       if (sel && sel.length) {
-        d3.select(this.$.chart).selectAll('.chart-shape')
+        d3.select(this.$.chart).selectAll('.selectable')
           .classed('selected', isRange ? function(d) {
             return sel[0] <= (d = accessor(d.data || d)) && d <= sel[1];
           } : function(d) {

@@ -108,13 +108,7 @@
             if (me.width === 0) {
               return;
             }
-            // var shapedData;
-            // if (me.shaper) {
-            //   me.shaper.set('data', data)
-            //   shapedData = me.shaper.data;
-            // }
-            // me.callRegistered('preDraw', data, me.duration, shapedData);
-            // me.callRegistered('preDraw', data, me.duration, shapedData);
+          
             me.callRegistered('preDraw', data, me.duration);
             me.callRegistered('draw', data, me.duration);
             me.fire('multi-draw');
@@ -136,10 +130,10 @@
           }).forEach(function(el) {
             if (el[methodName]) {
               if (methodName === 'draw') {
-                el._setIsDrawn(true);
                 if (!el.isDrawing) {
                   el[methodName].apply(el, args);
                 }
+                el._setIsDrawn(true);
               } else {
                 el[methodName].apply(el, args);
               }

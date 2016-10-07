@@ -1,0 +1,39 @@
+<link rel="import" href="../../polymer/polymer.html">
+<script>
+/**
+ * `chartProperties` behavior for exposing and documenting properties shared across charts
+ */
+(function() {
+  'use strict';
+
+
+  var B = Polymer.multi = Polymer.multi || {};
+
+  B.chartProperties = {
+
+    properties: {
+      
+      /**
+         * `witdh` the width of the chart 
+         */  
+      width: {
+        type: Number, 
+        notify: true,
+      },
+
+      /**
+         * `height` the width of the chart 
+         */  
+      height: {
+        type: Number, 
+        notify: true,
+      }
+
+
+    },
+
+
+  };
+
+})();
+</script>

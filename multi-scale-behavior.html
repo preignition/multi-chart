@@ -1,5 +1,6 @@
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="multi-lifecycle-behavior.html">
+<link rel="import" href="multi-config-behavior.html">
 <script>
 (function() {
   'use strict';
@@ -19,6 +20,12 @@
       scaleType: {
         type: String,
         value: 'scaleLinear'
+      },
+
+      elastic: {
+        type: Boolean,
+        reflectToAttribute: true, 
+        value: false
       },
 
       domain: {
@@ -69,15 +76,9 @@
     observers: [
       'observeConfig(padding, "padding", "scale")',
       'observeConfig(effectiveDomain, "domain", "scale")',
-      'observeConfig(range, "range", "scale")',
-      'observeConfig(domain, "domain", "scale")',
+      'observeConfigSplices(range.*, "range", "scale")',
+      'observeConfigSplices(domain.*, "domain", "scale")',
     ],
-
-    observeConfig: function(value, name, obj) {
-      if (this[obj]) {
-        this[obj][name](value);
-      }
-    },
 
     get targetElement() {
       return null;
@@ -88,7 +89,7 @@
      */
     preDraw: function(host, data, duration, isStack) {
       if (this.elastic === true || !this.domain) {
-        if (this.family === 'ordinal') {
+        if (this.family === 'ordinal' ) {
           this.domain = data.map(this.accessor);
         } else {
           var extent = d3.extent(data, this.accessor);
@@ -142,6 +143,7 @@
 
   B.scale = [
     Polymer.multi.lifecycle,
+    Polymer.multi.config,
     scale
   ];
 })();

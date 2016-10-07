@@ -15,7 +15,7 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
     }
     </style>
     <svg>
-      <g id="shape" class="shape bar" >
+      <g id="shape" class="shape-bar" >
       </g>
     </svg>
   </template>
@@ -75,12 +75,12 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
       var y = this.y;
       var y0 = this.y0;
 
-      var chart = d3.select(this.targetElement).selectAll('rect').data(data);
+      var chart = d3.select(this.targetElement).selectAll('rect.shape').data(data);
       
       chart.exit().remove();
 
       chart = chart.enter().append('rect')
-        .attr('class','chart-shape')
+        .attr('class','shape bar selectable')
         .merge(chart);
      
       chart.on('click', function(d) {

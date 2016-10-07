@@ -15,7 +15,7 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
     }
     </style>
     <svg>
-      <g id="shape" class="shape bar">
+      <g id="shape" class="shape-stack">
       </g>
     </svg>
   </template>
@@ -85,7 +85,7 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
         })
         .merge(series);
 
-      var chart = series.selectAll('rect')
+      var chart = series.selectAll('rect.stack')
         .data(function(d) {
           return d;
         });
@@ -93,7 +93,7 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
       chart.exit().remove();
 
       chart = chart.enter().append('rect')
-        .attr('class', 'chart-shape')
+        .attr('class', 'shape stack selectable')
         .merge(chart);
 
       chart.on('click', function(d) {

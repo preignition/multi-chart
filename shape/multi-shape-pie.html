@@ -15,7 +15,7 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
     }
     </style>
     <svg>
-      <g id="shape" transform$="[[translate(center.0, center.1)]]" class="shape pie">
+      <g id="shape" transform$="[[translate(center.0, center.1)]]" class="shape-pie">
       </g>
     </svg>
   </template>
@@ -100,7 +100,7 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
           this._error('arcs is not provided')
         }
 
-        var chart = d3.select(this.targetElement).selectAll('path');
+        var chart = d3.select(this.targetElement).selectAll('path.pie');
 
         if (duration) {
           chart.each(function(d) {
@@ -119,7 +119,7 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
         chart.exit().remove();
 
         chart = chart.enter().append('path')
-          .attr('class', 'chart-shape')
+          .attr('class', 'shape pie selectable')
           .merge(chart);
 
         chart.on('click', function(d) {

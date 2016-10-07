@@ -15,7 +15,7 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
     }
     </style>
     <svg>
-      <g id="shape" class="shape bubble">
+      <g id="shape" class="shape-bubble">
       </g>
     </svg>
   </template>
@@ -65,12 +65,12 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
 
     draw: function(host, data, duration) {
 
-      var chart = d3.select(this.targetElement).selectAll('circle').data(data);
+      var chart = d3.select(this.targetElement).selectAll('circle.bubble').data(data);
 
       chart.exit().remove();
 
       chart = chart.enter().append('circle')
-        .attr('class', 'chart-shape')
+        .attr('class', 'shape bubble selectable')
         .merge(chart);
 
       chart.on('click', function(d) {
