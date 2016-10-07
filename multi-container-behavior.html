@@ -107,8 +107,8 @@
           return;
         }
 
-        me.callRegistered('preDraw', data, me.duration);
-        me.callRegistered('draw', data, me.duration);
+        me.callRegistered('preDraw', data || me.data, me.duration);
+        me.callRegistered('draw', data || me.data, me.duration);
         me.fire('multi-draw');
 
       }

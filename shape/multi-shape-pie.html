@@ -33,7 +33,7 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
 
       properties: {
 
-       
+
         arcs: {
           type: Array,
           observer: 'fireRefresh'
@@ -112,7 +112,6 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
         var arcs = this.arcs; //this.$.shaper.shapedData;
         var arc = this.arc;
         var colorScale = this.colorScale;
-  
 
         chart = chart.data(arcs);
 
@@ -128,7 +127,6 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
 
 
         if (duration) {
-
           //as in https://bl.ocks.org/mbostock/5100636
           function arcTween(a) {
             var i = d3.interpolate(this._current, a);
@@ -141,15 +139,19 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
           chart = this.setTransition(chart, duration);
 
           chart
-            .attrTween('d', arcTween)
+            .attrTween('d', arcTween);
 
         } else {
           chart
             .attr('d', arc);
         }
 
-        chart.attr('key',function(d) {return d.data.key})
-          .attr('fill', function(d) {return colorScale(d.data.key)});
+        chart.attr('key', function(d) {
+            return d.data.key
+          })
+          .attr('fill', function(d) {
+            return colorScale(d.data.key)
+          });
       }
 
     });

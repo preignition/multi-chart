@@ -1,6 +1,5 @@
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="multi-container-behavior.html">
-<link rel="import" href="multi-selector-behavior.html">
 <link rel="import" href="multi-axis.html">
 <link rel="import" href="multi-scale.html">
 <link rel="import" href="multi-accessor.html">
@@ -49,18 +48,11 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
         type: String,
         value: 'chart'
       },
-
-      selectionType: {
-        type: String,
-        value: 'select'
-      }
       
     },
 
     behaviors: [
       Polymer.multi.container,
-      // Polymer.multi.color,
-      // Polymer.multi.selector
     ]
 
   });
