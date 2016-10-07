@@ -5,7 +5,7 @@
 <!-- <link rel="import" href="multi-color-behavior.html"> -->
 <link rel="import" href="multi-selector-behavior.html">
 <link rel="import" href="multi-axis.html">
-<link rel="import" href="multi-scale.html">
+<!-- <link rel="import" href="multi-scale.html"> -->
 <link rel="import" href="multi-accessor.html">
 <link rel="import" href="multi-shared-styles.html">
 <!-- <link rel="import" href="multi-axis-behaviors.html"> -->
@@ -24,7 +24,7 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
     <div id="observeNodes">
       <multi-axis anchor="axisGroup" dy="2.7em" accessor="[[xAccessor]]" elastic="[[xElastic]]" text="[[xAxisText]]" ref="xAxis" width="[[width]]" height="[[height]]" family="{{xScaleFamily}}" scale="{{xScale}}" scale-type="scaleBand" padding="0.1" domain="{{xDomain}}" range="[[xRange]]"></multi-axis>
       <multi-axis anchor="axisGroup"  text-angle="-90" y-text="6" dy="0.7em" domain-min="0" domain="[[yDomain]]" accessor="[[yAccessor]]" elastic="[[yElastic]]" text="[[yAxisText]]" ref="yAxis" width="[[width]]" height="[[height]]" position="left" domain="{{yDomain}}" range="[[yRange]]" scale="{{yScale}}"></multi-axis>
-      <multi-scale scale-type="scaleLinear" range="[[xRange]]" domain="[[xDomain]]" scale="{{xScaleContinuous}}"></multi-scale>
+      <!-- <multi-scale scale-type="scaleLinear" range="[[xRange]]" domain="[[xDomain]]" scale="{{xScaleContinuous}}"></multi-scale> -->
       <content id="content"></content>
     </div>
     <svg id="svg">
@@ -32,7 +32,8 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
         <g id="chart" class="chart">
         </g>
         <g id="axisGroup"></g>
-        <g id="brush" class="brush"></g>
+        <!-- <g id="selector"></g> -->
+        <!-- <g id="brush" class="brush"></g> -->
       </g>
       <g id="legend"></g>
     </svg>
@@ -61,17 +62,17 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
         value: 'brushX'
       },
 
-      colorScale: {
-        type: Function,
-        notify: true
-      }
+      // colorScale: {
+      //   type: Function,
+      //   notify: true
+      // }
 
     },
 
     behaviors: [
       Polymer.multi.container,
       // Polymer.multi.color,
-      Polymer.multi.selector,
+      // Polymer.multi.selector,
       Polymer.multi.xCoordinates,
       Polymer.multi.yCoordinates
     ]

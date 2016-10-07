@@ -4,212 +4,214 @@
 <link rel="import" href="multi-observe-nodes-behavior.html">
 <script>
 (function() {
-    'use strict';
+  'use strict';
 
-    var B = Polymer.multi = Polymer.multi || {};
+  var B = Polymer.multi = Polymer.multi || {};
 
-    var container = {
+  var container = {
 
-        properties: {
-          // multichart: {
-          //   value: true,
-          //   type: Boolean,
-          //   readOnly: true,
-          //   reflectToAttribute: true
-          // },
+    properties: {
 
-          // title: {
-          //   type: String
-          // },
-
-          // subtitle: {
-          //   type: String
-          // },
-
-          duration: {
-            type: Number,
-            value: 200
-          },
-
-          data: {
-            type: Array,
-            observer: 'renderChart'
-          },
-
-          groupName: {
-            type: String
-          },
-
-          /**
-           * `registeredItems` and array containing all elements that need to be refreshed when data changes 
-           */
-          registeredItems: {
-            type: Array,
-            value: function() {
-              return [];
-            }
-          },
-
-          attrForSerie: {
-            type: String,
-            value: 'index'
-          },
-
-          serieItems: {
-            type: Array,
-            notify: true,
-            value: function() {
-              return [];
-            }
-          },
-
-          /**
-           * `shaper` an element that will transform data in a form easier to draw (e.g [d3-stack](https://github.com/d3/d3-shape/blob/master/README.md#stack)).. 
-           */
-          shaper: {
-            type: Object,
-            readOnly: true
-          }
-
-        },
-
-        // ready: function() {
-        //   var boundHandler = this.__childNodesChanged.bind(this);
-        //   this._observer = Polymer.dom(this.$.observeNodes).observeNodes(boundHandler);
-        // },
-
-        attached: function() {
-          // this.callRegistered('hostAttached');
-
-          this.draw();
-          this.fire('multi-attached', this.groupName);
-        },
-
-        detached: function() {
-          this.fire('multi-detached', this.groupName);
-        },
-
-        listeners: {
-          'multi-refresh': '__onRefresh',
-          'multi-resize': '__onResize',
-        },
-
-        renderChart: function(data) {
-          if (this.renderer) {
-            this.renderer(data);
-          }
-        },
-
-        draw: function() {
-          var me = this;
-
-          function draw(data) {
-
-            if (me.width === 0) {
-              return;
-            }
-          
-            me.callRegistered('preDraw', data, me.duration);
-            me.callRegistered('draw', data, me.duration);
-            me.fire('multi-draw');
-
-          }
-          // this is the function that is called when we refresh the chart (base-behavior.renderChart(selection))
-          this.renderer = function(data) {
-            draw(data);
-          };
-        },
-
-        callRegistered(methodName) {
-          // we replace `methodName`` with `this host` as the first argument 
-          // var args = [].splice.call(arguments, 0, 1, this);
-          [].splice.call(arguments, 0, 1, this);
-          var args = arguments;
-          this.registeredItems.filter(function(el) {
-            return el.isActive;
-          }).forEach(function(el) {
-            if (el[methodName]) {
-              if (methodName === 'draw') {
-                if (!el.isDrawing) {
-                  el[methodName].apply(el, args);
-                }
-                el._setIsDrawn(true);
-              } else {
-                el[methodName].apply(el, args);
-              }
-            }
-          }, this);
-        },
-
-        __onResize: function() {
-          if (this.data && this.renderer) {
-            // this.debounce('onresize', function() {
-              this.renderer(this.data);
-            // }, 200);
-        }
+      duration: {
+        type: Number,
+        value: 200
       },
 
-      __onRefresh: function(e, detail) {
-        e.stopPropagation();
-        if (this.data && this.renderer) {
-          var el = e.srcElement;
-          if (el.onRefresh) {
-            // shaper web-component
-            return el.onRefresh(this.data);
-          }
-          if (el.isDrawn && this.registeredItems.indexOf(el) > -1) {
-            el.draw(this, this.data, this.duration);
-          }
+      data: {
+        type: Array,
+        observer: 'renderChart'
+      },
+
+      groupName: {
+        type: String
+      },
+
+      /**
+       * `registeredItems` and array containing all elements that need to be refreshed when data changes 
+       */
+      registeredItems: {
+        type: Array,
+        value: function() {
+          return [];
         }
       },
 
       /**
-       * @override
-       * `processNewNodes` process new nodes than have been added to the observedNode
+       * `shaper` an element that will transform data in a form easier to draw (e.g [d3-stack](https://github.com/d3/d3-shape/blob/master/README.md#stack)).. 
        */
-      processNewNodes: function(nodes) {
-        var me = this;
-        nodes.filter(function(node) {
-          return node.shallRegister;
-        }).forEach(function(node) {
-          me.push('registeredItems', node);
-          // if (node.isShaper) {
-          //   // we set the stack 
-          //   this._setShaper(node);
-          // }
-          if (node.isSerie) {
-            me.serieItems.push(node.getAttribute(me.attrForSerie));
-          }
-          if (node.afterRegister) {
-            node.afterRegister(me);
-          }
-        });
+      shaper: {
+        type: Object,
+        readOnly: true
+      },
+
+       /**
+       * `isSelection` is true when a selection is being done (e.g. by brushing). The attribute is used for css rules.
+       * This property is changed when a `multi-is-selecting` event is captured
+       */
+      isSelecting: {
+        type: Boolean,
+        value: false,
+        readOnly: true,
+        reflectToAttribute: true
       },
 
       /**
-       * @override
-       * `processRemovedNodes` process nodes than have been removed from observedNode
+       * `hasSelection`  is true when a selection exists. The attribute is used for css rules.
+       * This property is changed when a `multi-has-selection` event is captured
        */
-      processRemovedNodes: function(nodes) {
-        var me = this;
-        nodes.filter(function(node) {
-          return node.shallRegister;
-        }).forEach(function(node) {
-          me.splice('registeredItems', me.registeredItems.indexOf(node), 1);
-          me.push('registeredItems', node);
-          // if (node.isShaper) {
-          //   // we remove the stack 
-          //   this._setShaper(null);
-          // }
-          if (node.isSerie) {
-            me.splice('serieItems', me.serieItems.indexOf(node.getAttribute(me.attrForSerie)), 1);
-          }
-          if (node.afterUnregister) {
-            node.afterUnregister(me);
-          }
-        });
-
+      hasSelection: {
+        type: Boolean,
+        readOnly: true,
+        value: false,
+        reflectToAttribute: true,
       },
+
+
+    },
+
+    // ready: function() {
+    //   var boundHandler = this.__childNodesChanged.bind(this);
+    //   this._observer = Polymer.dom(this.$.observeNodes).observeNodes(boundHandler);
+    // },
+
+    attached: function() {
+      // this.callRegistered('hostAttached');
+
+      this.draw();
+      this.fire('multi-attached', this.groupName);
+    },
+
+    detached: function() {
+      this.fire('multi-detached', this.groupName);
+    },
+
+    listeners: {
+      'multi-is-selecting': '__onIsSelecting',
+      'multi-has-selection': '__onHasSelection',
+      'multi-refresh': '__onRefresh',
+      'multi-resize': '__onResize',
+    },
+
+    renderChart: function(data) {
+      if (this.renderer) {
+        this.renderer(data);
+      }
+    },
+
+    draw: function() {
+      var me = this;
+
+      function draw(data) {
+
+        if (me.width === 0) {
+          return;
+        }
+
+        me.callRegistered('preDraw', data, me.duration);
+        me.callRegistered('draw', data, me.duration);
+        me.fire('multi-draw');
+
+      }
+      // this is the function that is called when we refresh the chart (base-behavior.renderChart(selection))
+      this.renderer = function(data) {
+        draw(data);
+      };
+    },
+
+    callRegistered(methodName) {
+      // we replace `methodName`` with `this host` as the first argument 
+      // var args = [].splice.call(arguments, 0, 1, this);
+      [].splice.call(arguments, 0, 1, this);
+      var args = arguments;
+      this.registeredItems.filter(function(el) {
+        return el.isActive;
+      }).forEach(function(el) {
+        if (el[methodName]) {
+          if (methodName === 'draw') {
+            if (!el.isDrawing) {
+              el[methodName].apply(el, args);
+            }
+            el._setIsDrawn(true);
+          } else {
+            el[methodName].apply(el, args);
+          }
+        }
+      }, this);
+    },
+
+    __onHasSelection: function(e,d) {
+      e.stopPropagation();
+      this._setHasSelection(d);
+    },
+
+    __onIsSelecting: function(e,d) {
+      e.stopPropagation();
+      this._setIsSelecting(d);
+    },
+
+    __onResize: function() {
+      if (this.data && this.renderer) {
+        // this.debounce('onresize', function() {
+        this.renderer(this.data);
+        // }, 200);
+      }
+    },
+
+    __onRefresh: function(e, detail) {
+      e.stopPropagation();
+      if (this.data && this.renderer) {
+        var el = e.srcElement;
+        if (el.onRefresh) {
+          // shaper web-component
+          return el.onRefresh(this.data);
+        }
+        if (el.isDrawn && this.registeredItems.indexOf(el) > -1) {
+          el.draw(this, this.data, this.duration);
+        }
+      }
+    },
+
+    /**
+     * @override
+     * `processNewNodes` process new nodes than have been added to the observedNode
+     */
+    processNewNodes: function(nodes) {
+      var me = this;
+      nodes.filter(function(node) {
+        return node.shallRegister;
+      }).forEach(function(node) {
+        me.push('registeredItems', node);
+        
+        if (node.isSerie) {
+          me.serieItems.push(node.getAttribute(me.attrForSerie));
+        }
+        if (node.afterRegister) {
+          node.afterRegister(me);
+        }
+      });
+    },
+
+    /**
+     * @override
+     * `processRemovedNodes` process nodes than have been removed from observedNode
+     */
+    processRemovedNodes: function(nodes) {
+      var me = this;
+      nodes.filter(function(node) {
+        return node.shallRegister;
+      }).forEach(function(node) {
+        me.splice('registeredItems', me.registeredItems.indexOf(node), 1);
+        me.push('registeredItems', node);
+        
+        if (node.isSerie) {
+          me.splice('serieItems', me.serieItems.indexOf(node.getAttribute(me.attrForSerie)), 1);
+        }
+        if (node.afterUnregister) {
+          node.afterUnregister(me);
+        }
+      });
+
+    },
 
   };
 

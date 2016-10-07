@@ -40,11 +40,11 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
 
       height: {
         type: Number,
-        observer: '_observeHeight'
+        observer: 'fireRefresh'
       },
 
       index: {
-        type: Number
+        type: String
       }
      
     },
@@ -52,8 +52,6 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
     behaviors: [
       Polymer.multi.lifecycle,
       Polymer.multi.shape
-      // Polymer.multi.xCoordinate,
-      // Polymer.multi.yCoordinate,
     ],
 
     /**
@@ -63,17 +61,10 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
       return this.$.shape;
     },
 
-    _observeHeight: function (height) {
-        if(!this.y0) {
-          this.y0 = this.constant(height);
-        }
-    },
-
-    draw: function(host, data, duration, isStack) {
+    draw: function(host, data, duration) {
 
       var height = this.height;
       var y = this.y;
-      var y0 = this.y0;
 
       var chart = d3.select(this.targetElement).selectAll('rect.shape').data(data);
       
@@ -94,7 +85,6 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
       chart.attr('x', this.x)
         .attr('y', this.y)
         .attr('height', function(d) {
-          // return y0(d) - y(d) ;
           return height - y(d) ;
         })
         .attr('width', this.xScale.bandwidth())
