@@ -69,16 +69,11 @@
 
     },
 
-    // ready: function() {
-    //   var boundHandler = this.__childNodesChanged.bind(this);
-    //   this._observer = Polymer.dom(this.$.observeNodes).observeNodes(boundHandler);
-    // },
-
     attached: function() {
       // this.callRegistered('hostAttached');
 
-      this.render();
       this.fire('multi-attached', this.groupName);
+      this.render();
     },
 
     detached: function() {
@@ -149,11 +144,6 @@
 
     __onResize: function() {
       this.render();
-      // if (this.data && this.renderer) {
-      //   // this.debounce('onresize', function() {
-      //   this.renderer(this.data);
-      //   // }, 200);
-      // }
     },
 
     __onRefresh: function(e, detail) {

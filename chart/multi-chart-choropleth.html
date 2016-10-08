@@ -1,0 +1,113 @@
+<link rel="import" href="../../polymer/polymer.html">
+<link rel="import" href="../multi-color-behavior.html">
+<link rel="import" href="../shape/multi-shape-choropleth.html">
+<link rel="import" href="../d3-geo/d3-geo-projection.html">
+<link rel="import" href="../d3-geo/d3-geo-path.html">
+<link rel="import" href="../multi-scale.html">
+<link rel="import" href="../multi-accessor.html">
+<link rel="import" href="../properties/multi-chart-properties-behavior.html">
+<link rel="import" href="../properties/multi-color-properties-behavior.html">
+<link rel="import" href="../properties/multi-selection-properties-behavior.html">
+<link rel="import" href="../multi-container-simple.html">
+<link rel="import" href="../multi-shared-styles.html">
+<!-- <link rel="import" href="multi-axis-behaviors.html"> -->
+<!--
+`multi-poly`
+polymer elements for multivariate analysis (depend on crossfilter, universe and reductio)
+
+@demo demo/index.html 
+-->
+<dom-module id="multi-chart-choropleth">
+  <template>
+    <style is="custom-style" include="multi-chart multi-chart-selector">
+
+    </style>
+    <h2 class="title">[[title]]</h2>
+    <h3 class="subtitle">[[subtitle]]</h3>
+    <multi-accessor accessor="{{valueAccessor}}" path="[[valueAccessorPath]]"></multi-accessor>
+    <!-- <multi-accessor accessor="{{keyAccessor}}" path="[[keyAccessorPath]]"></multi-accessor> -->
+      
+      <multi-container-simple 
+      selection-type="[[selectionType]]" 
+      selectedItems="[[selectedItems]]" 
+      height="{{height}}" 
+      width="{{width}}" 
+      data="[[data]]" 
+      >
+        <multi-scale scale-type="[[colorScaleType]]" accessor="[[valueAccessor]]" domain="[[colorDomain]]" range="[[colorRange]]" scale="{{colorScale}}"></multi-scale>
+        <d3-geo-projection scale="[[scale]]"  height="[[height]]" width="[[width]]"  projection="{{projection}}" projection-type="[[projectionType]]"></d3-geo-projection>
+        <d3-geo-path path="{{path}}" projection="[[projection]]"></d3-geo-path>
+        <multi-shape-choropleth
+          path="[[path]]"
+          projection="[[projection]]"
+          features="[[features]]"
+          attrs="[[attrs]]"
+          value-accessor="[[valueAccessor]]" 
+          color-scale="[[colorScale]]"></multi-shape-choropleth>
+          <content select="[geo]"></content>
+          <content select="[legend]"></content>
+    </multi-container-simple>
+  </template>
+  <script>
+  Polymer({
+
+    is: 'multi-chart-choropleth',
+
+    hostAttributes: {
+      multichart: ''
+    },
+
+    properties: {
+
+       /**
+       * `path` the [path](https://github.com/d3/d3-geo#geoPath) generator function. It notifies so that we can pass other geo element that share the same path generator 
+       */
+      path: {
+        type: Function, 
+        notify: true
+      },
+
+      /**
+      * `projection` the [projection](https://github.com/d3/d3-geo#projection) generator function. It notifies so that we can pass other geo element that share the same path generator 
+      */
+      projection: {
+        type: Function,
+        notify: true,
+      },
+
+      /**
+       * `projectionType` the type of projection 
+       */
+      projectionType: {
+        type: String,
+        value: 'geoAlbersUsa'  
+      },
+
+      /**
+       * `valueAccessorPath` the path used to define the value accessor function 
+       */
+      valueAccessorPath: {
+        type: String,
+        value: '+rate'
+      },
+       /**
+       * `colorScaleType` the type of scale for color
+       */
+      colorScaleType: {
+        type: String,
+        value: 'scaleQuantize'
+       }
+
+       // colorScaleType: 'scaleQuantize'
+     
+    },
+
+    behaviors: [
+      Polymer.multi.chartProperties,
+      Polymer.multi.colorProperties,
+      Polymer.multi.selectionProperties
+    ]
+
+  });
+  </script>
+</dom-module>

@@ -1,6 +1,9 @@
 <link rel="import" href="../../polymer/polymer.html">
 <link rel="import" href="../properties/multi-x-coordinates-behavior.html">
 <link rel="import" href="../properties/multi-y-coordinates-behavior.html">
+<link rel="import" href="../properties/multi-chart-properties-behavior.html">
+<link rel="import" href="../properties/multi-color-properties-behavior.html">
+<link rel="import" href="../properties/multi-selection-properties-behavior.html">
 <link rel="import" href="../d3-shape/d3-stack.html">
 <link rel="import" href="../shape/multi-shape-stack.html">
 <link rel="import" href="../multi-scale.html">
@@ -16,7 +19,7 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
 
 @demo demo/index.html 
 -->
-<dom-module id="multi-chart-stack">
+<dom-module id="multi-chart-coordinate">
   <template>
     <style is="custom-style" include="multi-chart multi-chart-selector">
 
@@ -26,7 +29,7 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
     <multi-accessor accessor="{{xAccessor}}" path="[[xAccessorPath]]"></multi-accessor>
     <multi-accessor accessor="{{yAccessor}}" path="[[yAccessorPath]]"></multi-accessor>
     <multi-container-coordinate 
-      selection-type="[[selectionType]]"
+     selection-type="[[selectionType]]"
      selected-items="[[selectedItems]]"
      height="{{height}}"
      width="{{width}}"
@@ -42,22 +45,16 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
      y-elastic="[[yElastic]]" 
      color-scale="{{colorScale}}">
       <multi-series keys="{{keys}}" series="{{series}}">
-        <content></content>
+        <content select="[serie]"></content>
       </multi-series>
-      <multi-scale scale-type="scaleOrdinal" domain="[[keys]]" range="[[colorRange]]" scale="{{colorScale}}"></multi-scale>
-        <d3-stack domain="{{yDomain}}" data="{{stack}}" domain-min="[[domainMin]]" value="[[value]]" value-path="[[valuePath]]" order="[[order]]" offset="[[offset]]" keys="[[keys]]"></d3-stack>
-        <multi-shape-stack 
-        stack="[[stack]]"
-        x-scale="[[xScale]]" 
-        y-scale="[[yScale]]" 
-        color-scale="[[colorScale]]"></multi-shape-stack>
-      <multi-legend   chart-height="{{height}}"  chart-width="{{width}}" scale="[[colorScale]]" position="top-right" ></multi-legend>
+      <multi-scale scale-type="[[colorScaleType]]" domain="[[colorDomain]]" range="[[colorRange]]" scale="{{colorScale}}"></multi-scale>
+      <content select=":not([serie])"></content>
     </multi-container-coordinate>
   </template>
   <script>
   Polymer({
 
-    is: 'multi-chart-stack',
+    is: 'multi-chart-coordinate',
 
     hostAttributes: {
       multichart: ''
@@ -65,42 +62,24 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
 
     properties: {
 
-      selectionType: {
-        type: String,
-        value: 'brushX'
+      keys: {
+        type: Array, 
+        notify: true
       },
 
-      selectedItems: {
+      series: {
         type: Array,
         notify: true
       },
-    
-       yAccessorPath: {
-        type: String,
-        value: '+value.count'
-      },
-      xAccessorPath: {
-        type: String,
-        value: 'key'
-      },
 
-
-      /**
-       * `colorRange` output range of colors to be used for calculating the colorScale
-       */
-      colorRange: {
-        type: Array,
-        value: function() {
-          return d3.schemeCategory10;
-        }
-      },
-    },
+     },
 
     behaviors: [
       Polymer.multi.xCoordinates,
       Polymer.multi.yCoordinates,
-      // Polymer.multi.color
-      // Polymer.multi.selector
+      Polymer.multi.chartProperties,
+      Polymer.multi.colorProperties,
+      Polymer.multi.selectionProperties
     ]
 
   });

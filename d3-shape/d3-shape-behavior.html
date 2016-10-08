@@ -95,7 +95,7 @@
       this.debounce('refreshing', function() {
         this.computeData(data);
         // this.__observeData(data);// this._setShapedData(this.__computeData(data));
-        this.domHost.fire('multi-refresh');
+        if(this.domHost) {this.domHost.fire('multi-refresh')};
       }, 10);
     },
 

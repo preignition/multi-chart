@@ -3,8 +3,12 @@
 <link rel="import" href="multi-lifecycle-behavior.html">
 <link rel="import" href="multi-scale.html">
 <!--
-`multi-poly`
-polymer elements for multivariate analysis (depend on crossfilter, universe and reductio)
+`multi-selector`
+
+An element for selecting ranges or chart elements. 
+
+TODO: 
+-[ ] implement brush snapping like http://bl.ocks.org/mbostock/6232537 
 
 @demo demo/index.html 
 -->
@@ -88,13 +92,6 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
       },
 
       /**
-       * `_brush` holds the type of brush
-       */
-
-      // _brush: {
-      //   type: String
-      // },
-      /**
        * `brush` brushing for mouse or touch event implementation [d3-brush](https://github.com/d3/d3-brush) 
        */
       brush: {
@@ -118,7 +115,9 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
         type: Number,
       },
 
-
+      /**
+       * `extent` extent of the brush
+       */
       extent: {
         type: Array,
         computed: '_computeExtent(height, width)'
@@ -142,7 +141,14 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
       },
 
       /**
-       * `xContinuous` indicate true if we have a `continuous` scale on X when the xScale is `ordinal` (e.g. a scaleBand for bar charts)
+       * `xContinuous` indicate true if we have a `continuous` scale on X when the xScale is `ordinal` (e.g. a scaleBand for bar charts). If true a `xContinuousScale` is computed
+       */
+      xContinuous: {
+        type: Boolean,
+      },
+
+      /**
+       * `xContinuousScale` the continuous scale to use when selecting ranges 
        */
       xContinuousScale: {
         type: Function,
@@ -151,12 +157,15 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
         }
       },
 
-      yContinuousScale: {
-        type: Function,
-        value: function() {
-          return d3.scaleLinear();
-        }
-      }
+      /**
+       * `xContinuousScale` the continuous scale to use when selecting ranges 
+       */
+      // yContinuousScale: {
+      //   type: Function,
+      //   value: function() {
+      //     return d3.scaleLinear();
+      //   }
+      // }
     },
 
     behaviors: [
@@ -271,9 +280,9 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
       var xScale = this.xScale;
       var sel;
 
-      if (!scale) {
-        scale = this._getEffectiveScale();
-      }
+      // if (!scale) {
+      //   scale = this._getEffectiveScale();
+      // }
 
       if (scale = scale.x) {
         sel = scale.y ? selection[0] : selection;
@@ -329,21 +338,15 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
 
     onMultiBrushStart: function() {
       if (this.isBrush) {
-        if (this.xScale) {
-          if (!this.xScale.invert) {
-            this.__xContinuous = this.xContinuousScale.domain(d3.extent(this.xScale.domain())).range(this.xScale.range());
-          } else {
-            this.__xContinuous = null;
-          }
-        }
-        if (this.yScale) {
-          if (!this.yScale.invert) {
-            this.__yContinuous = this.yContinuousScale.domain(d3.extent(this.yScale.domain())).range(this.yScale.range());
-          } else {
-            this.__yContinuous = null;
-          }
-        }
-        // this.clearSelection();
+        this._refreshContiunousScale(this.xScale);
+        this.effectiveScale = this._getEffectiveScale();
+        // if (this.yScale) {
+        //   if (!this.yScale.invert) {
+        //     this.__yContinuous = this.yContinuousScale.domain(d3.extent(this.yScale.domain())).range(this.yScale.range());
+        //   } else {
+        //     this.__yContinuous = null;
+        //   }
+        // }
         this._setIsSelecting(true);
         this.fire('multi-select', {
           type: d3.event.type,
@@ -356,7 +359,8 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
       if (!d3.event.selection && !this._clearing) {
         this._clearing = true;
         this.clearSelection();
-      };
+      }
+
       delete this._clearing;
       this._setIsSelecting(false);
     },
@@ -389,21 +393,25 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
       this._setSelectedItems([]);
     },
 
+    _refreshContiunousScale: function(scale) {
+      if (scale) {
+        if (scale && !scale.invert && this.xContinuous) {
+          this.__xContinuous = this.xContinuousScale.domain(d3.extent(scale.domain())).range(scale.range());
+        } else {
+          this.__xContinuous = null;
+        }
+      }
+    },
+
     _getEffectiveScale: function() {
 
       var xScale, yScale;
 
       if (this.brush !== 'brushX') {
         yScale = this.__yContinuous || this.yScale;
-        // if (this.yScaleContinuous) {
-        //   yScale = this.yScaleContiuous;
-        // }
       }
       if (this.brush !== 'brushY') {
         xScale = this.__xContinuous || this.xScale;
-        // if ( this.xScaleContinuous) {
-        //   xScale = this.xScaleContinuous;
-        // }
       }
 
       return {
