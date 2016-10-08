@@ -15,7 +15,7 @@
   <link rel="import" href="../shape/multi-shape-geo-line.html">
   <link rel="import" href="../d3-geo/multi-geo-mesh.html">
   <link rel="import" href="../multi-legend.html">
-  <link rel="import" href="../chart/multi-chart-choropleth.html">
+  <link rel="import" href="../chart/multi-chart-geo.html">
   <link rel="stylesheet" href="../multichart.css">
   <style is="custom-style" include="demo-pages-shared-styles">
   #chart {
@@ -34,11 +34,11 @@
           <p>Example largely inspired from <a href="http://bl.ocks.org/mbostock/4060606" title="">this block</a>!</p>
           <multi-geo-feature features="{{features}}" data="{{geometries}}" name="counties" url="us.json"></multi-geo-feature>
           <multi-geo-mesh mesh="{{mesh}}" data="[[geometries]]" name="states"></multi-geo-mesh>
-          <multi-chart-choropleth id="chart" color-scale="{{colorScale}}" path="{{path}}" width="{{width}}" projection="{{projection}}" projection-type="geoAlbersUsa" value-accessor-path="+rate" title="a nice choropleth" features="[[features]]" scale="[[scale]]">
+          <multi-chart-geo id="chart" color-scale="{{colorScale}}" path="{{path}}" width="{{width}}" projection="{{projection}}" projection-type="geoAlbersUsa" value-accessor-path="+rate" title="a nice choropleth" features="[[features]]" scale="[[scale]]">
             <!-- the mesh for US States will be added to the choropleth !-->
             <multi-shape-geo-line geo path="[[path]]" projection="[[projection]]" attrs="[[meshAttrs]]" features="[[mesh]]"></multi-shape-geo-line>
             <multi-legend legend scale="[[colorScale]]" chart-width="[[width]]" padding="50" label-format=".0%" position="right" > </multi-legend>
-          </multi-chart-choropleth>
+          </multi-chart-geo>
            <paper-input label="scale" min="0" step="50" type="number" value="{{scale}}"></paper-input>
            <paper-button raised on-tap="toggle">randomize data</paper-button>
         </template>

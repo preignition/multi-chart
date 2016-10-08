@@ -4,12 +4,15 @@
 <link rel="import" href="multi-scale.html">
 <link rel="import" href="multi-accessor.html">
 <link rel="import" href="multi-shared-styles.html">
-<!-- <link rel="import" href="multi-axis-behaviors.html"> -->
 <!--
-`multi-poly`
-polymer elements for multivariate analysis (depend on crossfilter, universe and reductio)
+`multi-container-coordinate` is a container for simple charts (e.g. pie chart or maps)
 
-@demo demo/index.html 
+The container register elements that have a `shallRegister` property set to `true` and draw them when needed (e.g when the data changes).
+ 
+@element multi-container-simple
+@demo demo/index-pie.html
+@demo demo/index-choropleth.html
+-->
 -->
 <dom-module id="multi-container-simple">
   <template>

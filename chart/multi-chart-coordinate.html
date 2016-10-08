@@ -12,12 +12,32 @@
 <link rel="import" href="../multi-legend.html">
 <link rel="import" href="../multi-container-coordinate.html">
 <link rel="import" href="../multi-shared-styles.html">
-<!-- <link rel="import" href="multi-axis-behaviors.html"> -->
 <!--
-`multi-poly`
-polymer elements for multivariate analysis (depend on crossfilter, universe and reductio)
+`multi-chart-coordinate`
 
-@demo demo/index.html 
+### Exmaple: a Stack chart 
+
+```
+<multi-chart-coordinate id="chart" title="test stack chart" width="{{width}}" height="{{height}}" y-domain="[[yDomain]]" color-scale="{{colorScale}}" x-scale="{{xScale}}" y-scale="{{yScale}}" color-domain="[[keys]]" series="{{series}}" keys="{{keys}}" >
+  <d3-stack domain="{{yDomain}}" data="{{stack}}" domain-min="[[domainMin]]" value="[[value]]" value-path="[[valuePath]]" order="[[order]]" offset="[[offset]]" keys="[[keys]]"></d3-stack>
+  <multi-shape-stack chart  stack="[[stack]]" x-scale="[[xScale]]"  y-scale="[[yScale]]"    color-scale="[[colorScale]]"></multi-shape-stack>
+  <multi-serie serie key="apple" label="apple"></multi-serie>
+  <multi-serie serie key="banana" label="banana"></multi-serie>
+  <multi-serie serie key="grape" label="grape"></multi-serie>
+  <multi-legend legend chart-width="{{width}}" scale="[[colorScale]]" position="top-right" ></multi-legend>
+  <multi-selector selection-type="brushX" width="[[width]]"  height="[[height]]" x-scale="[[xScale]]" accessor="[[keyAccessor]]"></multi-selector> 
+</multi-chart-coordinate>
+```          
+<div>
+  <img src="https://raw.githubusercontent.com/PolymerEl/multi-chart/master/images/chart-stack.png" width="600"></img>
+</div>
+
+@element multi-chart-coordinate
+@demo demo/index-bar.html
+@demo demo/index-bubble.html
+@demo demo/index-line.html
+@demo demo/index-stack.html
+
 -->
 <dom-module id="multi-chart-coordinate">
   <template>

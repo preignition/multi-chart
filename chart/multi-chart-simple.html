@@ -13,10 +13,44 @@
 <link rel="import" href="../multi-shared-styles.html">
 <!-- <link rel="import" href="multi-axis-behaviors.html"> -->
 <!--
-`multi-poly`
-polymer elements for multivariate analysis (depend on crossfilter, universe and reductio)
+`multi-chart-simple`
 
-@demo demo/index.html 
+### Example: a simple chart containing a pie, with legend and selector
+
+```
+ <multi-chart-simple 
+            id="chart" 
+            title="test pie" 
+            width="{{width}}" 
+            height="{{height}}" 
+            center="{{center}}" 
+
+            color-scale="{{colorScale}}" 
+            key-accessor-path="[[keyAccessorPath]]" 
+            key-accessor="{{keyAccessor}}" 
+            value-accessor-path="[[valueAccessorPath]]" 
+            value-accessor="{{valueAccessor}}" 
+             >
+            <d3-pie  data="{{arcs}}" value="[[valueAccessor]]" __value-path="[[valueAccessorPath]]" pad-angle="[[padAngle]]" sort="[[sort]]" sort-values="[[sortValues]]"></d3-pie>
+            <multi-shape-pie 
+              width="[[width]]" 
+              height="[[height]]" 
+              center="[[center]]" 
+              arcs="[[arcs]]"
+              inner-radius="[[innerRadius]]"
+              color-scale="[[colorScale]]"></multi-shape-pie>
+             <multi-selector selection-type="select" accessor="[[keyAccessor]]"></multi-selector>  
+             <multi-legend legend chart-width="[[width]]" scale="[[colorScale]]" position="top-right" ></multi-legend>
+
+          </multi-chart-simple>
+
+```
+<div>
+  <img src="https://raw.githubusercontent.com/PolymerEl/multi-chart/master/images/chart-pie.png" width="600"></img>
+</div>
+
+@element multi-chart-simple
+@demo demo/index-pie.html
 -->
 <dom-module id="multi-chart-simple">
   <template>
@@ -51,19 +85,12 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
 
     properties: {
 
-      // *
-      //  * `valueAccessorPath` the path used to define the value accessor function 
-       
-      // valueAccessorPath: {
-      //   type: String,
-      // }
     },
 
     behaviors: [
       Polymer.multi.chartProperties,
       Polymer.multi.colorProperties,
       Polymer.multi.valueProperties,
-      // Polymer.multi.selectionProperties
     ]
 
   });

@@ -7,12 +7,16 @@
 <!-- <link rel="import" href="multi-scale.html"> -->
 <link rel="import" href="multi-accessor.html">
 <link rel="import" href="multi-shared-styles.html">
-<!-- <link rel="import" href="multi-axis-behaviors.html"> -->
 <!--
-`multi-poly`
-polymer elements for multivariate analysis (depend on crossfilter, universe and reductio)
+`multi-container-coordinate` is a container for `multi-charts` with `x` and `y` coordinates.
 
-@demo demo/index.html 
+The container register elements that have a `shallRegister` property set to `true` and draw them when needed (e.g when the data changes).
+ 
+@element multi-container-coordinate
+@demo demo/index-bar.html
+@demo demo/index-bubble.html
+@demo demo/index-line.html
+@demo demo/index-stack.html
 -->
 <dom-module id="multi-container-coordinate">
   <template>
@@ -23,7 +27,6 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
     <div id="observeNodes">
       <multi-axis anchor="axisGroup" dy="2.7em" accessor="[[xAccessor]]" elastic="[[xElastic]]" text="[[xAxisText]]" ref="xAxis" width="[[width]]" height="[[height]]" family="{{xScaleFamily}}" scale="{{xScale}}" scale-type="scaleBand" padding="0.1" domain="{{xDomain}}" range="[[xRange]]"></multi-axis>
       <multi-axis anchor="axisGroup"  text-angle="-90" y-text="6" dy="0.7em" domain-min="0" domain="[[yDomain]]" accessor="[[yAccessor]]" elastic="[[yElastic]]" text="[[yAxisText]]" ref="yAxis" width="[[width]]" height="[[height]]" position="left" domain="{{yDomain}}" range="[[yRange]]" scale="{{yScale}}"></multi-axis>
-      <!-- <multi-scale scale-type="scaleLinear" range="[[xRange]]" domain="[[xDomain]]" scale="{{xScaleContinuous}}"></multi-scale> -->
       <content id="content"></content>
     </div>
     <svg id="svg">
@@ -31,8 +34,6 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
         <g id="chart" class="chart">
         </g>
         <g id="axisGroup"></g>
-        <!-- <g id="selector"></g> -->
-        <!-- <g id="brush" class="brush"></g> -->
       </g>
       <g id="legend"></g>
     </svg>
@@ -60,8 +61,6 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
 
     behaviors: [
       Polymer.multi.container,
-      // Polymer.multi.color,
-      // Polymer.multi.selector,
       Polymer.multi.xCoordinates,
       Polymer.multi.yCoordinates
     ]
