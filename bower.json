@@ -5,8 +5,31 @@
   "authors": [
     "christophe.geiser <christophe.geiser@e-smile.org>"
   ],
-  "main": "multi-block.html",
-  "repository": "https://github.com/polymerEl/multi-block",
+  "main": [
+      "chart/multi-chart-geo.html",
+      "chart/multi-chart-coordinate.html",
+      "chart/multi-chart-simple.html",
+      "shape/multi-shape-bar.html",
+      "shape/multi-shape-bubble.html",
+      "shape/multi-shape-choropleth.html",
+      "shape/multi-shape-line.html",
+      "shape/multi-shape-pie.html",
+      "shape/multi-shape-stack.html",
+      "shape/multi-shape-stack.html",
+      "d3-geo/d3-geo-path.html",
+      "d3-geo/d3-geo-projection.html",
+      "d3-geo/multi-geo-feature.html",
+      "d3-geo/multi-geo-feature.html",
+      "d3-shape/d3-pie.html",
+      "d3-shape/d3-stack.html",
+      "multi-axis.html",
+      "multi-container-coordinate.html",
+      "multi-container-simple.html",
+      "multi-legend.html",
+      "multi-scale.html",
+      "multi-selector.html"
+  ],
+  "repository": "https://github.com/polymerEl/multi-chart",
   "keywords": [
     "web-component",
     "web-components",

@@ -8,22 +8,22 @@
     <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
     <script src="../../web-component-tester/browser.js"></script>
 
-    <link rel="import" href="../multi-poly.html">
+    <link rel="import" href="../all-imports.html">
   </head>
   <body>
 
     <test-fixture id="basic">
       <template>
-        <multi-poly></multi-poly>
+        <multi-chart-coordinate></multi-chart-coordinate>
       </template>
     </test-fixture>
 
     <script>
-      suite('multi-poly', function() {
+      suite('multi-chart', function() {
 
         test('instantiating the element works', function() {
           var element = fixture('basic');
-          assert.equal(element.is, 'multi-poly');
+          assert.equal(element.is, 'multi-chart-coordinate');
         });
 
       });
