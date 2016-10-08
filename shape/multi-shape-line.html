@@ -1,6 +1,7 @@
 <link rel="import" href="../../polymer/polymer.html">
 <link rel="import" href="multi-shape-behavior.html">
 <link rel="import" href="../multi-lifecycle-behavior.html">
+<link rel="import" href="../multi-shared-styles.html">
 <!--
 `multi-poly`
 polymer elements for multivariate analysis (depend on crossfilter, universe and reductio)
@@ -9,7 +10,7 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
 -->
 <dom-module id="multi-shape-line">
   <template>
-    <style is="custom-style">
+    <style is="custom-style" include="multi-chart-line">
     :host {
       display: none;
     }
