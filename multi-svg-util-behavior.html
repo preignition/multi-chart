@@ -1,35 +1,30 @@
 <link rel="import" href="../polymer/polymer.html">
 <script>
 /**
- * `xCoordinate` behavior for documenting x-related coordinate
+ * `multiSvgUtil` utility methods for manipulating svg transform attribute
+ *
+ * @polymerBehavior Polymer.multiSvgUtil
  */
-(function() {
-  'use strict';
 
+Polymer.multiSvgUtil = {
 
-  var B = Polymer.multi = Polymer.multi || {};
+  translateCenter: function(w, h) {
+    return 'translate(' + w / 2 + ',' + h / 2 + ')';
+  },
 
-  B.svgUtil = {
-    
-    translateCenter: function(w, h) {
-      return 'translate(' + w / 2 + ',' + h / 2 +')';
-    },
+  translate: function(x, y) {
+    return 'translate(' + x + ',' + y + ')';
+  },
+  rotate: function(angle) {
+    return 'rotate(' + angle + ')';
+  },
+  svgScale: function(factor) {
+    return 'scale(' + factor + ')';
+  },
+  //TODO
+  matrix: function() {
+    return 'matrix(' + ',' + ')';
+  },
 
-    translate : function(x,y) {
-      return 'translate(' + x + ',' + y +')';
-    },
-    rotate : function(angle) {
-      return 'rotate(' + angle + ')';
-    },
-    svgScale : function(factor) {
-      return 'scale(' + factor + ')';
-    },
-    //TODO
-    matrix : function() {
-      return 'matrix(' + ',' + ')';
-    },
-
-  };
-
-})();
+};
 </script>

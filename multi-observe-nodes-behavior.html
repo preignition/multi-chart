@@ -1,40 +1,37 @@
 <link rel="import" href="../polymer/polymer.html">
-
 <script>
-(function() {
-  'use strict';
+/**
+ * `multiObserveNodes` for observing child nodes that need to be registered or further processed when attached
+ *
+ * @polymerBehavior Polymer.multiObserveNodes
+ */
+Polymer.multiObserveNodes = {
 
-  var B = Polymer.multi = Polymer.multi || {};
+  get observeNodes() {
+    return this.$.observeNodes;
+  },
 
-  B.observeNodes = {
+  ready: function() {
+    var boundHandler = this.__childNodesChanged.bind(this);
+    this.__observer = Polymer.dom(this.observeNodes).observeNodes(boundHandler);
+  },
 
-    get observeNodes() {
-      return this.$.observeNodes;
-    },
+  detached: function() {
+    Polymer.dom(this.observeNodes).unobserveNodes(this.__observer);
+  },
 
-    ready: function() {
-      var boundHandler = this.__childNodesChanged.bind(this);
-      this.__observer = Polymer.dom(this.observeNodes).observeNodes(boundHandler);
-    },
+  __childNodesChanged: function(nodeInfo) {
+    this.processNewNodes(nodeInfo.addedNodes);
+    this.processRemovedNodes(nodeInfo.removedNodes);
+  },
 
-    detached: function() {
-      Polymer.dom(this.observeNodes).unobserveNodes(this.__observer);
-    },
+  processNewNodes: function(nodes) {
+    // do something
+  },
 
-    __childNodesChanged: function(nodeInfo) {
-      this.processNewNodes(nodeInfo.addedNodes);
-      this.processRemovedNodes(nodeInfo.removedNodes);
-    },
+  processRemovedNodes: function(nodes) {
+    // do something
+  }
 
-    processNewNodes: function(nodes) {
-      // do something
-    },
-
-    processRemovedNodes: function(nodes) {
-      // do something
-    }
-
-  };
-
-})();
+};
 </script>

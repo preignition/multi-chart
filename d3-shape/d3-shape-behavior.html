@@ -2,27 +2,14 @@
 <link rel="import" href="../multi-config-behavior.html">
 <script>
 /**
- * `shaper` behavior takes data as input and shape them for easier handling in charts.an example is d3.stack that build a matrix of x,y coordinates
+ * `multiShaper` behavior takes data as input and shape them for easier handling in charts.an example is d3.stack that build a matrix of x,y coordinates
+ * @polymerBehavior Polymer.multiShaper
  */
-(function() {
-  'use strict';
 
 
-  var B = Polymer.multi = Polymer.multi || {};
-
-  var shaper = {
+  Polymer.multiShaperImpl = {
 
     properties: {
-
-      /**
-       * `isShaper` making sure elements usins this behavior (`multi-stak` or `multi-nest`) are recognized as shaper
-       */
-      // isShaper: {
-      //   type: true,
-      //   reflectToAttributes: true,
-      //   value: true
-
-      // },
 
       shaper: {
         type: Function,
@@ -102,10 +89,9 @@
 
   };
 
-  B.shaper = [
-    Polymer.multi.config,
-    shaper
+  Polymer.multiShaper = [
+    Polymer.multiConfig,
+    Polymer.multiShaperImpl
   ];
 
-})();
 </script>

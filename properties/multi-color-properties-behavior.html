@@ -7,44 +7,44 @@
  * @demo demo/index-pie.html
  */
 
-  Polymer.multiColorProperties = {
+Polymer.multiColorProperties = {
 
-    properties: {
-      
-     /**
-       * `colorScale`
-       */
-      colorScale: {
-        type: Function, 
-        notify: true
-      },
+  properties: {
 
-      /**
-       * `colorDomain` the domain to use for colors
-       */
-      colorDomain: {
-        type: Array
-      },
+    /**
+     * `colorScale`
+     */
+    colorScale: {
+      type: Function,
+      notify: true
+    },
 
-       /**
-       * `colorRange` output range of colors to be used for calculating the colorScale
-       */
-      colorRange: {
-        type: Array,
-        value: function() {
-           return d3.schemeCategory10;
-        }
-      },
+    /**
+     * `colorDomain` the domain to use for colors
+     */
+    colorDomain: {
+      type: Array
+    },
 
-      /**
-       * `colorScaleType` the type of scale for color
-       */
+    /**
+     * `colorRange` output range of colors to be used for calculating the colorScale
+     */
+    colorRange: {
+      type: Array,
+      value: function() {
+        return d3.schemeCategory10;
+      }
+    },
 
-       colorScaleType: {
-        type: String,
-        value: 'scaleOrdinal'
-       }
+    /**
+     * `colorScaleType` the type of scale for color
+     */
+
+    colorScaleType: {
+      type: String,
+      value: 'scaleOrdinal'
     }
+  }
 
-  };
+};
 </script>

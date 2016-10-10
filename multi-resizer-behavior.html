@@ -1,12 +1,14 @@
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../iron-resizable-behavior/iron-resizable-behavior.html">
 <script>
-(function() {
-  'use strict';
+/**
+ * `multiResizer` behavior making multi-charts reactive
+ *
+ * @polymerBehavior Polymer.multiResizer
+ * @demo demo/index-pie.html
+ */
 
-  var B = Polymer.multi = Polymer.multi || {};
-
-  var resizer = {
+  Polymer.multiResizerImpl = {
 
     properties: {
       height: {
@@ -93,10 +95,9 @@
     }
   };
 
-  B.resizer = [
+  Polymer.multiResizer = [
     Polymer.IronResizableBehavior,
-    resizer
-  ]
+    Polymer.multiResizerImpl
+  ];
 
-})();
 </script>

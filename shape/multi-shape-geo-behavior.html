@@ -4,63 +4,57 @@
 <link rel="import" href="../multi-svg-util-behavior.html">
 <script>
 /**
- * `shape` behavior 
+ * `multiShapeGeo` behavior 
+ * @polymerBehavior Polymer.multiShapeGeo
  */
-(function() {
-  'use strict';
 
+Polymer.multiShapeGeo = {
 
-  var B = Polymer.multi = Polymer.multi || {};
+  properties: {
+    /**
+     * `features` geometries to be drawn
+     */
+    features: {
+      type: Array
+    },
 
-  B.shapeGeo = {
+    /**
+     * `path` the [d3-geoPath](](https://github.com/d3/d3-geo#geoPath))
+     */
+    path: {
+      type: Function,
+    },
 
-      properties: {
-        /**
-         * `features` geometries to be drawn
-         */
-        features: {
-          type: Array
-        },
-
-        /**
-         * `path` the [d3-geoPath](](https://github.com/d3/d3-geo#geoPath))
-         */
-        path: {
-          type: Function,
-        },
-
-        /**
-         * `attrs` default attributes to be set on the first draw
-         */
-         attrs : {
-            type: Object,
-            value: function() {
-              return {
-                fill: '#ddd',
-                stroke: '#555'
-              }
-            }
-         }
-
-      },
-      observers: [
-        '_drawLayer(features, path)',
-        'observeChanged(path.changed)'
-      ],
-
-      observeChanged: function() {
-        if (this.features && this.path) {
-          this.debounce('drawLayer', function() {
-            this._drawLayer(this.features, this.path);
-          }, 40);
+    /**
+     * `attrs` default attributes to be set on the first draw
+     */
+    attrs: {
+      type: Object,
+      value: function() {
+        return {
+          fill: '#ddd',
+          stroke: '#555'
         }
-      },
-
-      _drawLayer: function() {
-        
       }
-
     }
 
-})();
+  },
+  observers: [
+    '_drawLayer(features, path)',
+    'observeChanged(path.changed)'
+  ],
+
+  observeChanged: function() {
+    if (this.features && this.path) {
+      this.debounce('drawLayer', function() {
+        this._drawLayer(this.features, this.path);
+      }, 40);
+    }
+  },
+
+  _drawLayer: function() {
+
+  }
+
+}
 </script>
