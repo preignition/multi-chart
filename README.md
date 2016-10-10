@@ -11,7 +11,7 @@ This library is designed to work well with [\<multi-verse\>](https://github.com/
 
 ### Pie chart
 
-```
+```html
  <multi-chart-simple 
             id="chart" 
             title="test pie" 
@@ -52,7 +52,7 @@ This library is designed to work well with [\<multi-verse\>](https://github.com/
 
 
 ### Stack chart
-```
+```html
 <multi-chart-coordinate id="chart" title="test stack chart" width="{{width}}" height="{{height}}" y-domain="[[yDomain]]" color-scale="{{colorScale}}" x-scale="{{xScale}}" y-scale="{{yScale}}" color-domain="[[keys]]" series="{{series}}" keys="{{keys}}" >
   <d3-stack domain="{{yDomain}}" data="{{stack}}" domain-min="[[domainMin]]" value="[[value]]" value-path="[[valuePath]]" order="[[order]]" offset="[[offset]]" keys="[[keys]]"></d3-stack>
   <multi-shape-stack chart  stack="[[stack]]" x-scale="[[xScale]]"  y-scale="[[yScale]]"    color-scale="[[colorScale]]"></multi-shape-stack>
