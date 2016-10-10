@@ -8,96 +8,97 @@
  * @demo demo/index-pie.html
  */
 
-  Polymer.multiResizerImpl = {
+'use strict';
 
-    properties: {
-      height: {
-        type: Number,
-        readOnly: true,
-        notify: true,
-        value: 0
-      },
+Polymer.multiResizerImpl = {
 
-      width: {
-        type: Number,
-        readOnly: true,
-        notify: true,
-        value: 0
-      },
+  properties: {
+    height: {
+      type: Number,
+      readOnly: true,
+      notify: true,
+      value: 0
+    },
 
-      margin: {
-        type: Object,
-        value: function() {
-          return {
-            top: 20,
-            left: 40,
-            right: 20,
-            bottom: 20
-          };
-        }
-      },
+    width: {
+      type: Number,
+      readOnly: true,
+      notify: true,
+      value: 0
+    },
 
-      xCenter: {
-        type: Number,
-        computed: '__computeCenter(margin.right, width)'
-      },
-
-      yCenter: {
-        type: Number,
-        computed: '__computeCenter(margin.top, height)'
-      },
-
-      center: {
-        type: Array, 
-        notify: true, 
-        computed: '__computeCenterArray(xCenter, yCenter)'
+    margin: {
+      type: Object,
+      value: function() {
+        return {
+          top: 20,
+          left: 40,
+          right: 20,
+          bottom: 20
+        };
       }
-
     },
 
-    listeners: {
-      'iron-resize': '__onIronResize'
+    xCenter: {
+      type: Number,
+      computed: '__computeCenter(margin.right, width)'
     },
 
-    observers: [
-      'observeMargin(margin.*)'
-    ],
-
-    attached: function() {
-      this.calculateSize();
+    yCenter: {
+      type: Number,
+      computed: '__computeCenter(margin.top, height)'
     },
 
-    observeMargin: function(margin) {
-      this.calculateSize(margin.base);
-    },
-
-    calculateSize: function() {
-
-      this.debounce(this, function() {
-        var rect = this.$.svg.getBoundingClientRect();
-        this._setWidth(Math.floor(rect.width) - this.margin.right - this.margin.left);
-        this._setHeight(Math.floor(rect.height) - this.margin.top - this.margin.bottom);
-        this.fire('multi-resize');
-      }, 20);
-    },
-
-    __onIronResize: function() {
-      this.calculateSize();
-    },
-    
-    __computeCenter: function(margin, size) {
-      // return margin + size / 2;
-      return margin + size / 2;
-    },
-
-     __computeCenterArray: function(x, y) {
-      return [x,y];
+    center: {
+      type: Array,
+      notify: true,
+      computed: '__computeCenterArray(xCenter, yCenter)'
     }
-  };
 
-  Polymer.multiResizer = [
-    Polymer.IronResizableBehavior,
-    Polymer.multiResizerImpl
-  ];
+  },
 
+  listeners: {
+    'iron-resize': '__onIronResize'
+  },
+
+  observers: [
+    'observeMargin(margin.*)'
+  ],
+
+  attached: function() {
+    this.calculateSize();
+  },
+
+  observeMargin: function(margin) {
+    this.calculateSize(margin.base);
+  },
+
+  calculateSize: function() {
+
+    this.debounce(this, function() {
+      var rect = this.$.svg.getBoundingClientRect();
+      this._setWidth(Math.floor(rect.width) - this.margin.right - this.margin.left);
+      this._setHeight(Math.floor(rect.height) - this.margin.top - this.margin.bottom);
+      this.fire('multi-resize');
+    }, 20);
+  },
+
+  __onIronResize: function() {
+    this.calculateSize();
+  },
+
+  __computeCenter: function(margin, size) {
+    // return margin + size / 2;
+    return margin + size / 2;
+  },
+
+  __computeCenterArray: function(x, y) {
+    return [x, y];
+  }
+};
+
+Polymer.multiResizer = [
+  Polymer.IronResizableBehavior,
+  Polymer.multiResizerImpl
+];
 </script>

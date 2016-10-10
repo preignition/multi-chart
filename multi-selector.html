@@ -214,7 +214,7 @@ TODO:
     },
 
     afterRegister: function(host) {
-      Polymer.multi.lifecycle.afterRegister.call(this, host);
+      Polymer.multiLifecycle.afterRegister.call(this, host);
       this.listen(host, 'multi-tap', 'onMultiTap');
     },
 

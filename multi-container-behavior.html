@@ -9,6 +9,7 @@
  * @polymerBehavior Polymer.multiContainer
  */
 
+ 'use strict';
 
 Polymer.multiContainerImpl = {
 
@@ -207,9 +208,9 @@ Polymer.multiContainerImpl = {
 };
 
 Polymer.multiContainer = [
-  Polymer.multi.svgUtil,
-  Polymer.multi.resizer,
-  Polymer.multi.observeNodes,
+  Polymer.multiSvgUtil,
+  Polymer.multiResizer,
+  Polymer.multiObserveNodes,
   Polymer.multiContainerImpl
 ];
 </script>
