@@ -5,12 +5,12 @@
 /**
  * `multiScale` behavior for scales
  *
- * @polymerBehavior Polymer.multiScale
  * @demo demo/index-pie.html
  */
 
 'use strict';
 
+/** @polymerBehavior multiScaleImpl */
 Polymer.multiScaleImpl = {
 
   properties: {
@@ -145,6 +145,7 @@ Polymer.multiScaleImpl = {
   }
 };
 
+/** @polymerBehavior */
 Polymer.multiScale = [
   Polymer.multiLifecycle,
   Polymer.multiConfig,

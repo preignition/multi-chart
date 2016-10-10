@@ -6,11 +6,11 @@
 /**
  * `multiContainer` common config for all chart containers
  *
- * @polymerBehavior Polymer.multiContainer
  */
 
  'use strict';
 
+/** @polymerBehavior  multiContainerImpl*/
 Polymer.multiContainerImpl = {
 
   properties: {
@@ -207,6 +207,7 @@ Polymer.multiContainerImpl = {
 
 };
 
+/** @polymerBehavior */
 Polymer.multiContainer = [
   Polymer.multiSvgUtil,
   Polymer.multiResizer,

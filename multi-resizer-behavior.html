@@ -4,12 +4,12 @@
 /**
  * `multiResizer` behavior making multi-charts reactive
  *
- * @polymerBehavior Polymer.multiResizer
  * @demo demo/index-pie.html
  */
 
 'use strict';
 
+/** @polymerBehavior multiResizerImpl */
 Polymer.multiResizerImpl = {
 
   properties: {
@@ -97,6 +97,7 @@ Polymer.multiResizerImpl = {
   }
 };
 
+/** @polymerBehavior */
 Polymer.multiResizer = [
   Polymer.IronResizableBehavior,
   Polymer.multiResizerImpl
