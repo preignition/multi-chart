@@ -124,7 +124,7 @@ TODO:
       },
 
       /**
-       * `selectedItems` the list of items selected (when selectionType === 'select')
+       * `selectedItems` the list of items selected (when selectionType === 'select' || selectionType === 'multi'  )
        */
       selectedItems: {
         type: Array,
@@ -174,7 +174,8 @@ TODO:
     ],
 
     observers: [
-      '_observeSelectedItems(selectedItems.splices)',
+      // '_observeSelectedItems(selectedItems.splices)',
+      '_observeSelectedItems(selectedItems.*)',
       '_observeXScale(xScale)',
       '_observeXScale(xScale)',
       '_observeXScale(xScale.changed)',
@@ -191,13 +192,13 @@ TODO:
     },
 
     _observeXScale: function() {
-      scale = this.xScale;
+      var scale = this.xScale;
       this.xDomain = scale.domain();
       this.xRange = scale.range();
     },
 
     _observeYScale: function() {
-      scale = this.yScale;
+      var scale = this.yScale;
       this.yDomain = scale.domain();
       this.yRange = scale.range();
     },
@@ -222,12 +223,42 @@ TODO:
       this.unlisten(host, 'multi-tap', 'onMultiTap');
     },
 
-    _observeSelectedItems: function(itemsSplices) {
-      if (itemsSplices) {
-        return this._setHasSelection(!!itemsSplices.indexSplices[0].object.length);
-      }
-      this._setHasSelection(!!this.selectedItems.length);
+    _observeSelectedItems: function(items) {
+      // if (itemsSplices) {
+      //   return this._setHasSelection(!!itemsSplices.base.length);
+      // }
+      this._setHasSelection(!!items.base.length);
 
+      // notify the selection 
+      this.notifySelection();
+
+      // refresh the selection
+      this.refreshSelection();
+
+    },
+
+    notifySelection: function() {
+      this.fire('multi-select', {
+        // type: d3.event.type,
+        isRange: this.isRange,
+        selection: this.selectedItems
+      });
+    },
+
+    refreshSelection: function() {
+      var isRange = this.isRange;
+      var sel = this.selectedItems;
+      var accessor = this.accessor;
+
+      if (sel && sel.length) {
+        d3.select(this.targetElement.ownerSVGElement).selectAll('.selectable')
+          // d3.select(this.$.chart).selectAll('.selectable')
+          .classed('selected', isRange ? function(d) {
+            return sel[0] <= (d = accessor(d.data || d)) && d <= sel[1];
+          } : function(d) {
+            return sel.indexOf(accessor(d.data || d)) > -1;
+          });
+      }
     },
 
     _computeExtent: function(h, w) {
@@ -267,32 +298,33 @@ TODO:
       var selection = d3.event.selection;
 
       if (!selection) {
-        // this.clearSelection();
-        return this.fire('multi-select', {
-          type: d3.event.type,
-          selection: null
-        });
+        return this.clearSelection();
       }
 
       var scale = this.effectiveScale;
-      var isRange = false;
+      // var isRange = false;
 
       var xScale = this.xScale;
       var sel;
 
-      // if (!scale) {
-      //   scale = this._getEffectiveScale();
-      // }
-
       if (scale = scale.x) {
         sel = scale.y ? selection[0] : selection;
         if (scale.invert) {
-          isRange = true;
+          // isRange = true;
+          this._setIsRange(true);
           sel = sel.map(scale.invert);
+          if (this.selectedItems[0] !== sel[0] || this.selectedItems[1] !== sel[1]) {
+            // only call the splice when needed 
+            this.splice('selectedItems', 0, 2, sel[0], sel[1]);
+          }
         } else {
           sel = xScale.domain().filter(function(d) {
             return sel[0] <= (d = xScale(d)) && d <= sel[1];
           });
+          if (this.selectedItems.length !== sel.length || this.selectedItems[0] !== sel[0] || this.selectedItems[1] !== sel[1]) {
+            // only call the splice when needed 
+            this.splice.apply(this, ['selectedItems', 0, this.selectedItems.length + 1].concat(sel));
+          }
         }
       }
 
@@ -301,39 +333,11 @@ TODO:
       // TODO : handle yScale ...
 
       // adjust isRange
-      this._setIsRange(isRange);
-      this._setSelectedItems(sel);
-
-      // notify the selection 
-      this.notifySelection();
+      // this._setSelectedItems(sel);
 
       // handle selected class
-      this.refreshSelection();
+      // this.refreshSelection();
 
-    },
-
-    refreshSelection: function() {
-      var isRange = this.isRange;
-      var sel = this.selectedItems;
-      var accessor = this.accessor;
-
-      if (sel && sel.length) {
-        d3.select(this.targetElement.ownerSVGElement).selectAll('.selectable')
-          // d3.select(this.$.chart).selectAll('.selectable')
-          .classed('selected', isRange ? function(d) {
-            return sel[0] <= (d = accessor(d.data || d)) && d <= sel[1];
-          } : function(d) {
-            return sel.indexOf(accessor(d.data || d)) > -1;
-          });
-      }
-
-    },
-    notifySelection: function() {
-      this.fire('multi-select', {
-        type: d3.event.type,
-        isRange: this.isRange,
-        selection: this.selectedItems
-      });
     },
 
     onMultiBrushStart: function() {
@@ -348,10 +352,11 @@ TODO:
         //   }
         // }
         this._setIsSelecting(true);
-        this.fire('multi-select', {
-          type: d3.event.type,
-          selection: null
-        });
+        // this.clearSelection()
+        // this.fire('multi-select', {
+        //   type: d3.event.type,
+        //   selection: null
+        // });
       }
     },
 
@@ -368,6 +373,7 @@ TODO:
     onMultiTap: function(e, d) {
       e.stopPropagation();
       if (this.selectionType === 'select' || this.selectionType === 'multi') {
+        // for some path constror (e.g. d3.pie initial data is stored under d.data)
         var key = this.accessor(d.data || d);
         var index = this.selectedItems.indexOf(key);
         if (index > -1) {
@@ -376,21 +382,23 @@ TODO:
           if (this.selectionType === 'multi') {
             this.push('selectedItems', key);
           } else {
-            this._setSelectedItems([key]);
+            this.splice('selectedItems', 0, 1, key);
+            // this._setSelectedItems([key]);
           }
         }
       }
       // notify the selection 
-      this.notifySelection();
+      // this.notifySelection();
 
       // handle selected class
-      this.refreshSelection();
+      // this.refreshSelection();
     },
 
     clearSelection: function() {
       // this.brush.move(null);
       d3.select(this.targetElement).call(this.brush.move, null);
-      this._setSelectedItems([]);
+      this.splice('selectedItems', 0);
+      // this._setSelectedItems([]);
     },
 
     _refreshContiunousScale: function(scale) {
