@@ -25,7 +25,7 @@ This library is designed to work well with [\<multi-verse\>](https://github.com/
             value-accessor-path="[[valueAccessorPath]]" 
             value-accessor="{{valueAccessor}}" 
              >
-            <d3-pie  data="{{arcs}}" value="[[valueAccessor]]" __value-path="[[valueAccessorPath]]" pad-angle="[[padAngle]]" sort="[[sort]]" sort-values="[[sortValues]]"></d3-pie>
+            <d3-pie  data="{{arcs}}" value="[[valueAccessor]]" pad-angle="[[padAngle]]" sort="[[sort]]" sort-values="[[sortValues]]"></d3-pie>
             <multi-shape-pie 
               width="[[width]]" 
               height="[[height]]" 
