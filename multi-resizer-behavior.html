@@ -75,12 +75,12 @@ Polymer.multiResizerImpl = {
 
   calculateSize: function() {
 
-    this.debounce(this, function() {
+    this.debounce('calculateSize', function() {
       var rect = this.$.svg.getBoundingClientRect();
       this._setWidth(Math.floor(rect.width) - this.margin.right - this.margin.left);
       this._setHeight(Math.floor(rect.height) - this.margin.top - this.margin.bottom);
       this.fire('multi-resize');
-    }, 20);
+    }, 30);
   },
 
   __onIronResize: function() {

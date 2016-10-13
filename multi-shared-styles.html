@@ -11,10 +11,15 @@
       height: 200px;
     }
     
-    ::content #svg {
+    #svg {
+      width: 100%; /* need width here, otherwise the size of this svg is not properly calculated on resize*/
       @apply(--layout-flex);
       @apply(--layout-self-stretch);
     }
+    /*::content #svg {
+      @apply(--layout-flex);
+      @apply(--layout-self-stretch);
+    }*/
     
     ::content .axis-text {
       fill: var(--secondary-text-color, grey);

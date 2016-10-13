@@ -136,6 +136,7 @@ TODO:
 
       isRange: {
         type: Boolean,
+        notify: true,
         readOnly: true
       },
 
@@ -249,15 +250,27 @@ TODO:
       var sel = this.selectedItems;
       var accessor = this.accessor;
 
-      if (sel && sel.length) {
+      if (sel) {
+        if (sel.length) {
+          d3.select(this.targetElement.ownerSVGElement).selectAll('.selectable')
+            // d3.select(this.$.chart).selectAll('.selectable')
+            .classed('selected', isRange ? function(d) {
+              return sel[0] <= (d = accessor(d.data || d)) && d <= sel[1];
+            } : function(d) {
+              return sel.indexOf(accessor(d.data || d)) > -1;
+            });
+        }
+      } else {
         d3.select(this.targetElement.ownerSVGElement).selectAll('.selectable')
-          // d3.select(this.$.chart).selectAll('.selectable')
-          .classed('selected', isRange ? function(d) {
-            return sel[0] <= (d = accessor(d.data || d)) && d <= sel[1];
-          } : function(d) {
-            return sel.indexOf(accessor(d.data || d)) > -1;
-          });
+          .classed('selected', false)
       }
+    },
+
+    clearSelection: function() {
+      // this.brush.move(null);
+      d3.select(this.targetElement).call(this.brush.move, null);
+      this.splice('selectedItems', 0);
+      // this._setSelectedItems([]);
     },
 
     _computeExtent: function(h, w) {
@@ -291,7 +304,7 @@ TODO:
     },
 
     onMultiBrush: function() {
-      if (!d3.event.sourceEvent) {
+      if (!d3.event.sourceEvent || this._clearing) {
         return;
       }
       var selection = d3.event.selection;
@@ -326,36 +339,13 @@ TODO:
           }
         }
       }
-
-      // console.info('SELECTION', selection);
-      // console.info('SEL', sel);
-      // TODO : handle yScale ...
-
-      // adjust isRange
-      // this._setSelectedItems(sel);
-
-      // handle selected class
-      // this.refreshSelection();
-
     },
 
     onMultiBrushStart: function() {
       if (this.isBrush) {
         this._refreshContiunousScale(this.xScale);
         this.effectiveScale = this._getEffectiveScale();
-        // if (this.yScale) {
-        //   if (!this.yScale.invert) {
-        //     this.__yContinuous = this.yContinuousScale.domain(d3.extent(this.yScale.domain())).range(this.yScale.range());
-        //   } else {
-        //     this.__yContinuous = null;
-        //   }
-        // }
         this._setIsSelecting(true);
-        // this.clearSelection()
-        // this.fire('multi-select', {
-        //   type: d3.event.type,
-        //   selection: null
-        // });
       }
     },
 
@@ -391,13 +381,6 @@ TODO:
 
       // handle selected class
       // this.refreshSelection();
-    },
-
-    clearSelection: function() {
-      // this.brush.move(null);
-      d3.select(this.targetElement).call(this.brush.move, null);
-      this.splice('selectedItems', 0);
-      // this._setSelectedItems([]);
     },
 
     _refreshContiunousScale: function(scale) {

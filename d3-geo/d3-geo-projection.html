@@ -1,6 +1,7 @@
 <link rel="import" href="../../polymer/polymer.html">
 <!-- <link rel="import" href="../multi-accessor.html"> -->
 <link rel="import" href="../multi-config-behavior.html">
+<link rel="import" href="../properties/multi-geo-chart-properties-behavior.html">
 <!-- <link rel="import" href="d3-shape-behavior.html"> -->
 <!-- <link rel="import" href="multi-lifecyle-behavior.html"> -->
 <!--
@@ -49,30 +50,12 @@ a new geographic path generator with the default settings as in [d3.geoPath](htt
         },
 
         /**
-         * `projectionType` the type of the projection, one of `geoAlbers`,`geoAlbersUsa`,`geoAzimuthalEqualArea`,`geoAzimuthalEquidistant`,`geoConicConformal`,`geoConicEqualArea`,`geoConicEquidistant`,`geoEquirectangular`,`geoGnomonic`,`geoProjection`,`geoMercator`,`geoOrthographic`,`geoStereographic`,`geoTransverseMercator`
-         */
-        projectionType: {
-          type: String
-        },
-
-        /**
-         * [`clipAngle`](https:github.com/d3/d3-geo#projection_clipAngle)
-         */
-        clipAngle: {
-          type: Number
-        },
-        /**
-         * [`clipExtent`](https:github.com/d3/d3-geo#projection_clipExtent)
-         */
-        clipExtent: {
-          type: Array
-        },
-        /**
          * [`scale`](https:github.com/d3/d3-geo#projection_scale)
          */
         scale: {
           type: Number
         },
+        
         /**
          * [`translate`](https:github.com/d3/d3-geo#projection_translate)
          */
@@ -80,38 +63,7 @@ a new geographic path generator with the default settings as in [d3.geoPath](htt
           type: Array,
           computed: '_computeTranslate(width, height)'
         },
-        /**
-         * [`center`](https:github.com/d3/d3-geo#projection_center)
-         */
-        center: {
-          type: Array
-        },
-        /**
-         * [`rotate`](https:github.com/d3/d3-geo#projection_rotate)
-         */
-        rotate: {
-          type: Number
-        },
-        /**
-         * [`precision`](https:github.com/d3/d3-geo#projection_precision)
-         */
-        precision: {
-          type: Number
-        },
-
-        /**
-         * `width` the width for the layer. 
-         */
-        width: {
-          type: Number
-        },
-
-        /**
-         * `height` the height for the layer. 
-         */
-        height: {
-          type: Number
-        }
+       
 
       },
 
@@ -151,7 +103,8 @@ a new geographic path generator with the default settings as in [d3.geoPath](htt
       },
 
       behaviors: [
-        Polymer.multiConfig
+        Polymer.multiConfig,
+        Polymer.multiGeoChartProperties
       ],
 
       observers: [

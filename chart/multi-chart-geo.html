@@ -6,9 +6,9 @@
 <link rel="import" href="../d3-geo/d3-geo-path.html">
 <link rel="import" href="../multi-scale.html">
 <link rel="import" href="../multi-accessor.html">
-<link rel="import" href="../properties/multi-chart-properties-behavior.html">
 <link rel="import" href="../properties/multi-color-properties-behavior.html">
 <link rel="import" href="../properties/multi-selection-properties-behavior.html">
+<link rel="import" href="../properties/multi-geo-chart-properties-behavior.html">
 <link rel="import" href="../multi-container-simple.html">
 <link rel="import" href="../multi-shared-styles.html">
 <!-- 
@@ -49,7 +49,18 @@
       data="[[data]]" 
       >
         <multi-scale scale-type="[[colorScaleType]]" accessor="[[valueAccessor]]" domain="[[colorDomain]]" range="[[colorRange]]" scale="{{colorScale}}"></multi-scale>
-        <d3-geo-projection scale="[[scale]]"  height="[[height]]" width="[[width]]"  projection="{{projection}}" projection-type="[[projectionType]]"></d3-geo-projection>
+        <d3-geo-projection 
+          projection="{{projection}}" 
+          scale="[[projectionScale]]"  
+          height="[[height]]"
+          clip-angle="[[clipAngle]]" 
+          clip-extent="[[clipExtent]]" 
+          center="[[center]]"
+          rotate="[[rotate]]"
+          precision="[[precision]]"
+          width="[[width]]"  
+          height="[[height]]"  
+          projection-type="[[projectionType]]"></d3-geo-projection>
         <d3-geo-path path="{{path}}" projection="[[projection]]"></d3-geo-path>
         <multi-shape-choropleth
           path="[[path]]"
@@ -91,11 +102,10 @@
       },
 
       /**
-       * `projectionType` the type of projection 
+       * [`projectionScale`](https:github.com/d3/d3-geo#projection_scale)
        */
-      projectionType: {
-        type: String,
-        value: 'geoAlbersUsa'  
+      projectionScale: {
+        type: Number
       },
 
       /**
@@ -118,7 +128,7 @@
     },
 
     behaviors: [
-      Polymer.multiChartProperties,
+      Polymer.multiGeoChartProperties,
       Polymer.multiColorProperties
       // Polymer.multiSelectionProperties
     ]

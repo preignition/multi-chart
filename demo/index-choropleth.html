@@ -38,13 +38,13 @@
           <p>Example largely inspired from <a href="http://bl.ocks.org/mbostock/4060606" title="">this block</a>!</p>
           <multi-geo-feature features="{{features}}" data="{{geometries}}" name="counties" url="us.json"></multi-geo-feature>
           <multi-geo-mesh mesh="{{mesh}}" data="[[geometries]]" name="states"></multi-geo-mesh>
-          <multi-chart-geo id="chart" color-scale="{{colorScale}}" path="{{path}}" width="{{width}}" projection="{{projection}}" projection-type="geoAlbersUsa" value-accessor-path="+rate"  features="[[features]]" scale="[[scale]]">
+          <multi-chart-geo id="chart" color-scale="{{colorScale}}" path="{{path}}" width="{{width}}" projection="{{projection}}" projection-type="geoAlbersUsa" value-accessor-path="+rate"  features="[[features]]" projection-scale="[[projectionScale]]">
             <!-- the mesh for US States will be added to the choropleth !-->
-            <multi-shape-geo-line geo path="[[path]]" projection="[[projection]]" attrs="[[meshAttrs]]" features="[[mesh]]"></multi-shape-geo-line>
+            <multi-shape-geo-line path="[[path]]" projection="[[projection]]" attrs="[[meshAttrs]]" features="[[mesh]]"></multi-shape-geo-line>
             <multi-legend legend scale="[[colorScale]]" chart-width="[[width]]" padding="50" label-format=".0%" position="right" > </multi-legend>
             <h3 header>test choropleth chart</h3>  
           </multi-chart-geo>
-           <paper-input label="scale" min="0" step="50" type="number" value="{{scale}}"></paper-input>
+           <paper-input label="scale" min="0" step="50" type="number" value="{{projectionScale}}"></paper-input>
            <paper-button raised on-tap="toggle">randomize data</paper-button>
         </template>
       </template>
@@ -58,7 +58,7 @@ window.addEventListener('WebComponentsReady', function() {
   var chart = app.$.chart;
   var data;
 
-  app.scale = 800;
+  app.projectionScale = 800;
   chart.scaleType = 'scaleQuantize';
   chart.colorRange = [d3.rgb(247, 251, 255), d3.rgb(222, 235, 247), d3.rgb(198, 219, 239), d3.rgb(158, 202, 225), d3.rgb(107, 174, 214), d3.rgb(66, 146, 198), d3.rgb(33, 113, 181), d3.rgb(8, 81, 156), d3.rgb(8, 48, 107)];
   chart.colorDomain = [0, 0.15];
