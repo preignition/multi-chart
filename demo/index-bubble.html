@@ -32,7 +32,6 @@
       <template>
         <template is="dom-bind" id="app">
           <multi-chart-coordinate id="chart" 
-            title="test buble chart" 
             width="{{width}}" 
             height="{{height}}" 
             y-domain="[[yDomain]]" 
@@ -65,7 +64,7 @@
                   y-scale="[[yScale]]" 
                   z-scale="[[zScale]]"
                   color-scale="[[colorScale]]"></multi-shape-bubble>
-
+            <h3 header>test bubble chart</h3>          
             <multi-serie serie key="apple" label="apple"></multi-serie>
             <multi-serie serie key="banana" label="banana"></multi-serie>
             <multi-legend legend chart-width="[[width]]" scale="[[colorScale]]" position="top-right" ></multi-legend>

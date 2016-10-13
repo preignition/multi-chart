@@ -29,7 +29,7 @@
     <demo-snippet>
       <template>
         <template is="dom-bind" id="app">
-         <multi-chart-coordinate id="chart" title="test line chart" 
+         <multi-chart-coordinate id="chart"  
             width="{{width}}" 
             height="{{height}}" 
             color-scale="{{colorScale}}" 
@@ -47,6 +47,7 @@
               x-scale="[[xScale]]" 
               y-scale="[[yScale]]" 
               color-scale="[[colorScale]]"></multi-shape-line>
+            <h3 header>test line chart</h3>          
             <multi-legend legend chart-width="[[width]]" scale="[[colorScale]]" position="top-right" ></multi-legend>
             <multi-selector selection-type="brushX" width="[[width]]"  height="[[height]]" x-scale="[[xScale]]" accessor="[[xAccessor]]"></multi-selector> 
           </multi-chart-coordinate>

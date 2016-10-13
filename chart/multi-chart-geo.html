@@ -35,8 +35,9 @@
     <style is="custom-style" include="multi-chart multi-chart-selector">
 
     </style>
-    <h2 class="title">[[title]]</h2>
-    <h3 class="subtitle">[[subtitle]]</h3>
+    <!-- <h2 class="title">[[title]]</h2> -->
+    <!-- <h3 class="subtitle">[[subtitle]]</h3> -->
+    <content select="[header]"></content>
     <multi-accessor accessor="{{valueAccessor}}" path="[[valueAccessorPath]]"></multi-accessor>
     <!-- <multi-accessor accessor="{{keyAccessor}}" path="[[keyAccessorPath]]"></multi-accessor> -->
       
@@ -57,9 +58,10 @@
           attrs="[[attrs]]"
           value-accessor="[[valueAccessor]]" 
           color-scale="[[colorScale]]"></multi-shape-choropleth>
-          <content select="[geo]"></content>
+          <content select=":not([legend]):not([header]):not([footer])"></content>
           <content select="[legend]"></content>
     </multi-container-simple>
+    <content select="[footer]"></content>
   </template>
   <script>
   Polymer({

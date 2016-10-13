@@ -45,8 +45,7 @@
     <style is="custom-style" include="multi-chart multi-chart-selector">
 
     </style>
-    <h2 class="title">[[title]]</h2>
-    <h3 class="subtitle">[[subtitle]]</h3>
+    <content select="[header]"></content> 
     <multi-accessor accessor="{{xAccessor}}" path="[[xAccessorPath]]"></multi-accessor>
     <multi-accessor accessor="{{yAccessor}}" path="[[yAccessorPath]]"></multi-accessor>
     <multi-container-coordinate 
@@ -69,8 +68,9 @@
         <content select="[serie]"></content>
       </multi-series>
       <multi-scale scale-type="[[colorScaleType]]" domain="[[colorDomain]]" range="[[colorRange]]" scale="{{colorScale}}"></multi-scale>
-      <content select=":not([serie])"></content>
+      <content select=":not([serie]):not([header]):not([footer])"></content>
     </multi-container-coordinate>
+    <content select="[footer]"></content> 
   </template>
   <script>
   Polymer({
