@@ -17,8 +17,8 @@
 ### Example: a choropleth chart, along with a topojson mesh
 
 ```
- <multi-chart-geo id="chart" color-scale="{{colorScale}}" path="{{path}}" width="{{width}}" projection="{{projection}}" projection-type="geoAlbersUsa" value-accessor-path="+rate" title="a nice choropleth" features="[[features]]" scale="[[scale]]">
-     <multi-shape-geo-line geo path="[[path]]" projection="[[projection]]" attrs="[[meshAttrs]]" features="[[mesh]]"></multi-shape-geo-line>
+ <multi-chart-geo id="chart" color-scale="{{colorScale}}" path="{{path}}" width="{{width}}" projection="{{projection}}" projection-type="geoAlbersUsa" value-accessor-path="+rate" title="a nice choropleth" feature="[[feature]]" scale="[[scale]]">
+     <multi-shape-geo-line geo path="[[path]]" projection="[[projection]]" attrs="[[meshAttrs]]" feature="[[mesh]]"></multi-shape-geo-line>
      <multi-legend legend scale="[[colorScale]]" chart-width="[[width]]" padding="50" label-format=".0%" position="right" > </multi-legend>
  </multi-chart-geo>
 ```
@@ -48,7 +48,12 @@
       width="{{width}}" 
       data="[[data]]" 
       >
-        <multi-scale scale-type="[[colorScaleType]]" accessor="[[valueAccessor]]" domain="[[colorDomain]]" range="[[colorRange]]" scale="{{colorScale}}"></multi-scale>
+        <multi-scale 
+          scale-type="[[colorScaleType]]" 
+          accessor="[[valueAccessor]]" 
+          domain="[[colorDomain]]" 
+          range="[[colorRange]]" 
+          scale="{{colorScale}}"></multi-scale>
         <d3-geo-projection 
           projection="{{projection}}" 
           scale="[[projectionScale]]"  
@@ -65,7 +70,7 @@
         <multi-shape-choropleth
           path="[[path]]"
           projection="[[projection]]"
-          features="[[features]]"
+          feature="[[feature]]"
           attrs="[[attrs]]"
           value-accessor="[[valueAccessor]]" 
           color-scale="[[colorScale]]"></multi-shape-choropleth>
@@ -84,6 +89,14 @@
     },
 
     properties: {
+
+      /**
+       * `autoFit` when true, fit projection scale and translate so as to fit to bounding box (width and height)
+       */
+      autoFit: {
+        type: Boolean, 
+        value: true
+      },
 
        /**
        * `path` the [path](https://github.com/d3/d3-geo#geoPath) generator function. It notifies so that we can pass other geo element that share the same path generator 
@@ -131,7 +144,18 @@
       Polymer.multiGeoChartProperties,
       Polymer.multiColorProperties
       // Polymer.multiSelectionProperties
-    ]
+    ],
+
+    observers: [
+      'doFit(autoFit,width, height, feature, projection)'
+    ],
+
+    doFit: function(autoFit, width, height, feature, projection) {
+      if(autoFit && width && height) {
+        projection.fitExtent([[0,0], [width, height]], feature);
+      }
+    }
+
 
   });
   </script>

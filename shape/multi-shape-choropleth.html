@@ -97,10 +97,10 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
       /**
        * `drawLayer` 
        */
-      _drawLayer: function(features, path) {
+      _drawLayer: function(feature, path) {
         var layer = this.layer || d3.select(this.targetElement).selectAll('path.choropleth');
 
-        layer = layer.data(features);
+        layer = layer.data(feature.features);
 
         layer.exit().remove();
 
@@ -139,7 +139,7 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
 
         if (!layer) {
           this._setNeedRefresh(true);
-          return; // the layer is not yet ready (e.g. features not loaded)
+          return; // the layer is not yet ready (e.g. feature not loaded)
         }
 
         var colorScale = this.colorScale;

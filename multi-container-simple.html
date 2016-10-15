@@ -13,7 +13,6 @@ The container register elements that have a `shallRegister` property set to `tru
 @demo demo/index-pie.html
 @demo demo/index-choropleth.html
 -->
--->
 <dom-module id="multi-container-simple">
   <template>
     <style is="custom-style" include="multi-container multi-chart-selector">
@@ -25,7 +24,9 @@ The container register elements that have a `shallRegister` property set to `tru
     <svg id="svg">
       <!-- <g id="chartContent" transform$="[[translate(xCenter, yCenter)]]"> -->
       <g id="chartContent">
-        <g id="chart" class="chart">
+        <g id="zoom">
+          <g id="chart" class="chart">
+          </g>
         </g>
         <!-- <g id="selector"></g>   -->
       </g>
@@ -51,7 +52,7 @@ The container register elements that have a `shallRegister` property set to `tru
         type: String,
         value: 'chart'
       },
-      
+
     },
 
     behaviors: [

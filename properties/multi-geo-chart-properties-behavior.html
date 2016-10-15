@@ -48,6 +48,18 @@ Polymer.multiGeoChartProperties = {
     precision: {
       type: Number
     },
+    
+    /**
+     * [`translate`](https:github.com/d3/d3-geo#projection_translate)
+     */
+    translate: {
+      type: Array,
+      notify: true, 
+      value: function() {
+        return  [480, 250];
+      }
+      // computed: '_computeTranslate(width, height)'
+    },
 
     /**
      * `width` the width for the layer. 

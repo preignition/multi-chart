@@ -15,9 +15,9 @@ Polymer.multiShapeGeo = {
 
   properties: {
     /**
-     * `features` geometries to be drawn
+     * `feature` geometries to be drawn
      */
-    features: {
+    feature: {
       type: Array
     },
 
@@ -43,14 +43,14 @@ Polymer.multiShapeGeo = {
 
   },
   observers: [
-    '_drawLayer(features, path)',
+    '_drawLayer(feature, path)',
     'observeChanged(path.changed)'
   ],
 
   observeChanged: function() {
-    if (this.features && this.path) {
+    if (this.feature && this.path) {
       this.debounce('drawLayer', function() {
-        this._drawLayer(this.features, this.path);
+        this._drawLayer(this.feature, this.path);
       }, 40);
     }
   },

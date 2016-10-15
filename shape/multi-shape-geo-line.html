@@ -35,9 +35,9 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
 
       properties: {
         /**
-         * `features` a GeoJSON MultiLineString geometry object
+         * `feature` a GeoJSON MultiLineString geometry object
          */
-        features: {
+        feature: {
           type: Array
         },
        
@@ -59,14 +59,14 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
       /**
        * `drawLayer` 
        */
-      _drawLayer: function(features, path) {
+      _drawLayer: function(feature, path) {
         // var layer = this.layer || d3.select(this.targetElement).selectAll('path.layer');
 
         d3.select(this.targetElement).selectAll('*').remove();
 
         d3.select(this.targetElement)
           .append('path')
-          .datum(features)
+          .datum(feature)
           .attrs(this.attrs)
           .attr('class', 'layer')
           .attr('d', path);

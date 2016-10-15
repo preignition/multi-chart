@@ -53,18 +53,10 @@ a new geographic path generator with the default settings as in [d3.geoPath](htt
          * [`scale`](https:github.com/d3/d3-geo#projection_scale)
          */
         scale: {
-          type: Number
-        },
+          type: Number,
+          notify: true, 
+        }
         
-        /**
-         * [`translate`](https:github.com/d3/d3-geo#projection_translate)
-         */
-        translate: {
-          type: Array,
-          computed: '_computeTranslate(width, height)'
-        },
-       
-
       },
 
       /**
@@ -120,6 +112,35 @@ a new geographic path generator with the default settings as in [d3.geoPath](htt
 
       onRefresh: function() {
         this.notifyChanged('projection');
+      },
+      
+      get clipAngle() {
+        return this.projection.clipAngle();
+      },
+
+      get clipExtent() {
+        return this.projection.clipExtent();
+      },
+
+      get rotate() {
+        return this.projection.rotate();
+      },
+
+      get scale() {
+        return this.projection.scale();
+      },
+
+      get translate() {
+        return this.projection.translate();
+      },
+
+      get center() {
+        return this.projection.center();
+      },
+
+      get precision() {
+        return this.projection.precision();
+
       },
       // observeProjectionChanged(pr) {
       //   console.info('PP');

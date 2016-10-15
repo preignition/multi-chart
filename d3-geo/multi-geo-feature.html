@@ -4,7 +4,7 @@
 <link rel="import" href="../multi-config-behavior.html">
 <!--
 `multi-geo-feature`
-exposes geo features from an url
+exposes geo feature from an url
 
 @demo demo/index-choropleth.html 
 -->
@@ -20,9 +20,9 @@ exposes geo features from an url
 
     properties: {
       /**
-       * `features` the goe features to be exposed by this component
+       * `feature` the GeoJSON Feature or FeatureCollection to be exposed by this component
        */
-      features: {
+      feature: {
         type: Array,
         notify: true
       },
@@ -66,9 +66,9 @@ exposes geo features from an url
 
     _observeData: function(data, name, geoType) {
       if (geoType === 'topojson') {
-        this.features = topojson.feature(data, data.objects[name]).features;
+        this.feature = topojson.feature(data, data.objects[name]);
       } else {
-        this.features = data.objects[name].geometries;
+        this.feature = data.objects[name].geometries;
       }
     }
 
