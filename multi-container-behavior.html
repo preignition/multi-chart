@@ -90,7 +90,8 @@ Polymer.multiContainerImpl = {
     'multi-is-selecting': '__onIsSelecting',
     'multi-has-selection': '__onHasSelection',
     'multi-refresh': '__onRefresh',
-    'multi-resize': '__onResize',
+    'multi-resize': '__onResize'
+    // 'multi-clear': '__onMultiClear',
   },
 
   // renderChart: function(data) {
@@ -119,7 +120,6 @@ Polymer.multiContainerImpl = {
 
   callRegistered: function(methodName) {
     // we replace `methodName`` with `this host` as the first argument 
-    // var args = [].splice.call(arguments, 0, 1, this);
     [].splice.call(arguments, 0, 1, this);
     var args = arguments;
     this.registeredItems.filter(function(el) {
@@ -165,6 +165,10 @@ Polymer.multiContainerImpl = {
       }
     }
   },
+
+  // __onMultiClear: function() {
+  //   this.fire('multi-clear');
+  // },
 
   /**
    * @override

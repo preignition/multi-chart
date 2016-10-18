@@ -38,7 +38,18 @@
           <p>Example largely inspired from <a href="http://bl.ocks.org/mbostock/4060606" title="">this block</a>!</p>
           <multi-geo-feature feature="{{feature}}" data="{{geometries}}" name="counties" url="us.json"></multi-geo-feature>
           <multi-geo-mesh mesh="{{mesh}}" data="[[geometries]]" name="states"></multi-geo-mesh>
-          <multi-chart-geo id="chart" color-scale="{{colorScale}}" path="{{path}}" width="{{width}}" projection="{{projection}}" projection-type="geoAlbersUsa" value-accessor-path="+rate"  feature="[[feature]]" projection-scale="[[projectionScale]]">
+          <multi-chart-geo 
+            id="chart" 
+            color-scale="{{colorScale}}" 
+            path="{{path}}" 
+            width="{{width}}" 
+            projection="{{projection}}"
+            projection-type="geoAlbersUsa" 
+            value-accessor-path="+rate"  
+            key-accessor-path="id"  
+            feature-key-accessor-path="id"  
+            feature="[[feature]]" 
+            projection-scale="[[projectionScale]]">
             <!-- the mesh for US States will be added to the choropleth !-->
             <multi-shape-geo-line path="[[path]]" projection="[[projection]]" attrs="[[meshAttrs]]" feature="[[mesh]]"></multi-shape-geo-line>
             <multi-legend legend scale="[[colorScale]]" chart-width="[[width]]" padding="50" label-format=".0%" position="right" > </multi-legend>

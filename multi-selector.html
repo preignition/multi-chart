@@ -216,11 +216,13 @@ TODO:
 
     afterRegister: function(host) {
       Polymer.multiLifecycle.afterRegister.call(this, host);
+      // this.listen(host, 'multi-clear', 'clearSelection');
       this.listen(host, 'multi-tap', 'onMultiTap');
     },
 
     afterUnregister: function(host) {
       this.unlisten(host, 'multi-tap', 'onMultiTap');
+      // this.unlisten(host, 'multi-clear', 'clearSelection');
     },
 
     _observeSelectedItems: function(items) {
@@ -268,7 +270,9 @@ TODO:
 
     clearSelection: function() {
       // this.brush.move(null);
-      d3.select(this.targetElement).call(this.brush.move, null);
+      if(this.brush && this.brush.move) {
+        d3.select(this.targetElement).call(this.brush.move, null);
+      }
       this.splice('selectedItems', 0);
       // this._setSelectedItems([]);
     },

@@ -9,6 +9,7 @@
 <link rel="import" href="../properties/multi-color-properties-behavior.html">
 <link rel="import" href="../properties/multi-selection-properties-behavior.html">
 <link rel="import" href="../properties/multi-geo-chart-properties-behavior.html">
+<link rel="import" href="../multi-config-behavior.html">
 <link rel="import" href="../multi-container-simple.html">
 <link rel="import" href="../multi-shared-styles.html">
 <!-- 
@@ -39,7 +40,8 @@
     <!-- <h3 class="subtitle">[[subtitle]]</h3> -->
     <content select="[header]"></content>
     <multi-accessor accessor="{{valueAccessor}}" path="[[valueAccessorPath]]"></multi-accessor>
-    <!-- <multi-accessor accessor="{{keyAccessor}}" path="[[keyAccessorPath]]"></multi-accessor> -->
+    <multi-accessor accessor="{{keyAccessor}}" path="[[keyAccessorPath]]"></multi-accessor>
+    <multi-accessor accessor="{{featureKeyAccessor}}" path="[[featureKeyAccessorPath]]"></multi-accessor>
       
       <multi-container-simple 
       selection-type="[[selectionType]]" 
@@ -73,6 +75,8 @@
           feature="[[feature]]"
           attrs="[[attrs]]"
           value-accessor="[[valueAccessor]]" 
+          key-accessor="[[keyAccessor]]" 
+          feature-key-accessor="[[featureKeyAccessor]]" 
           color-scale="[[colorScale]]"></multi-shape-choropleth>
           <content select=":not([legend]):not([header]):not([footer])"></content>
           <content select="[legend]"></content>
@@ -128,6 +132,23 @@
         type: String,
         value: '+rate'
       },
+
+      /**
+       * `keyAccessorPath` the path used to define the key accessor function 
+       */
+      keyAccessorPath: {
+        type: String,
+        value: 'key'
+      },
+
+       /**
+       * `keyAccessorPath` the path used to define the key accessor function 
+       */
+      featureKeyAccessorPath: {
+        type: String,
+        value: 'properties.NAME_2'
+      },
+
        /**
        * `colorScaleType` the type of scale for color
        */
@@ -142,19 +163,26 @@
 
     behaviors: [
       Polymer.multiGeoChartProperties,
-      Polymer.multiColorProperties
+      Polymer.multiColorProperties,
+      Polymer.multiConfig
       // Polymer.multiSelectionProperties
     ],
 
     observers: [
       'doFit(autoFit,width, height, feature, projection)'
+      // 'observePath(path.changed)'
     ],
 
     doFit: function(autoFit, width, height, feature, projection) {
       if(autoFit && width && height) {
         projection.fitExtent([[0,0], [width, height]], feature);
+        // we need to notify the path so that layers are redrawn when the projection changes
+        this.notifyChanged('path');
       }
-    }
+    },
+    // observePath: function() {
+    //   console.info('PATH CHANGED');
+    // }
 
 
   });

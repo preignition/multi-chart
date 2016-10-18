@@ -33,16 +33,31 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
 
       properties: {
 
-
         arcs: {
           type: Array,
           observer: 'fireRefresh'
         },
 
+        /**
+         * `innerRadius` the inner radius for the pie chart. It might be calculated by setting `radiusWidth` property
+         */
         innerRadius: {
           value: 0
         },
 
+        /**
+         * `pieWidth` a way to indicate the width of the radius (either in % or absolute value). 
+         * If set, inner radius will be inferred. 
+         */
+        pieWidth: {
+          type: String
+        },
+
+        /**
+         * `outerRadius` the outer radius for the pie. Computed as half the max size of the chart. 
+         * It can be set as a Function :
+         * `function(d){return 20 + Math.sqrt(d.value)}` 
+         */
         outerRadius: {
           type: Function,
           computed: '_computeRadius(width, height)'
@@ -68,7 +83,7 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
       },
 
       observers: [
-
+        '_observePieWidth(pieWidth, outerRadius)'
       ],
 
       behaviors: [
@@ -92,6 +107,10 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
 
       _computeRadius: function(w, h) {
         return Math.min(w, h) / 2;
+      },
+
+      _observePieWidth: function(width, radius) {
+        this.innerRadius = (width + '').endsWith('%') ? parseFloat(width) * radius : radius - parseFloat(width);
       },
 
       draw: function(host, data, duration) {

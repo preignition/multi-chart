@@ -60,6 +60,24 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
 
         },
 
+
+        /**
+         * `keyAccessor` the accessor for the data key
+         */
+        keyAccessor: {
+          type: Function
+
+        },
+
+
+        /**
+         * `featureKeyAccessor` the accessor for accessing the feature key
+         */
+        featureKeyAccessor: {
+          type: Function
+
+        },
+
         /**
          * `colorScale` scale function for mapping the input colorDomain to the output colorRange. It is usually computed by a multi-scale element.
          */
@@ -88,9 +106,10 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
        */
       _fillMap: function(data) {
         var map = this.map;
-        var accessor = this.valueAccessor;
+        var valueAccessor = this.valueAccessor;
+        var keyAccessor = this.keyAccessor;
         data.forEach(function(d) {
-          map.set(d.id, accessor(d));
+          map.set(keyAccessor(d), valueAccessor(d));
         });
       },
 
@@ -99,6 +118,7 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
        */
       _drawLayer: function(feature, path) {
         var layer = this.layer || d3.select(this.targetElement).selectAll('path.choropleth');
+        var featureKeyAccessor = this.featureKeyAccessor;
 
         layer = layer.data(feature.features);
 
@@ -110,7 +130,7 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
 
         layer.attr('d', path)
           .attr('geo-key', function(d) {
-            return d.id;
+            return featureKeyAccessor(d);
           });
 
         // just the first time so that we can see the shapes
@@ -136,6 +156,7 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
       draw: function(host, data, duration) {
 
         var layer = this.layer;
+        var featureKeyAccessor = this.featureKeyAccessor;
 
         if (!layer) {
           this._setNeedRefresh(true);
@@ -143,11 +164,17 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
         }
 
         var colorScale = this.colorScale;
+        var keyAccessor = this.keyAccessor;
         var map = this.map;
 
         layer.attr('fill', function(d) {
-          return colorScale(map.get(d.id));
+          return colorScale(map.get(featureKeyAccessor(d)));
         });
+
+        layer.on('click', function(d) {
+          host.fire('multi-tap', d);
+        });
+  
 
         this.clearRefresh();
       }
