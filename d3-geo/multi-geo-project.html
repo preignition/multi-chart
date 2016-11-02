@@ -5,8 +5,7 @@
 <!-- <link rel="import" href="d3-shape-behavior.html"> -->
 <!-- <link rel="import" href="multi-lifecyle-behavior.html"> -->
 <!--
-`d3-geo-path`
-a new geographic path generator with the default settings as in [d3.geoPath](https://github.com/d3/d3-geo#geoPath)
+`multi-geo-project
 
 @demo demo/index-choropleth.html 
 -->
@@ -43,7 +42,7 @@ a new geographic path generator with the default settings as in [d3.geoPath](htt
          */
         projectedData: {
           type: Array,
-          notify: true 
+          notify: true
         },
 
         /**
@@ -51,10 +50,9 @@ a new geographic path generator with the default settings as in [d3.geoPath](htt
          * a value of ´key´ will generate  an accessor function like ´function(d) {return d.key}´ 
          * a value of ´+value.count´ will generate  an accessor function like ´function(d) {return +d.value.count}´ 
          */
-         coordinateAccessorPath : {
-          type: String,
-          
-         },
+        coordinateAccessorPath: {
+          type: String
+        },
 
         /**
          * `coordinates` accessor function returning [x,y] coordinates from the data. Passed directly or through a coordinatePath
@@ -70,14 +68,14 @@ a new geographic path generator with the default settings as in [d3.geoPath](htt
           type: String,
           value: '__point__'
         }
-        
+
       },
 
       _computeProjection: function(projection, coordinateAccessor, data, key) {
         data.forEach(function(d) {
           d[key] = projection(coordinateAccessor(d));
         });
-        this.set('projectedData',data);
+        this.set('projectedData', data);
       },
 
       behaviors: [
@@ -91,7 +89,7 @@ a new geographic path generator with the default settings as in [d3.geoPath](htt
       ],
       _observeProjection: function(pr) {
         if (pr && !!this.projection && !!this.coordinateAccessor && this.data && this.key) {
-         this._computeProjection(this.projection, this.coordinateAccessor, this.data, this.key) ;
+          this._computeProjection(this.projection, this.coordinateAccessor, this.data, this.key);
         }
       }
 

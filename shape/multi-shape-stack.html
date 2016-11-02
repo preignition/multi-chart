@@ -2,8 +2,8 @@
 <link rel="import" href="multi-shape-behavior.html">
 <link rel="import" href="../multi-lifecycle-behavior.html">
 <!--
-`multi-poly`
-polymer elements for multivariate analysis (depend on crossfilter, universe and reductio)
+`multi-shape-stack`
+polymer elements responsible for drawing stacks in coordinate charts
 
 @demo demo/index-stack.html 
 -->
@@ -23,7 +23,6 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
   Polymer({
 
     is: 'multi-shape-stack',
-
 
     properties: {
       /**
@@ -58,7 +57,6 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
     //    this.$.shaper.computeData(data);
     //  },
 
-
     draw: function(host, data, duration) {
 
       if (!this.stack) {
@@ -71,7 +69,7 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
       var colorScale = this.colorScale;
 
       var series = d3.select(this.targetElement).selectAll('.serie')
-        .data(stack)
+        .data(stack);
 
       series.exit().remove();
 
@@ -118,9 +116,7 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
           return yScale(d[0]) - yScale(d[1]);
         })
         .attr('width', this.xScale.bandwidth());
-
     }
-
 
   });
   </script>

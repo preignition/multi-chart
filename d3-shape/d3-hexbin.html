@@ -4,10 +4,9 @@
 <!-- <link rel="import" href="d3-shape-behavior.html"> -->
 <!-- <link rel="import" href="multi-lifecyle-behavior.html"> -->
 <!--
-`multi-poly`
-polymer elements for multivariate analysis (depend on crossfilter, universe and reductio)
+`d3-hexbin`
 
-@demo demo/index-pie.html 
+@demo demo/index-choropleth.html 
 -->
 <dom-module id="d3-hexbin">
   <!--  <template>
@@ -51,8 +50,8 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
           return function(b, i) {
             b.forEach(function(p) {
               p.__bin__ = i;
-            })
-          }
+            });
+          };
         }
       },
 

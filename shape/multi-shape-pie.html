@@ -2,8 +2,8 @@
 <link rel="import" href="multi-shape-behavior.html">
 <link rel="import" href="../multi-lifecycle-behavior.html">
 <!--
-`multi-poly`
-polymer elements for multivariate analysis (depend on crossfilter, universe and reductio)
+`multi-shape pie`
+polymer elements responsible for drawing pie shapes
 
 @demo demo/index-pie.html 
 -->
@@ -25,7 +25,7 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
 
     var identity = function(d) {
       return d;
-    }
+    };
 
     Polymer({
 
@@ -116,7 +116,7 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
       draw: function(host, data, duration) {
 
         if (!this.arcs) {
-          this._error('arcs is not provided')
+          this._error('arcs is not provided');
         }
 
         var chart = d3.select(this.targetElement).selectAll('path.pie');
@@ -139,7 +139,7 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
         chart = chart.enter().append('path')
           .attr('class', 'shape pie selectable')
           .on('click', function(d) {
-              host.fire('multi-tap', d);
+            host.fire('multi-tap', d);
           })
           .merge(chart);
 
@@ -164,10 +164,10 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
         }
 
         chart.attr('key', function(d) {
-            return d.data.key
+            return d.data.key;
           })
           .attr('fill', function(d) {
-            return colorScale(d.data.key)
+            return colorScale(d.data.key);
           });
       }
 

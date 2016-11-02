@@ -3,8 +3,7 @@
 <link rel="import" href="d3-shape-behavior.html">
 <!-- <link rel="import" href="multi-lifecyle-behavior.html"> -->
 <!--
-`multi-poly`
-polymer elements for multivariate analysis (depend on crossfilter, universe and reductio)
+`d3-stack`
 
 @demo demo/index-stack.html 
 -->
@@ -16,7 +15,6 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
   Polymer({
 
     is: 'd3-stack',
-
 
     properties: {
       shaper: {
@@ -50,7 +48,7 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
         type: Function
       },
 
-       /**
+      /**
        * `domainMin` the minimum value for the calculated domain
        */
       domainMin: {

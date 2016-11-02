@@ -4,8 +4,8 @@
 
 <link rel="import" href="../multi-lifecycle-behavior.html">
 <!--
-`nulti-shape-layer`
-polymer elements for multivariate analysis (depend on crossfilter, universe and reductio)
+`nulti-shape-geo-line`
+polymer elements for drawing geo features
 
 @demo demo/index-choropleth.html 
 -->
@@ -25,9 +25,9 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
   (function() {
     'use strict';
 
-    var identity = function(d) {
-      return d;
-    }
+    // var identity = function(d) {
+    //   return d;
+    // };
 
     Polymer({
 
@@ -75,11 +75,7 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
           .attrs(this.attrs)
           .attr('class', 'layer')
           .attr('d', path);
-
-
       }
-
-
 
     });
   })();
