@@ -17,7 +17,7 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
     }
     </style>
     <svg>
-      <g id="layer" class="shape-geo-line">
+      <g id="layer" class$="shape-geo-line">
       </g>
     </svg>
   </template>
@@ -37,9 +37,14 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
         /**
          * `feature` a GeoJSON MultiLineString geometry object
          */
-        feature: {
-          type: Array
-        },
+        // feature: {
+        //   type: Array
+        // },
+
+        cls: {
+          type: String, 
+          value: 'line'
+        }
        
       },
 
@@ -59,14 +64,14 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
       /**
        * `drawLayer` 
        */
-      _drawLayer: function(feature, path) {
+      drawLayer: function(data, path) {
         // var layer = this.layer || d3.select(this.targetElement).selectAll('path.layer');
 
         d3.select(this.targetElement).selectAll('*').remove();
 
         d3.select(this.targetElement)
           .append('path')
-          .datum(feature)
+          .datum(data)
           .attrs(this.attrs)
           .attr('class', 'layer')
           .attr('d', path);

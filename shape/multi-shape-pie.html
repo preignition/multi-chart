@@ -138,12 +138,10 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
 
         chart = chart.enter().append('path')
           .attr('class', 'shape pie selectable')
+          .on('click', function(d) {
+              host.fire('multi-tap', d);
+          })
           .merge(chart);
-
-        chart.on('click', function(d) {
-          host.fire('multi-tap', d);
-        });
-
 
         if (duration) {
           //as in https://bl.ocks.org/mbostock/5100636

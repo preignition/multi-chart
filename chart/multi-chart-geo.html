@@ -9,6 +9,7 @@
 <link rel="import" href="../properties/multi-color-properties-behavior.html">
 <link rel="import" href="../properties/multi-selection-properties-behavior.html">
 <link rel="import" href="../properties/multi-geo-chart-properties-behavior.html">
+<link rel="import" href="../properties/multi-value-accessor-properties-behavior.html">
 <link rel="import" href="../multi-config-behavior.html">
 <link rel="import" href="../multi-container-simple.html">
 <link rel="import" href="../multi-shared-styles.html">
@@ -72,7 +73,7 @@
         <multi-shape-choropleth
           path="[[path]]"
           projection="[[projection]]"
-          feature="[[feature]]"
+          data="[[feature]]"
           attrs="[[attrs]]"
           value-accessor="[[valueAccessor]]" 
           key-accessor="[[keyAccessor]]" 
@@ -125,28 +126,17 @@
         type: Number
       },
 
-      /**
-       * `valueAccessorPath` the path used to define the value accessor function 
-       */
-      valueAccessorPath: {
-        type: String,
-        value: '+rate'
-      },
-
-      /**
-       * `keyAccessorPath` the path used to define the key accessor function 
-       */
-      keyAccessorPath: {
-        type: String,
-        value: 'key'
-      },
-
        /**
        * `keyAccessorPath` the path used to define the key accessor function 
        */
       featureKeyAccessorPath: {
         type: String,
         value: 'properties.NAME_2'
+      },
+
+      featureKeyAccessor: {
+        type: Function, 
+        notify: true
       },
 
        /**
@@ -164,6 +154,7 @@
     behaviors: [
       Polymer.multiGeoChartProperties,
       Polymer.multiColorProperties,
+      Polymer.multiValueProperties,
       Polymer.multiConfig
       // Polymer.multiSelectionProperties
     ],
@@ -176,7 +167,9 @@
     doFit: function(autoFit, width, height, feature, projection) {
       if(autoFit && width && height) {
         projection.fitExtent([[0,0], [width, height]], feature);
+        // this._notifyChange('projection');
         // we need to notify the path so that layers are redrawn when the projection changes
+        this.notifyChanged('projection');
         this.notifyChanged('path');
       }
     },

@@ -5,10 +5,8 @@
   <template>
     <style>
     :host {
-      /*display: block;*/
       @apply(--layout-vertical);
       @apply(--layout-justified);
-      /*height: 200px;*/
     }
     
     #svg {
@@ -16,10 +14,6 @@
       @apply(--layout-flex);
       @apply(--layout-self-stretch);
     }
-    /*::content #svg {
-      @apply(--layout-flex);
-      @apply(--layout-self-stretch);
-    }*/
     
     ::content .axis-text {
       fill: var(--secondary-text-color, grey);
@@ -37,7 +31,6 @@
 
     ::content .title,  ::content .subtitle    {
       margin: 0;
-      /*color: red;*/
     }
     ::content .subtitle {
       color: red;
@@ -50,7 +43,6 @@
   <template>
     <style>
     :host {
-      /*display: block;*/
       @apply(--layout-vertical);
       @apply(--layout-justified);
       height: 200px;
@@ -68,27 +60,26 @@
     </style>
   </template>
 </dom-module>
-<dom-module id="multi-chart-line">
-  <template>
-    <style>
-    ::content .line {
-      fill: none;
-    }
-    </style>
-  </template>
-</dom-module>
 <dom-module id="multi-chart-selector">
   <template>
     <style>
     :host[is-selecting] ::content .selectable, :host[has-selection] ::content .selectable  {
       fill-opacity: 0.35;
-      /*fill: var(--secondary-text-color, grey);*/
     }  
     
-    :host[is-selecting] ::content .selected, :host[has-selection] ::content .selected { {
+    :host[is-selecting] ::content .selected, :host[has-selection] ::content .selected { 
       fill-opacity: 1;
-      /*fill: var(--multi-chart-selected-color, #0B5D86);*/
-    }  
+    } 
+
+    ::content .selectable {
+      cursor: pointer;
+    } 
+
+    ::content .selectable:hover {
+      stroke-width : 3px;
+      fill-opacity: 0.85;
+    } 
+
 
     </style>
   </template>
@@ -98,6 +89,15 @@
   <template>
     <style>
 
+    </style>
+  </template>
+</dom-module>
+<dom-module id="multi-chart-line">
+  <template>
+    <style>
+    ::content .line {
+      fill: none;
+    }
     </style>
   </template>
 </dom-module>

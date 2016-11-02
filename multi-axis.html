@@ -3,10 +3,9 @@
 <!-- <link rel="import" href="multi-scale-behavior.html"> -->
 <link rel="import" href="multi-lifecycle-behavior.html">
 <!--
-`multi-poly`
-polymer elements for multivariate analysis (depend on crossfilter, universe and reductio)
+`multi-axis`, an element for adding axis to multi-chart
 
-@demo demo/index.html 
+@demo demo/index-line.html 
 -->
 <dom-module id="multi-axis">
   <template>
@@ -16,7 +15,7 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
     }
     </style>
     <svg>
-      <g id="axis" class="axis" transform$="[[translate(x,y)]]">
+      <g id="axis" class="axis" transform$="[[translate(_x,_y)]]">
         <text class="axis-text" transform$="[[rotate(textAngle)]]" x$="[[xText]]" y$="[[yText]]" dx$="[[dx]]" dy$="[[dy]]" text-anchor="end">[[text]]</text>
       </g>
     </svg>
@@ -28,32 +27,50 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
 
 
     properties: {
-
+      /**
+       * `axis` the [d3 axis](https://github.com/d3/d3-axis) function 
+       */
       axis: {
         type: Function,
         computed: '_computeAxis(position,scale)'
       },
 
+      /**
+       * `position`  the [position of the axis](https://github.com/d3/d3-axis#position), either right, left, bottom or top. 
+       * a x-axis (resp. y-axis) attribute is set to the target element when position is either left or right (resp. to or bottom), 
+       */
       position: {
         type: String,
         value: 'bottom',
         observer: '_setPositionAttribute'
       },
 
-      x: {
+      /**
+       * `_x` x translation for the axis. is set depending on position and height 
+       */
+      _x: {
         type: Number,
         value: 0
       },
 
-      y: {
+      /**
+       * `_y` y translation for the axis. is set depending on position and width
+       */
+      _y: {
         type: Number,
         value: 0
       },
 
+      /**
+       * `width` the width of the chart
+       */
       width: {
         type: Number
       },
 
+      /**
+       * `height` the height of the chart
+       */
       height: {
         type: Number
       },
@@ -139,7 +156,7 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
 
     _observeWidth: function(w, position) {
       if (this.isY) {
-        this.x = position === 'right' ? w : 0;
+        this._x = position === 'right' ? w : 0;
       }
       if (this.isX) {
         this.range = [0, w];
@@ -149,7 +166,7 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
 
     _observeHeight: function(h, position) {
       if (this.isX) {
-        this.y = position === 'bottom' ? h : 0;
+        this._y = position === 'bottom' ? h : 0;
       }
 
       if (this.isY) {

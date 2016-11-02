@@ -14,10 +14,18 @@
 Polymer.multiShapeGeo = {
 
   properties: {
+    
     /**
-     * `feature` geometries to be drawn
+     * `layer` a d3.selection of the layer for convenience
      */
-    feature: {
+    layer: {
+      type: Function
+    },
+
+    /**
+     * `data` geometries to be drawn
+     */
+    data: {
       type: Array
     },
 
@@ -39,24 +47,67 @@ Polymer.multiShapeGeo = {
           stroke: '#555'
         }
       }
+    },
+
+    /**
+     * `layerType` layer type - will be reflected to the layer class
+     */
+    layerType: {
+      type: String,
+      value: 'layer',
+      observer: '_observeLayerType'
+    },
+
+    /**
+     * `cls` the class to add to layer shapes
+     */
+    cls: {
+      type: String,
+      value: 'layer-shape'
     }
 
   },
   observers: [
-    '_drawLayer(feature, path)',
+    'drawLayer(data, path)',
     'observeChanged(path.changed)'
   ],
 
+  /**
+   * `targetElement` getter override lifecycle Behavior and called during attached
+   */
+  get targetElement() {
+    return this.$.layer;
+  },
+
+  _observeLayerType: function(type, old) {
+    if (old) {
+      this.targetElement.removeAttribute(old);
+    }
+    this.targetElement.setAttribute(type, '');
+  },
+
   observeChanged: function() {
-    if (this.feature && this.path) {
+    if (this.data && this.path) {
       this.debounce('drawLayer', function() {
-        this._drawLayer(this.feature, this.path);
+        this.drawLayer(this.data, this.path);
       }, 40);
     }
   },
 
-  _drawLayer: function() {
+  drawLayer: function(data, path) {
+    var layer = this.layer || d3.select(this.targetElement);
+    var cls = this.cls;
 
+    layer = layer.selectAll('path.' + cls).data(data);
+
+    layer.exit().remove();
+
+    layer = layer.enter().append('path')
+      .attr('class', cls)
+      .attrs(this.attrs)
+      .merge(layer);
+
+    return this.layer = layer;  
   }
 
 }

@@ -1,7 +1,6 @@
 <link rel="import" href="../polymer/polymer.html">
 <!--
-`multi-poly`
-polymer elements for multivariate analysis (depend on crossfilter, universe and reductio)
+`multi-accessor`
 
 -->
 <dom-module id="multi-accessor">
@@ -11,11 +10,18 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
     is: 'multi-accessor',
 
     properties: {
+      
+      /**
+       * `accessor` the accessor function 
+       */
       accessor: {
         type: Function,
         notify: true,
       },
 
+      /**
+       * `accessor` the path from which tha accessor function is built
+       */
       path: {
         type: String,
         // observer: 'observePath'
@@ -26,10 +32,6 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
         value: false
       }
 
-      // series: {
-      //   type: Array,
-      //   observer: 'observeSeries'
-      // }
     },
 
     observers: [

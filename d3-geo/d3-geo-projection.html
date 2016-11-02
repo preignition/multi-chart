@@ -63,14 +63,16 @@ a new geographic path generator with the default settings as in [d3.geoPath](htt
        * [`fitExtent`](https://github.com/d3/d3-geo#projection_fitExtent) Sets the projection’s scale and translate to fit the specified GeoJSON object in the center of the given `extent`. 
        */
       fitExtent: function(extent, object) {
-        return this.projection.fitExtent(extent, object);
+        this.projection.fitExtent(extent, object);
+        // this._notifyChange('projection', null);
       },
 
       /**
        * [`fitSize`](https://github.com/d3/d3-geo#projection_fitSize) A convenience method for projection.fitExtent where the top-left corner of the extent is `[0,0]`.
        */
       fitSize: function(size, object) {
-        return this.projection.fitSize(size, object);
+        this.projection.fitSize(size, object);
+        // this._notifyChange('projection', null);
       },
 
       /**

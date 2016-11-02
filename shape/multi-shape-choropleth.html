@@ -35,14 +35,6 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
       properties: {
 
         /**
-         * `layer` a d3.selection of the layer for convenience
-         */
-        layer: {
-          type: Function
-        },
-
-
-        /**
          * `map` a d3.map Object to facilitate retrieving values.
          */
         map: {
@@ -60,7 +52,6 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
 
         },
 
-
         /**
          * `keyAccessor` the accessor for the data key
          */
@@ -68,7 +59,6 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
           type: Function
 
         },
-
 
         /**
          * `featureKeyAccessor` the accessor for accessing the feature key
@@ -114,9 +104,9 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
       },
 
       /**
-       * `drawLayer` 
+       * `drawLayer` redraw the layer. called from multi-shape-geo-behavior when feature or path changes
        */
-      _drawLayer: function(feature, path) {
+      drawLayer: function(feature, path) {
         var layer = this.layer || d3.select(this.targetElement).selectAll('path.choropleth');
         var featureKeyAccessor = this.featureKeyAccessor;
 
