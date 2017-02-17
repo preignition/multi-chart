@@ -1,6 +1,6 @@
-# \<multi-chart\>
+[![Published on webcomponents.org](https://img.shields.io/badge/webcomponents.org-published-blue.svg)](https://beta.webcomponents.org/element/polymerEl/multi-chart)
 
-[Demo and API docs](http://polymerel.github.io/multi-chart/components/multi-chart/#multi-chart-geo)
+# \<multi-chart\>
 
 A set of polymer elements for building reusable, modular and standard-based charts. 
 
