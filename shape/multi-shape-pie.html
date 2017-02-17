@@ -131,6 +131,7 @@ polymer elements responsible for drawing pie shapes
         var arcs = this.arcs; //this.$.shaper.shapedData;
         var arc = this.arc;
         var colorScale = this.colorScale;
+        // ver me = this;
 
         chart = chart.data(arcs);
 
@@ -140,6 +141,12 @@ polymer elements responsible for drawing pie shapes
           .attr('class', 'shape pie selectable')
           .on('click', function(d) {
             host.fire('multi-tap', d);
+          })
+          .on('mouseenter', function(d) {
+            host.fire('multi-mouse-enter', d);
+          })
+          .on('mouseleave', function(d) {
+            host.fire('multi-mouse-leave', d);
           })
           .merge(chart);
 

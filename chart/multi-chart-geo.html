@@ -77,6 +77,7 @@
           attrs="[[attrs]]"
           value-accessor="[[valueAccessor]]" 
           key-accessor="[[keyAccessor]]" 
+          auto-scale="[[autoScale]]"
           feature-key-accessor="[[featureKeyAccessor]]" 
           color-scale="[[colorScale]]"></multi-shape-choropleth>
           <content select=":not([legend]):not([header]):not([footer])"></content>
@@ -93,6 +94,14 @@
       multichart: ''
     },
 
+    behaviors: [
+      Polymer.multiGeoChartProperties,
+      Polymer.multiColorProperties,
+      Polymer.multiValueProperties,
+      Polymer.multiConfig
+      // Polymer.multiSelectionProperties
+    ],
+
     properties: {
 
       /**
@@ -101,6 +110,13 @@
       autoFit: {
         type: Boolean, 
         value: true
+      },
+
+      /**
+       * `autoScale` is set to true, the color scale will be recalculated based on min/max every time data changes. 
+       */
+      autoScale: {
+        type: Boolean
       },
 
        /**
@@ -151,13 +167,15 @@
      
     },
 
-    behaviors: [
-      Polymer.multiGeoChartProperties,
-      Polymer.multiColorProperties,
-      Polymer.multiValueProperties,
-      Polymer.multiConfig
-      // Polymer.multiSelectionProperties
-    ],
+    listeners: {
+      'multi-min-max': 'onMinMax'
+    },
+
+    onMinMax: function(e,minMax) {
+      if(this.autoScale) {
+        this.set('colorDomain', minMax);
+      }
+    },
 
     observers: [
       'doFit(autoFit,width, height, feature, projection)'

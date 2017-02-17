@@ -177,7 +177,7 @@ TODO:
       // '_observeSelectedItems(selectedItems.splices)',
       '_observeSelectedItems(selectedItems.*)',
       '_observeXScale(xScale)',
-      '_observeXScale(xScale)',
+      '_observeYScale(yScale)',
       '_observeXScale(xScale.changed)',
       '_observeYScale(yScale.changed)'
       // '_observeSelectionType(selectionType, xScale, yScale)'
@@ -218,6 +218,7 @@ TODO:
       Polymer.multiLifecycle.afterRegister.call(this, host);
       // this.listen(host, 'multi-clear', 'clearSelection');
       this.listen(host, 'multi-tap', 'onMultiTap');
+     
     },
 
     afterUnregister: function(host) {
@@ -329,6 +330,7 @@ TODO:
           // isRange = true;
           this._setIsRange(true);
           sel = sel.map(scale.invert);
+          // console.info('SEL', sel);
           if (this.selectedItems[0] !== sel[0] || this.selectedItems[1] !== sel[1]) {
             // only call the splice when needed 
             this.splice('selectedItems', 0, 2, sel[0], sel[1]);
@@ -390,7 +392,13 @@ TODO:
     _refreshContiunousScale: function(scale) {
       if (scale) {
         if (scale && !scale.invert && this.xContinuous) {
-          this.__xContinuous = this.xContinuousScale.domain(d3.extent(scale.domain())).range(scale.range());
+          var range = scale.range();
+          if(scale.bandwidth) {
+            // it is a scaleBand; we need to re-adjust the range taking bandWIdth and padding into account (see https://github.com/d3/d3-scale#band-scales)
+            var step = scale.step();
+            range = [range[0] + step / 2  , range[1] - step / 2 ] ;
+          }
+          this.__xContinuous = this.xContinuousScale.domain(d3.extent(scale.domain())).range(range);
         } else {
           this.__xContinuous = null;
         }

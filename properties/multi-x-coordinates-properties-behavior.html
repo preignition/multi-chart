@@ -42,7 +42,14 @@ Polymer.multixCoordinatesProperties = {
     xScale: {
       type: Function,
       notify: true
-    }
+    },
+    
+    /**
+     * `pretendContinuous` set true to force ordinal scale into continuous range 
+     */
+    xPretendContinuous: {
+      type: Boolean,
+    },
   }
 
 };

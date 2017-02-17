@@ -25,6 +25,10 @@
 
     is: 'multi-axis',
 
+    behaviors: [
+      Polymer.multiSvgUtil,
+      Polymer.multiScale
+    ],
 
     properties: {
       /**
@@ -119,12 +123,6 @@
       },
  
     },
-
-    behaviors: [
-      Polymer.multiSvgUtil,
-      Polymer.multiScale
-    ],
-
 
     /**
      * `targetElement` getter override lifecycle Behavior and called during attached

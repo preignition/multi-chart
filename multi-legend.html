@@ -26,6 +26,12 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
 
     is: 'multi-legend',
 
+    behaviors: [
+      Polymer.multiLifecycle,
+      Polymer.multiConfig,
+      Polymer.multiSvgUtil
+    ],
+
     properties: {
 
       /**
@@ -133,7 +139,7 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
         type: String
       },
       labels: {
-        type: String
+        type: Object
       },
       labelAlign: {
         type: String
@@ -148,12 +154,6 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
         type: String
       }
     },
-
-    behaviors: [
-      Polymer.multiLifecycle,
-      Polymer.multiConfig,
-      Polymer.multiSvgUtil,
-    ],
 
     observers: [
       '_observePosition(position, padding,chartWidth, chartHeight)',
@@ -176,6 +176,14 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
       'observeConfig(labelDelimiter, "labelDelimiter", "legend", "refresh")'
     ],
 
+    listeners: {
+      // 'multi-refresh': '_onMultiRefresh'
+    },
+
+    _onMultiRefresh: function(e,d) {
+      // console.info('REFRESH:', arguments );
+      
+    },
     // attached: function() {
     //   if (!this.chartWidth) {
     //     this.chartWidth = this.domHost.width;
@@ -210,12 +218,18 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
       if (d3[legendType]) {
         var legend = d3[legendType]();
         this.applyConfig(legend, ['scale', 'cells', 'orient', 'ascending', 'shape', 'shapeWidth', 'shapeHeight', 'shapeRadius', 'shapePadding', 'useClass', 'classPrefix', 'title', 'labels', 'labelAlign', 'labelFormat', 'labelOffset', 'labelDelimiter']);
+        
+        var me = this;
+        legend.on('cellclick', function(d){me.fire('multi-cell-click', d)});
+        legend.on('cellover', function(d){me.fire('multi-cell-over', d)});
+        legend.on('cellout', function(d){me.fire('multi-cell-out', d)});
+
         return legend;
       }
     },
 
     draw: function(host, data, duration) {
-
+      // console.info('Legend Draw', arguments);
       var legend = d3.select(this.targetElement).call(this.legend);
 
     }

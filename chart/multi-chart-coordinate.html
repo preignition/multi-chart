@@ -46,7 +46,7 @@
 
     </style>
     <content select="[header]"></content> 
-    <multi-accessor accessor="{{xAccessor}}" path="[[xAccessorPath]]"></multi-accessor>
+    <multi-accessor accessor="{{xAccessor}}" path="[[xAccessorPath]]" ></multi-accessor>
     <multi-accessor accessor="{{yAccessor}}" path="[[yAccessorPath]]"></multi-accessor>
     <multi-container-coordinate 
      selection-type="[[selectionType]]"
@@ -58,6 +58,7 @@
      y-domain="[[yDomain]]"
      y-accessor="[[yAccessor]]" 
      x-scale="{{xScale}}"
+     x-pretend-continuous=[[xPretendContinuous]]
      y-scale="{{yScale}}"
      x-axis-text="[[xAxisText]]" 
      y-axis-text="[[yAxisText]]" 

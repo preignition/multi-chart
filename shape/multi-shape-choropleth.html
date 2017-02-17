@@ -44,6 +44,7 @@ polymer elements responsible for drawing choropleth area in a geo-chart
           }
         },
 
+
         /**
          * `valueAccessor` the accessor for the choropleth value
          */
@@ -75,6 +76,21 @@ polymer elements responsible for drawing choropleth area in a geo-chart
           type: Function
         },
 
+        /**
+         * `colorEmpty` color to use when no data is to be applied
+         */
+        colorEmpty: {
+          type: String,
+          value: '#ccc'
+        }
+
+        // *
+        //  * `autoScale` is set to true, the color scale will be recalculated based on min/max every time data changes. 
+         
+        // autoScale: {
+        //   type: Boolean
+        // },
+
       },
 
       behaviors: [
@@ -98,9 +114,22 @@ polymer elements responsible for drawing choropleth area in a geo-chart
         var map = this.map;
         var valueAccessor = this.valueAccessor;
         var keyAccessor = this.keyAccessor;
+        var min = 0;
+        var max = 0;
+        var value;
         data.forEach(function(d) {
-          map.set(keyAccessor(d), valueAccessor(d));
+          value = valueAccessor(d);
+          map.set(keyAccessor(d), value);
+          if(value < min) {
+            min = value;
+          }
+          if(value > max) {
+            max = value;
+          }
         });
+
+        this.fire('multi-min-max',[min,max]);
+
       },
 
       /**
@@ -153,18 +182,23 @@ polymer elements responsible for drawing choropleth area in a geo-chart
           return; // the layer is not yet ready (e.g. feature not loaded)
         }
 
+        // if(this.autoScale) {
+        //   // recalculate the domain
+        // }
+
         var colorScale = this.colorScale;
+        var colorEmpty = this.colorEmpty;
         var keyAccessor = this.keyAccessor;
         var map = this.map;
 
         layer.attr('fill', function(d) {
-          return colorScale(map.get(featureKeyAccessor(d)));
+          return colorScale(map.get(featureKeyAccessor(d))) || colorEmpty;
         });
 
         layer.on('click', function(d) {
           host.fire('multi-tap', d);
         });
-  
+
 
         this.clearRefresh();
       }

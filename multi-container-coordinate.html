@@ -25,7 +25,7 @@ The container register elements that have a `shallRegister` property set to `tru
     </style>
     <!-- Polymer has problem with handling namespace (https://github.com/Polymer/polymer/pull/3372): multi-axis is outside SVG -->
     <div id="observeNodes">
-      <multi-axis anchor="axisGroup" dy="2.7em" accessor="[[xAccessor]]" elastic="[[xElastic]]" text="[[xAxisText]]" ref="xAxis" width="[[width]]" height="[[height]]" family="{{xScaleFamily}}" scale="{{xScale}}" scale-type="scaleBand" padding="0.1" domain="{{xDomain}}" range="[[xRange]]"></multi-axis>
+      <multi-axis anchor="axisGroup" dy="2.7em" accessor="[[xAccessor]]" elastic="[[xElastic]]" text="[[xAxisText]]" ref="xAxis" width="[[width]]" height="[[height]]" family="{{xScaleFamily}}" scale="{{xScale}}" scale-type="scaleBand" padding="0.1" domain="{{xDomain}}" range="[[xRange]]" pretend-continuous=[[xPretendContinuous]]></multi-axis>
       <multi-axis anchor="axisGroup" text-angle="-90" y-text="6" dy="0.7em" domain-min="0" domain="[[yDomain]]" accessor="[[yAccessor]]" elastic="[[yElastic]]" text="[[yAxisText]]" ref="yAxis" width="[[width]]" height="[[height]]" position="left" domain="{{yDomain}}" range="[[yRange]]" scale="{{yScale}}"></multi-axis>
       <content id="content"></content>
     </div>
