@@ -8,18 +8,29 @@
  *
  */
 
- 'use strict';
+'use strict';
 
 /** @polymerBehavior  multiContainerImpl*/
 Polymer.multiContainerImpl = {
 
   properties: {
 
-    duration: {
-      type: Number,
-      value: 200
-    },
+    // duration: {
+    //   type: Number,
+    //   value: 200
+    // },
 
+    /* 
+     * `transition` a transition composer function
+     */
+     transition : {
+       type:  Function,
+       value: function() {
+        return function(transition) {
+          return transition.duration(200);
+        };
+       }
+      },
     data: {
       type: Array,
       observer: 'render'
@@ -91,7 +102,7 @@ Polymer.multiContainerImpl = {
     'multi-has-selection': '__onHasSelection',
     'multi-refresh': '__onRefresh',
     'multi-resize': '__onResize'
-    // 'multi-clear': '__onMultiClear',
+      // 'multi-clear': '__onMultiClear',
   },
 
   // renderChart: function(data) {
@@ -105,8 +116,8 @@ Polymer.multiContainerImpl = {
 
     if (data && this.width !== 0) {
 
-      this.callRegistered('preDraw', data, this.duration);
-      this.callRegistered('draw', data, this.duration);
+      this.callRegistered('preDraw', data, this.transition);
+      this.callRegistered('draw', data, this.transition);
       this.fire('multi-render');
     }
 
@@ -154,14 +165,16 @@ Polymer.multiContainerImpl = {
 
   __onRefresh: function(e, detail) {
     e.stopPropagation();
+    var el = e.srcElement;
+    if (el.onRefresh) {
+      // shaper web-component
+      return this.debounce('multi-container-behavior-refresh', function(){
+        el.onRefresh(this.data);
+      }, 50);
+    }
     if (this.data) {
-      var el = e.srcElement;
-      if (el.onRefresh) {
-        // shaper web-component
-        return el.onRefresh(this.data);
-      }
       if (el.isDrawn && this.registeredItems.indexOf(el) > -1) {
-        el.draw(this, this.data, this.duration);
+        el.draw(this, this.data, this.transition);
       }
     }
   },

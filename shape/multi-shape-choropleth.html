@@ -32,6 +32,12 @@ polymer elements responsible for drawing choropleth area in a geo-chart
 
       is: 'multi-shape-choropleth',
 
+      behaviors: [
+        Polymer.multiLifecycle,
+        Polymer.multiShapeGeo,
+        Polymer.multiShape
+      ],
+
       properties: {
 
         /**
@@ -82,7 +88,9 @@ polymer elements responsible for drawing choropleth area in a geo-chart
         colorEmpty: {
           type: String,
           value: '#ccc'
-        }
+        },
+
+
 
         // *
         //  * `autoScale` is set to true, the color scale will be recalculated based on min/max every time data changes. 
@@ -92,12 +100,6 @@ polymer elements responsible for drawing choropleth area in a geo-chart
         // },
 
       },
-
-      behaviors: [
-        Polymer.multiLifecycle,
-        Polymer.multiShapeGeo,
-        Polymer.multiShape
-      ],
 
       /**
        * `targetElement` getter override lifecycle Behavior and called during attached
@@ -147,16 +149,27 @@ polymer elements responsible for drawing choropleth area in a geo-chart
           .attr('class', 'shape choropleth selectable')
           .merge(layer);
 
-        layer.attr('d', path)
-          .attr('geo-key', function(d) {
+        layer
+          .attr('data-geo-key', function(d) {
             return featureKeyAccessor(d);
           });
 
         // just the first time so that we can see the shapes
         if (!this.isDrawn) {
           layer
-            .attrs(this.attrs)
+            .attrs(this.attrs);
         }
+
+        if(this.transition) {
+          layer.transition()
+            .call(this.transition)
+            .attr('d', path);
+        }  
+        else {
+          layer
+            .attr('d', path);
+        }
+
 
         this.layer = layer;
         this.checkRefresh();
@@ -172,7 +185,7 @@ polymer elements responsible for drawing choropleth area in a geo-chart
       /**
        * `draw` update layer fill colors.
        */
-      draw: function(host, data, duration) {
+      draw: function(host, data, transition) {
 
         var layer = this.layer;
         var featureKeyAccessor = this.featureKeyAccessor;

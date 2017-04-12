@@ -101,7 +101,7 @@ Polymer.multiScaleImpl = {
   /**
    * `preDraw` re-calculate the domain if/when needed - called by the host 
    */
-  preDraw: function(host, data, duration, isStack) {
+  preDraw: function(host, data, transition, isStack) {
     if (this.elastic === true || !this.domain) {
       if (this.family === 'ordinal') {
       // if (this.family === 'ordinalBand') {

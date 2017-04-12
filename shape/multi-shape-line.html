@@ -77,7 +77,7 @@ polymer elements resobpible for drawing lines in a coordinate chart
       return this.$.shape;
     },
 
-    draw: function(host, data, duration) {
+    draw: function(host, data, transition) {
 
       var chart = d3.select(this.targetElement).datum(data);
       
@@ -85,8 +85,8 @@ polymer elements resobpible for drawing lines in a coordinate chart
       //     host.fire('multi-tap', d);
       //   });
 
-      if (duration)  {
-        chart = chart.transition().duration(duration);
+      if (transition)  {
+        chart = chart.transition().call(transition);
       }  
       
       chart.attr('stroke',  this.colorScale(this.index))

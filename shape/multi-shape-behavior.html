@@ -53,11 +53,11 @@ Polymer.multiShapeImpl = {
     this._setNeedRefresh(false);
   },
 
-  setTransition: function(chart, duration) {
+  setTransition: function(chart, transition) {
     var me = this;
     this._setIsDrawing(true);
 
-    chart = chart.transition().duration(duration)
+    chart = chart.transition().call(transition)
       .on('end', function() {
         me._setIsDrawing(false);
       });

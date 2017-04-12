@@ -228,7 +228,7 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
       }
     },
 
-    draw: function(host, data, duration) {
+    draw: function(host, data, transition) {
       // console.info('Legend Draw', arguments);
       var legend = d3.select(this.targetElement).call(this.legend);
 

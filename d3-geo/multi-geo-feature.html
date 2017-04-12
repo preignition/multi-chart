@@ -56,20 +56,34 @@ exposes geo feature from an url
       handleAs: {
         type: String,
         value: 'json'
-      }
+      },
+      /* 
+       * `filter` the filter to use for fitlering features
+       * ex: function(f) {return f.id !== 10} // remove antartic from a world map
+       */
+       filter : {
+         type:  Function,
+         value: null
+         }, 
     },
 
     observers: [
-      '_observeData(data, name, geoType)',
+      '_observeData(data, name, geoType, filter)',
 
     ],
 
-    _observeData: function(data, name, geoType) {
+    _observeData: function(data, name, geoType, filter) {
+      var feature; 
       if (geoType === 'topojson') {
-        this.feature = topojson.feature(data, data.objects[name]);
+        feature = topojson.feature(data, data.objects[name]);
       } else {
-        this.feature = data.objects[name].geometries;
+        feature = data.objects[name].geometries;
       }
+      if(feature && feature.features && filter && typeof filter === 'function') {
+        feature.features = feature.features.filter(filter);
+      }
+      this.feature = feature;
+
     }
 
   });

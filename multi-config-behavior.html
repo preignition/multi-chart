@@ -34,6 +34,9 @@ Polymer.multiConfig = {
       }
       // this._notifyChange(targetName, null, value);
     }
+    else  { 
+      console.warn(targetName + '['+ name +'] is not a function and confic cannot be applied');
+    }
   },
   observeConfigSplices: function(splice, name, targetName, eventName) {
     var value = this[name];

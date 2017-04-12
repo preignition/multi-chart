@@ -61,7 +61,7 @@ polymer elements responsible for drawing bars in a coordinate chart
       return this.$.shape;
     },
 
-    draw: function(host, data, duration) {
+    draw: function(host, data, transition) {
 
       var height = this.height;
       var y = this.y;
@@ -78,8 +78,8 @@ polymer elements responsible for drawing bars in a coordinate chart
           host.fire('multi-tap', d);
         });
 
-      if (duration)  {
-        chart = chart.transition().duration(duration);
+      if (transition)  {
+        chart = chart.transition().call(transition);
       }  
       
       chart.attr('x', this.x)

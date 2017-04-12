@@ -57,7 +57,7 @@ polymer elements responsible for drawing stacks in coordinate charts
     //    this.$.shaper.computeData(data);
     //  },
 
-    draw: function(host, data, duration) {
+    draw: function(host, data, transition) {
 
       if (!this.stack) {
         this._error('stack is not provided');
@@ -98,8 +98,8 @@ polymer elements responsible for drawing stacks in coordinate charts
         host.fire('multi-tap', d);
       });
 
-      if (duration) {
-        chart = this.setTransition(chart, duration);
+      if (transition) {
+        chart = this.setTransition(chart, transition);
       }
 
       chart

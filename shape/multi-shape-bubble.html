@@ -63,7 +63,7 @@ polymer elements responsible for drawing bubbles in a coordinate chart
       return this.$.shape;
     },
 
-    draw: function(host, data, duration) {
+    draw: function(host, data, transition) {
 
       var chart = d3.select(this.targetElement).selectAll('circle.bubble').data(data);
 
@@ -77,8 +77,8 @@ polymer elements responsible for drawing bubbles in a coordinate chart
         host.fire('multi-tap', d);
       });
 
-      if (duration) {
-        chart = chart.transition().duration(duration);
+      if (transition) {
+        chart = chart.transition().call(transition);
       }
 
       chart.attr('cx', this.x)

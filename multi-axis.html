@@ -177,12 +177,12 @@
     },
 
 
-    draw: function(host, data, duration) {
+    draw: function(host, data, transition) {
 
       var sel = d3.select(this.targetElement);
 
-      if (duration) {
-        sel.transition(duration).call(this.axis.scale(this.scale));
+      if (tansition) {
+        sel.transition().call(transition).call(this.axis.scale(this.scale));
       } else {
         sel.call(this.axis.scale(this.scale));
       }

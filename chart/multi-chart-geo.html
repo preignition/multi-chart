@@ -73,6 +73,7 @@
         <multi-shape-choropleth
           path="[[path]]"
           projection="[[projection]]"
+          transition="[[transition]]"
           data="[[feature]]"
           attrs="[[attrs]]"
           value-accessor="[[valueAccessor]]" 
@@ -108,8 +109,9 @@
        * `autoFit` when true, fit projection scale and translate so as to fit to bounding box (width and height)
        */
       autoFit: {
-        type: Boolean, 
-        value: true
+        type: Boolean,
+        value: false
+        // value: true
       },
 
       /**
@@ -118,6 +120,13 @@
       autoScale: {
         type: Boolean
       },
+
+      /* 
+       * `transition` a transition to apply when drawing chart features
+       */
+       transition : {
+         type:  Function
+         },
 
        /**
        * `path` the [path](https://github.com/d3/d3-geo#geoPath) generator function. It notifies so that we can pass other geo element that share the same path generator 
@@ -132,7 +141,7 @@
       */
       projection: {
         type: Function,
-        notify: true,
+        notify: true
       },
 
       /**
@@ -178,8 +187,8 @@
     },
 
     observers: [
-      'doFit(autoFit,width, height, feature, projection)'
-      // 'observePath(path.changed)'
+      'doFit(autoFit,width, height, feature, projection)',
+      'observeProjection(projection.changed)'
     ],
 
     doFit: function(autoFit, width, height, feature, projection) {
@@ -188,12 +197,15 @@
         // this._notifyChange('projection');
         // we need to notify the path so that layers are redrawn when the projection changes
         this.notifyChanged('projection');
-        this.notifyChanged('path');
+        // this.notifyChanged('path');
       }
     },
-    // observePath: function() {
-    //   console.info('PATH CHANGED');
-    // }
+    observeProjection: function() {
+      this.debounce('multi-chart-geo-projection', function() {
+        this.notifyChanged('path');
+      }, 100);
+      console.info('PATH CHANGED');
+    }
 
 
   });

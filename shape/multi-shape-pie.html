@@ -113,7 +113,7 @@ polymer elements responsible for drawing pie shapes
         this.innerRadius = (width + '').endsWith('%') ? parseFloat(width) * radius : radius - parseFloat(width);
       },
 
-      draw: function(host, data, duration) {
+      draw: function(host, data, transition) {
 
         if (!this.arcs) {
           this._error('arcs is not provided');
@@ -121,7 +121,7 @@ polymer elements responsible for drawing pie shapes
 
         var chart = d3.select(this.targetElement).selectAll('path.pie');
 
-        if (duration) {
+        if (transition) {
           chart.each(function(d) {
             this._current = d;
           });
@@ -150,7 +150,7 @@ polymer elements responsible for drawing pie shapes
           })
           .merge(chart);
 
-        if (duration) {
+        if (transition) {
           //as in https://bl.ocks.org/mbostock/5100636
           function arcTween(a) {
             var i = d3.interpolate(this._current, a);
@@ -160,7 +160,7 @@ polymer elements responsible for drawing pie shapes
             };
           }
 
-          chart = this.setTransition(chart, duration);
+          chart = this.setTransition(chart, transition);
 
           chart
             .attrTween('d', arcTween);

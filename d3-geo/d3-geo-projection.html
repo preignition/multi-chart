@@ -39,6 +39,11 @@ a webcompobent for handling geo projection as in [d3-geo](https://github.com/d3/
 
       is: 'd3-geo-projection',
 
+      behaviors: [
+        Polymer.multiConfig,
+        Polymer.multiGeoChartProperties
+      ],
+
       properties: {
         /**
          * `projection` the [projection](https://github.com/d3/d3-geo#projection) generator function
@@ -95,11 +100,6 @@ a webcompobent for handling geo projection as in [d3-geo](https://github.com/d3/
       _computeTranslate: function(w, h) {
         return [w / 2, h / 2];
       },
-
-      behaviors: [
-        Polymer.multiConfig,
-        Polymer.multiGeoChartProperties
-      ],
 
       observers: [
         'observeConfig(clipAngle, "clipAngle", "projection")',
