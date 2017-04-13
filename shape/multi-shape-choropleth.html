@@ -137,7 +137,7 @@ polymer elements responsible for drawing choropleth area in a geo-chart
       /**
        * `drawLayer` redraw the layer. called from multi-shape-geo-behavior when feature or path changes
        */
-      drawLayer: function(feature, path) {
+      drawLayer: function(feature, path, transition) {
         var layer = this.layer || d3.select(this.targetElement).selectAll('path.choropleth');
         var featureKeyAccessor = this.featureKeyAccessor;
 
@@ -160,9 +160,9 @@ polymer elements responsible for drawing choropleth area in a geo-chart
             .attrs(this.attrs);
         }
 
-        if(this.transition) {
+        if(transition) {
           layer.transition()
-            .call(this.transition)
+            .call(transition)
             .attr('d', path);
         }  
         else {

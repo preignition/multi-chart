@@ -50,6 +50,8 @@
       height="{{height}}" 
       width="{{width}}" 
       data="[[data]]" 
+      enable-zoom="[[enableZoom]]"
+      zoom="{{zoom}}"
       >
         <multi-scale 
           scale-type="[[colorScaleType]]" 
@@ -59,7 +61,8 @@
           scale="{{colorScale}}"></multi-scale>
         <d3-geo-projection 
           projection="{{projection}}" 
-          scale="[[projectionScale]]"  
+          zoom="[[zoom]]"
+          scale="{{projectionScale}}"  
           height="[[height]]"
           clip-angle="[[clipAngle]]" 
           clip-extent="[[clipExtent]]" 
@@ -148,7 +151,8 @@
        * [`projectionScale`](https:github.com/d3/d3-geo#projection_scale)
        */
       projectionScale: {
-        type: Number
+        type: Number,
+        notify: true
       },
 
        /**
@@ -170,7 +174,18 @@
       colorScaleType: {
         type: String,
         value: 'scaleQuantize'
-       }
+       },
+
+       /* 
+        * `enableZoom` set true to enable zoom 
+        */
+        enableZoom : {
+          type:  Boolean,
+          },
+
+       zoom: {
+        type: Function
+       }   
 
        // colorScaleType: 'scaleQuantize'
      
@@ -204,7 +219,7 @@
       this.debounce('multi-chart-geo-projection', function() {
         this.notifyChanged('path');
       }, 100);
-      console.info('PATH CHANGED');
+      // console.info('PATH CHANGED');
     }
 
 

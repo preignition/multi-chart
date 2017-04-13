@@ -82,7 +82,9 @@ exposes geo feature from an url
       if(feature && feature.features && filter && typeof filter === 'function') {
         feature.features = feature.features.filter(filter);
       }
-      this.feature = feature;
+      this.debounce('multi-geo-feature-observe-data', function(){
+        this.feature = feature;
+      }, 50);
 
     }
 

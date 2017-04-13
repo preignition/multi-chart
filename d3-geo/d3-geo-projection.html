@@ -60,9 +60,31 @@ a webcompobent for handling geo projection as in [d3-geo](https://github.com/d3/
         scale: {
           type: Number,
           notify: true, 
-        }
+        },
+
+        /* 
+         * `zoom` the zoom function...
+         */
+         // zoom : {
+         //   type:  Function,
+         //   observer: '_observeZoom'
+         //   },
         
       },
+
+      // _observeZoom: function(zoom, old) {
+      //    if(zoom){
+      //     // var projection = this.projection
+      //     var me = this;
+      //     d3.select(this).call(zoom.transform, {k: this.scale, x: this.width/2, y : this.height /2});
+      //     zoom.on('zoom', function() {
+      //       console.log('ZOOM',d3.event.transform.x, d3.event.transform.y, d3.event.transform.k);
+      //       me.set('scale', d3.event.transform.k);
+      //       me.set('translate', [d3.event.transform.x, d3.event.transform.y]);
+      //       // scale = d3.event.transform.k;
+      //     });
+      //   }
+      // },
 
       /**
        * [`fitExtent`](https://github.com/d3/d3-geo#projection_fitExtent) Sets the projection’s scale and translate to fit the specified GeoJSON object in the center of the given `extent`. 
@@ -97,9 +119,9 @@ a webcompobent for handling geo projection as in [d3-geo](https://github.com/d3/
         return projection;
       },
 
-      _computeTranslate: function(w, h) {
-        return [w / 2, h / 2];
-      },
+      // _computeTranslate: function(w, h) {
+      //   return [w / 2, h / 2];
+      // },
 
       observers: [
         'observeConfig(clipAngle, "clipAngle", "projection")',

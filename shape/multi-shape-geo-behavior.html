@@ -89,7 +89,7 @@ Polymer.multiShapeGeo = {
   observeChanged: function() {
     if (this.data && this.path) {
       this.debounce('drawLayer', function() {
-        this.drawLayer(this.data, this.path);
+        this.drawLayer(this.data, this.path, this.transition);
       }, 40);
     }
   },

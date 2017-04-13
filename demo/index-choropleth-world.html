@@ -24,7 +24,8 @@
   #chart {
     height: 600px;
     width: 950px;
-    stroke: red;
+    stroke: white;
+    fill: var(--primary-color);
   }
   
   h3 {
@@ -43,7 +44,20 @@
           <multi-geo-feature id="feature" feature="{{feature}}" data="{{geometries}}" name="countries" url="worldSimplify01.json"></multi-geo-feature>
           <!-- <multi-geo-mesh mesh="{{mesh}}" data="[[geometries]]" name="states"></multi-geo-mesh> -->
           <multi-transition transition="{{transition}}" duration="500"></multi-transition>
-          <multi-chart-geo transition="[[transition]]" id="chart" color-scale="{{colorScale}}" path="{{path}}" width="{{width}}" projection="{{projection}}" projection-type="[[projectionType]]" value-accessor-path="+rate" key-accessor-path="id" feature-key-accessor-path="id" feature="[[feature]]" projection-scale="[[projectionScale]]">
+          <multi-chart-geo 
+            id="chart" 
+            enable-zoom
+            transition="[[transition]]" 
+            color-scale="{{colorScale}}" 
+            path="{{path}}" 
+            width="{{width}}" 
+            projection="{{projection}}" 
+            projection-type="[[projectionType]]" 
+            value-accessor-path="+rate" 
+            key-accessor-path="id" 
+            feature-key-accessor-path="id" 
+            feature="[[feature]]" 
+            projection-scale="{{projectionScale}}">
             <!-- the mesh for US States will be added to the choropleth !-->
             <!-- <multi-shape-geo-line path="[[path]]" projection="[[projection]]" attrs="[[meshAttrs]]" data="[[mesh]]"></multi-shape-geo-line> -->
             <!-- <multi-legend legend scale="[[colorScale]]" chart-width="[[width]]" padding="50" label-format=".0%" position="right" > </multi-legend> -->
@@ -70,11 +84,11 @@ window.addEventListener('WebComponentsReady', function() {
   var chart = app.$.chart;
   var data;
 
-  app.projectionScale = 900;
+  app.projectionType = 'geoMercator';
+  app.projectionScale = 200;
   chart.scaleType = 'scaleQuantize';
   chart.colorRange = [d3.rgb(247, 251, 255), d3.rgb(222, 235, 247), d3.rgb(198, 219, 239), d3.rgb(158, 202, 225), d3.rgb(107, 174, 214), d3.rgb(66, 146, 198), d3.rgb(33, 113, 181), d3.rgb(8, 81, 156), d3.rgb(8, 48, 107)];
   chart.colorDomain = [0, 0.15];
-  app.projectionType = 'geoMercator'
 
   //remove antartica
   app.$.feature.filter = function(f) {
@@ -82,7 +96,8 @@ window.addEventListener('WebComponentsReady', function() {
   };
 
   chart.attrs = {
-    fill: '#eee',
+    // fill: '#eee',
+    fill: null,
     stroke: null
   };
   app.meshAttrs = {

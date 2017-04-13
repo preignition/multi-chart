@@ -15,8 +15,8 @@ Polymer.multiConfig = {
 
   applyConfig: function(obj, properties) {
     properties.forEach(function(name) {
-      if (this.name !== undefined && obj[name]) {
-        obj[name](this.name);
+      if (this[name] !== undefined && obj[name]) {
+        obj[name](this[name]);
       }
     }, this);
   },

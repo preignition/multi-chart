@@ -1,5 +1,6 @@
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="multi-container-behavior.html">
+<link rel="import" href="multi-zoom-behavior.html">
 <link rel="import" href="multi-axis.html">
 <link rel="import" href="multi-scale.html">
 <link rel="import" href="multi-accessor.html">
@@ -16,6 +17,14 @@ The container register elements that have a `shallRegister` property set to `tru
 <dom-module id="multi-container-simple">
   <template>
     <style is="custom-style" include="multi-container multi-chart-selector">
+  
+   /* #overlay {
+      fill: none;
+      pointer-events: all;
+      width: 100%;
+    }
+    */
+
 
     </style>
     <div id="observeNodes">
@@ -28,6 +37,9 @@ The container register elements that have a `shallRegister` property set to `tru
           <g id="chart" class="chart">
           </g>
         </g>
+         <!--  <g >
+            <rect id="overlay"></rect>
+          </g> -->
         <!-- <g id="selector"></g>   -->
       </g>
       <g id="legend"></g>
@@ -56,7 +68,8 @@ The container register elements that have a `shallRegister` property set to `tru
     },
 
     behaviors: [
-      Polymer.multiContainer
+      Polymer.multiContainer,
+      Polymer.multiZoom
     ]
 
   });

@@ -11,7 +11,7 @@
     is: 'multi-transition',
 
     behaviors: [
-      // Polymer.multiConfig
+      Polymer.multiConfig
     ],
 
     properties: {
@@ -25,15 +25,16 @@
         value: function() {
           var me = this;
           return function(transition) {
-            if(me.duration) {
-              transition.duration(me.duration);
-            }
-            if(me.delay) {
-              transition.delay(me.delay);
-            }
-             if(me.ease) {
-              transition.ease(me.ease);
-            }
+            me.applyConfig(transition, ['duration', 'delay', 'ease' ])
+            // if(me.duration) {
+            //   transition.duration(me.duration);
+            // }
+            // if(me.delay) {
+            //   transition.delay(me.delay);
+            // }
+            //  if(me.ease) {
+            //   transition.ease(me.ease);
+            // }
             return transition;
 
           };
