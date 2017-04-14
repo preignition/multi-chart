@@ -8,47 +8,53 @@
 /** @polymerBehavior */
 Polymer.multiZoom = {
 
-    properties: {
-      /* 
-       * `enableZoom` set true to enable zoom behaviors
-       */
-      enableZoom: {
-        type: Boolean,
-        value: false,
-        reflectToAttribute: true
-          // observer: '__observeEnableZoom'
-      },
-      /* 
-       * `zoom` the zoom function
-       */
-      transform: {
-        type: Object,
-        notify: true
-      },
-
-
+  properties: {
+    /* 
+     * `enableZoom` set true to enable zoom behaviors
+     */
+    enableZoom: {
+      type: Boolean,
+      value: false,
+      reflectToAttribute: true,
+        observer: '__observeEnableZoom'
     },
-    observers: [
-      '__observeEnableZoom(enableZoom,width, height)'
-    ],
-    __observeEnableZoom: function(enable, width, height) {
-      if (enable && width && height) {
-        // var scale0 = (width - 1) / 2 / Math.PI;
-        var zoom = d3.zoom().on('zoom', zoomed);
-        var zoomedEl = d3.select(this.$.zoom);
+    /* 
+     * `transform` the transform Object applied to zoomed ELement 
+     */
+    transform: {
+      type: Object,
+      notify: true
+    },
 
-        d3.select(this.$.svg).call(zoom);
 
-        function zoomed() {
-          zoomedEl.attr('transform', d3.event.transform);
-        }
-        }
-        if (!enable && old) {
-          // remove listner
-          // d3.select(this.$.zoom)
-        }
+  },
+  observers: [
+    // '__observeEnableZoom(enableZoom)'
+  ],
 
+  get zoomedEl() {
+    return d3.select(this.$.zoom);
+  },
+
+  __observeEnableZoom: function(enable, old) {
+    if (enable) {
+      var zoom = d3.zoom().on('zoom', zoomed);
+      var zoomedEl = this.zoomedEl;
+
+      d3.select(this.$.svg).call(zoom);
+      var me = this;
+      
+      function zoomed() {
+        me.transform = d3.event.transform;
+        zoomedEl.attr('transform', me.transform);
       }
+    }
+    if (!enable && old) {
+      // remove listner
+      // d3.select(this.$.zoom)
+    }
 
-    };
+  }
+
+};
 </script>

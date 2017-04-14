@@ -51,7 +51,6 @@
       width="{{width}}" 
       data="[[data]]" 
       enable-zoom="[[enableZoom]]"
-      zoom="{{zoom}}"
       >
         <multi-scale 
           scale-type="[[colorScaleType]]" 
@@ -61,7 +60,6 @@
           scale="{{colorScale}}"></multi-scale>
         <d3-geo-projection 
           projection="{{projection}}" 
-          zoom="[[zoom]]"
           scale="{{projectionScale}}"  
           height="[[height]]"
           clip-angle="[[clipAngle]]" 
@@ -181,14 +179,8 @@
         */
         enableZoom : {
           type:  Boolean,
-          },
+        }
 
-       zoom: {
-        type: Function
-       }   
-
-       // colorScaleType: 'scaleQuantize'
-     
     },
 
     listeners: {

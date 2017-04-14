@@ -24,7 +24,13 @@ The container register elements that have a `shallRegister` property set to `tru
       width: 100%;
     }
     */
+/*    #background rect {
+      fill: var(--secondary-color);
+      mask: url(#mask-wave);
+      width: 100vw;
+      height: 100vh;
 
+    }*/
 
     </style>
     <div id="observeNodes">
@@ -32,6 +38,7 @@ The container register elements that have a `shallRegister` property set to `tru
     </div>
     <svg id="svg">
       <!-- <g id="chartContent" transform$="[[translate(xCenter, yCenter)]]"> -->
+      <g id="background"></g>
       <g id="chartContent">
         <g id="zoom">
           <g id="chart" class="chart">
