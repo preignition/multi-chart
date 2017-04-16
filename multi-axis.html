@@ -26,8 +26,8 @@
     is: 'multi-axis',
 
     behaviors: [
-      Polymer.multiSvgUtil,
-      Polymer.multiScale
+      multi.svgUtil,
+      multi.scale
     ],
 
     properties: {
@@ -181,7 +181,7 @@
 
       var sel = d3.select(this.targetElement);
 
-      if (tansition) {
+      if (transition) {
         sel.transition().call(transition).call(this.axis.scale(this.scale));
       } else {
         sel.call(this.axis.scale(this.scale));

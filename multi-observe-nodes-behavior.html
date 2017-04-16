@@ -1,13 +1,16 @@
 <link rel="import" href="../polymer/polymer.html">
 <script>
 /**
- * `multiObserveNodes` for observing child nodes that need to be registered or further processed when attached
+ o* `multi.ObserveNodes` for observing child nodes that need to be registered or further processed when attached
  *
  */
 'use strict';
 
 /** @polymerBehavior */
-Polymer.multiObserveNodes = {
+// Polymer.multiObserveNodes = {
+window.multi = window.multi || {};
+
+window.multi.observeNodes = {
 
   get observeNodes() {
     return this.$.observeNodes;

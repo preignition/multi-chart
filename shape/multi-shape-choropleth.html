@@ -33,9 +33,9 @@ polymer elements responsible for drawing choropleth area in a geo-chart
       is: 'multi-shape-choropleth',
 
       behaviors: [
-        Polymer.multiLifecycle,
-        Polymer.multiShapeGeo,
-        Polymer.multiShape
+        multi.lifecycle,
+        multi.shapeGeo,
+        multi.shape
       ],
 
       properties: {
@@ -205,7 +205,11 @@ polymer elements responsible for drawing choropleth area in a geo-chart
         var map = this.map;
 
         layer.attr('fill', function(d) {
-          return colorScale(map.get(featureKeyAccessor(d))) || colorEmpty;
+          var value = map.get(featureKeyAccessor(d))
+          if(!value ) {
+            return colorEmpty;
+          }
+          return colorScale(value);
         });
 
         layer.on('click', function(d) {

@@ -1,6 +1,6 @@
 <link rel="import" href="../../polymer/polymer.html">
 <link rel="import" href="../multi-config-behavior.html">
-<link rel="import" href="../properties/multi-label-properties-behavior.html">
+<!-- <link rel="import" href="../properties/multi-label-properties-behavior.html"> -->
 <link rel="import" href="../multi-svg-util-behavior.html">
 <script>
 /**
@@ -11,7 +11,10 @@
 'use strict';
 
 /** @polymerBehavior Polymer.multiShapeImpl */
-Polymer.multiShapeImpl = {
+window.multi = window.multi || {};
+
+window.multi.shapeImpl = {
+// Polymer.multiShapeImpl = {
 
   properties: {
 
@@ -36,6 +39,7 @@ Polymer.multiShapeImpl = {
       type: Boolean,
       readOnly: true
     }
+
 
   },
 
@@ -108,10 +112,10 @@ Polymer.multiShapeImpl = {
 };
 
 /** @polymerBehavior */
-Polymer.multiShape = [
-  Polymer.multiConfig,
-  Polymer.multiLabelProperties,
-  Polymer.multiSvgUtil,
-  Polymer.multiShapeImpl
+multi.shape = [
+  multi.config,
+  // multi.LabelProperties,
+  multi.svgUtil,
+  multi.shapeImpl
 ];
 </script>

@@ -1,9 +1,9 @@
 <link rel="import" href="../../polymer/polymer.html">
-<link rel="import" href="../properties/multi-x-coordinates-properties-behavior.html">
-<link rel="import" href="../properties/multi-y-coordinates-properties-behavior.html">
-<link rel="import" href="../properties/multi-chart-properties-behavior.html">
-<link rel="import" href="../properties/multi-color-properties-behavior.html">
-<link rel="import" href="../properties/multi-selection-properties-behavior.html">
+<link rel="import" href="../properties/multi-x-coordinates-behavior.html">
+<link rel="import" href="../properties/multi-y-coordinates-behavior.html">
+<link rel="import" href="../properties/multi-chart-behavior.html">
+<link rel="import" href="../properties/multi-color-behavior.html">
+<!-- <link rel="import" href="../properties/multi-selection-properties-behavior.html"> -->
 <link rel="import" href="../d3-shape/d3-stack.html">
 <link rel="import" href="../../d3-bundle-element/d3-element-multi.html">
 <link rel="import" href="../shape/multi-shape-stack.html">
@@ -97,10 +97,10 @@
      },
 
     behaviors: [
-      Polymer.multixCoordinatesProperties,
-      Polymer.multiyCoordinatesProperties,
-      Polymer.multiChartProperties,
-      Polymer.multiColorProperties
+      multi.xCoordinates,
+      multi.yCoordinates,
+      multi.chart,
+      multi.color
       // Polymer.multiSelectionProperties
     ]
 

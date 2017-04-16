@@ -1,6 +1,6 @@
 <link rel="import" href="../../polymer/polymer.html">
 <link rel="import" href="../multi-accessor.html">
-<link rel="import" href="d3-shape-behavior.html">
+<link rel="import" href="d3-shaper-behavior.html">
 <!-- <link rel="import" href="multi-lifecyle-behavior.html"> -->
 <!--
 `d3-pie`
@@ -67,7 +67,7 @@
     },
 
     behaviors: [
-      Polymer.multiShaper
+      multi.shaper
       // Polymer.multi.lifecycle
     ],
 
@@ -75,7 +75,7 @@
       'observeConfig(value, "value", "shaper","refresh")',
       'observeConfig(padAngle, "padAngle", "shaper","refresh")',
       'observeConfig(sort, "sort", "shaper","refresh")',
-      'observeConfig(sortValues, "sortValues", "shaper,"refresh"")'
+      'observeConfig(sortValues, "sortValues", "shaper", "refresh")'
     ]
 
   });

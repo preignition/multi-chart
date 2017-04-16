@@ -8,7 +8,9 @@
 'use strict';
 
 /** @polymerBehavior */
-Polymer.multiSvgUtil = {
+window.multi = window.multi || {}; 
+
+window.multi.svgUtil = {
 
   translateCenter: function(w, h) {
     return 'translate(' + w / 2 + ',' + h / 2 + ')';

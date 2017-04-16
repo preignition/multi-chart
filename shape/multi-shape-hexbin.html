@@ -55,8 +55,8 @@ polymer elements responsible for drawing hexbin in a geo-chart
       },
 
       behaviors: [
-        Polymer.multiLifecycle,
-        Polymer.multiShapeGeo
+        multi.lifecycle,
+        multi.shapeGeo
       ],
 
       observers: [
@@ -65,7 +65,7 @@ polymer elements responsible for drawing hexbin in a geo-chart
 
       drawLayer: function(data, path) {
 
-        var chart = Polymer.multiShapeGeo.drawLayer.call(this, data, path);
+        var chart = multi.shapeGeo.drawLayer.call(this, data, path);
         var hexbin = path;
 
         var color =  d3.scaleSequential(d3.interpolateViridis)

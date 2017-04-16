@@ -169,7 +169,7 @@ TODO:
     },
 
     behaviors: [
-      Polymer.multiLifecycle
+      multi.lifecycle
       // Polymer.multi.shape
     ],
 
@@ -215,7 +215,7 @@ TODO:
     },
 
     afterRegister: function(host) {
-      Polymer.multiLifecycle.afterRegister.call(this, host);
+      multi.lifecycle.afterRegister.call(this, host);
       // this.listen(host, 'multi-clear', 'clearSelection');
       this.listen(host, 'multi-tap', 'onMultiTap');
      

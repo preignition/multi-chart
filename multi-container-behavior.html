@@ -11,7 +11,10 @@
 'use strict';
 
 /** @polymerBehavior  multiContainerImpl*/
-Polymer.multiContainerImpl = {
+// Polymer.multiContainerImpl = {
+window.multi = window.multi || {};
+
+window.multi.containerImpl = {
 
   properties: {
 
@@ -228,10 +231,11 @@ Polymer.multiContainerImpl = {
 };
 
 /** @polymerBehavior */
-Polymer.multiContainer = [
-  Polymer.multiSvgUtil,
-  Polymer.multiResizer,
-  Polymer.multiObserveNodes,
-  Polymer.multiContainerImpl
+multi.container = [
+// Polymer.multiContainer = [
+  multi.svgUtil,
+  multi.resizer,
+  multi.observeNodes,
+  multi.containerImpl
 ];
 </script>

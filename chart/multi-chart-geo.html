@@ -1,15 +1,15 @@
 <link rel="import" href="../../polymer/polymer.html">
 <link rel="import" href="../../d3-bundle-element/d3-element-multi.html">
-<link rel="import" href="../multi-color-behavior.html">
+<!-- <link rel="import" href="../multi-color-behavior.html"> -->
 <link rel="import" href="../shape/multi-shape-choropleth.html">
 <link rel="import" href="../d3-geo/d3-geo-projection.html">
 <link rel="import" href="../d3-geo/d3-geo-path.html">
 <link rel="import" href="../multi-scale.html">
 <link rel="import" href="../multi-accessor.html">
-<link rel="import" href="../properties/multi-color-properties-behavior.html">
-<link rel="import" href="../properties/multi-selection-properties-behavior.html">
-<link rel="import" href="../properties/multi-geo-chart-properties-behavior.html">
-<link rel="import" href="../properties/multi-value-accessor-properties-behavior.html">
+<link rel="import" href="../properties/multi-color-behavior.html">
+<!-- <link rel="import" href="../properties/multi-selection-properties-behavior.html"> -->
+<link rel="import" href="../properties/multi-geo-chart-behavior.html">
+<link rel="import" href="../properties/multi-value-accessor-behavior.html">
 <link rel="import" href="../multi-config-behavior.html">
 <link rel="import" href="../multi-container-simple.html">
 <link rel="import" href="../multi-shared-styles.html">
@@ -51,6 +51,8 @@
       width="{{width}}" 
       data="[[data]]" 
       enable-zoom="[[enableZoom]]"
+      extent="[[extent]]"
+      scale-extent="[[scaleExtent]]"
       >
         <multi-scale 
           scale-type="[[colorScaleType]]" 
@@ -97,15 +99,15 @@
     },
 
     behaviors: [
-      Polymer.multiGeoChartProperties,
-      Polymer.multiColorProperties,
-      Polymer.multiValueProperties,
-      Polymer.multiConfig
+      multi.geoChart,
+      multi.color,
+      multi.valueAccessor,
+      multi.config
       // Polymer.multiSelectionProperties
     ],
 
     properties: {
-
+      
       /**
        * `autoFit` when true, fit projection scale and translate so as to fit to bounding box (width and height)
        */
@@ -212,7 +214,15 @@
         this.notifyChanged('path');
       }, 100);
       // console.info('PATH CHANGED');
-    }
+    },
+  //   attached: function() {
+  //   // compute the domain from the range if it does not exist
+  //   if (!this.colorDomain && this.colorRange) {
+  //     this.colorDomain = this.colorRange.map(function(d, i) {
+  //       return i;
+  //     })
+  //   }
+  // }
 
 
   });

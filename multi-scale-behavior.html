@@ -11,7 +11,10 @@
 'use strict';
 
 /** @polymerBehavior multiScaleImpl */
-Polymer.multiScaleImpl = {
+window.multi = window.multi || {};
+
+window.multi.scaleImpl = {
+// Polymer.multiScaleImpl = {
 
   properties: {
 
@@ -173,9 +176,9 @@ Polymer.multiScaleImpl = {
 };
 
 /** @polymerBehavior */
-Polymer.multiScale = [
-  Polymer.multiLifecycle,
-  Polymer.multiConfig,
-  Polymer.multiScaleImpl
+multi.scale = [
+  multi.lifecycle,
+  multi.config,
+  multi.scaleImpl
 ];
 </script>

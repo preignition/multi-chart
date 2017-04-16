@@ -8,7 +8,10 @@
 
 'use strict';
 
-  Polymer.multiShaperImpl = {
+  window.multi = window.multi || {};
+
+  window.multi.shaperImpl = {
+  // Polymer.multiShaperImpl = {
 
     properties: {
 
@@ -76,6 +79,9 @@
     },
 
     computeData: function(data) {
+      if(!data) {
+        return;
+      }
       return this.data = this.shaper(data);
     },
 
@@ -90,9 +96,10 @@
 
   };
 
-  Polymer.multiShaper = [
-    Polymer.multiConfig,
-    Polymer.multiShaperImpl
+  // Polymer.multiShaper = [
+  multi.shaper = [
+    multi.config,
+    multi.shaperImpl
   ];
 
 </script>
