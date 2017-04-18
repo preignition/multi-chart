@@ -17,7 +17,7 @@ polymer elements for drawing geo features
     }
     </style>
     <svg>
-      <g id="layer" class$="shape-geo-line">
+      <g id="layer" class="shape-geo-line">
       </g>
     </svg>
   </template>
@@ -44,7 +44,7 @@ polymer elements for drawing geo features
         cls: {
           type: String, 
           value: 'line'
-        }
+        },
        
       },
 
@@ -64,9 +64,9 @@ polymer elements for drawing geo features
       /**
        * `drawLayer` 
        */
-      drawLayer: function(data, path) {
+      drawLayer: function(data, path, transition) {
         // var layer = this.layer || d3.select(this.targetElement).selectAll('path.layer');
-
+        console.log('GEO', data);
         d3.select(this.targetElement).selectAll('*').remove();
 
         d3.select(this.targetElement)

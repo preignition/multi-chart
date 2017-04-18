@@ -53,7 +53,7 @@ window.multi.shapeGeo = {
     },
 
     /**
-     * `layerType` layer type - will be reflected to the layer class
+     * `layerType` layer type - will be reflected to the layer attribute
      */
     layerType: {
       type: String,
@@ -97,7 +97,7 @@ window.multi.shapeGeo = {
     }
   },
 
-  drawLayer: function(data, path) {
+  drawLayer: function(data, path, transition) {
     var layer = this.layer || d3.select(this.targetElement);
     var cls = this.cls;
 

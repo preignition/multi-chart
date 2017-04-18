@@ -1,5 +1,6 @@
 <link rel="import" href="../../polymer/polymer.html">
 <link rel="import" href="multi-shape-behavior.html">
+<link rel="import" href="multi-shape-highlight-behavior.html">
 <link rel="import" href="multi-shape-geo-behavior.html">
 <link rel="import" href="../multi-lifecycle-behavior.html">
 <!--
@@ -35,7 +36,8 @@ polymer elements responsible for drawing choropleth area in a geo-chart
       behaviors: [
         multi.lifecycle,
         multi.shapeGeo,
-        multi.shape
+        multi.shape,
+        multi.shapeHighlight
       ],
 
       properties: {

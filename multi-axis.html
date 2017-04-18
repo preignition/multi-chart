@@ -122,7 +122,13 @@
         value: 0
       },
  
-    },
+      /* 
+       * [`ticks`] (https://github.com/d3/d3-axis/blob/master/README.md#axis_ticks) 
+       */
+       ticks : {
+         type:  Array
+         }
+      },
 
     /**
      * `targetElement` getter override lifecycle Behavior and called during attached
@@ -134,9 +140,9 @@
     observers: [
       // '_observePosition(position)',
       '_observeHeight(height, position)',
-      '_observeWidth(width, position)'
+      '_observeWidth(width, position)',
+      '_observeTicks(axis, ticks)'
     ],
-
 
     get isY() {
       return this.position === 'left' || this.position === 'right';
@@ -150,6 +156,10 @@
       var axis = type === 'right' ? d3.axisRight() : type === 'left' ? d3.axisLeft() : type === 'top' ? d3.axisTop() : d3.axisBottom();
 
       return axis.scale(scale);
+    },
+
+    _observeTicks: function(axis, ticks) {
+        return axis.ticks.apply(axis, ticks );
     },
 
     _observeWidth: function(w, position) {

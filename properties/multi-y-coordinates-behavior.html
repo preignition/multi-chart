@@ -17,7 +17,7 @@ window.multi.yCoordinates = {
      */
     yElastic: {
       type: Boolean,
-      value: true
+      value: false
     },
 
     /**
@@ -46,6 +46,13 @@ window.multi.yCoordinates = {
       type: Function,
       notify: true
     },
+    /* 
+     * [`yTicks`] (https://github.com/d3/d3-axis/blob/master/README.md#axis_ticks) ex [5, '.0s'] will show 5 ticks
+     */
+    yTicks: {
+      type: Array
+    }
+
 
   },
 

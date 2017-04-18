@@ -1,0 +1,110 @@
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="multi-observe-nodes-behavior.html">
+<script>
+/**
+ * `multiConfig` utility method for handling element config 
+ */
+
+'use strict';
+
+/** @polymerBehavior */
+// multi.config = {
+window.multi = window.multi || {};
+
+window.multi.registerImpl = {
+
+  properties: {
+    data: {
+      type: Array,
+      // notify: true, 
+      observer: 'render'
+    },
+
+    /**
+     * `groupName` the name of the group (used when to registering this element under a multi-verse)
+     */
+    groupName: {
+      type: String
+    },
+
+    /**
+     * `registeredItems` and array containing all elements that need to be refreshed when data changes 
+     */
+    registeredItems: {
+      type: Array,
+      value: function() {
+        return [];
+      }
+    },
+  },
+
+  render: function(data, old) {
+      // if(old) {
+      //   return;
+      // }
+      // console.log('RENDER', this.data);
+      // var d = this.data;
+      // this.set('data', []);
+      // this.set('data', d);
+      // this.notifyPath('data', this.data);
+  },
+
+  attached: function() {
+    // this.callRegistered('hostAttached');
+
+    this.fire('multi-attached', this.groupName);
+    this.render();
+  },
+
+  detached: function() {
+    this.fire('multi-detached', this.groupName);
+  },
+
+  /**
+   * @override
+   * `processNewNodes` process new nodes than have been added to the observedNode
+   */
+  processNewNodes: function(nodes) {
+    var me = this;
+    nodes.filter(function(node) {
+      return node.shallRegister;
+    }).forEach(function(node) {
+      me.push('registeredItems', node);
+
+      if (node.isSerie) {
+        me.serieItems.push(node.getAttribute(me.attrForSerie));
+      }
+      if (node.afterRegister) {
+        node.afterRegister(me);
+      }
+    });
+  },
+
+  /**
+   * @override
+   * `processRemovedNodes` process nodes than have been removed from observedNode
+   */
+  processRemovedNodes: function(nodes) {
+    var me = this;
+    nodes.filter(function(node) {
+      return node.shallRegister;
+    }).forEach(function(node) {
+      me.splice('registeredItems', me.registeredItems.indexOf(node), 1);
+      me.push('registeredItems', node);
+
+      if (node.isSerie) {
+        me.splice('serieItems', me.serieItems.indexOf(node.getAttribute(me.attrForSerie)), 1);
+      }
+      if (node.afterUnregister) {
+        node.afterUnregister(me);
+      }
+    });
+
+  }
+};
+
+window.multi.register = [
+  multi.observeNodes,
+  multi.registerImpl
+];
+</script>

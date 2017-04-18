@@ -9,7 +9,7 @@
 window.multi = window.multi || {};
 
 window.multi.xCoordinates = {
-// Polymer.multixCoordinatesProperties = {
+  // Polymer.multixCoordinatesProperties = {
 
   properties: {
     /**
@@ -46,7 +46,14 @@ window.multi.xCoordinates = {
       type: Function,
       notify: true
     },
-    
+  
+    /* 
+     * [`xTicks`] (https://github.com/d3/d3-axis/blob/master/README.md#axis_ticks) ex [5, '.0s'] will show 5 ticks
+     */
+    xTicks: {
+      type: Array
+    },
+
     /**
      * `pretendContinuous` set true to force ordinal scale into continuous range 
      */

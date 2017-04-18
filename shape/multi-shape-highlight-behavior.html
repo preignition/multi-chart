@@ -1,0 +1,50 @@
+<link rel="import" href="../../polymer/polymer.html">
+
+<script>
+/**
+  `multi.shapeHiglight` behavior. adds a highlight class on shapes with same keys as `highlightedKeys` 
+
+
+ */
+
+'use strict';
+
+/** @polymerBehavior Polymer.multiShapeImpl */
+window.multi = window.multi || {};
+
+window.multi.shapeHighlight = {
+// Polymer.multiShapeImpl = {
+
+  properties: {
+
+    highlightedKeys: {
+      type: Array
+    },
+
+    highlightedCls: {
+      type: String,
+      value: 'highlighted'
+    }
+
+  },
+
+  observers: [
+    '_observeHighlightedKeys(highlightedKeys, layer)'
+  ],
+
+  _observeHighlightedKeys: function(keys) {
+    if(!this.layer ) {
+      console.error('missig Layer in highlightedKeys');
+    }
+    var featureKeyAccessor = this.featureKeyAccessor;
+
+   d3.select(this.targetElement).selectAll('.selectable')
+      .classed(this.highlightedCls, function(d){
+        // console.info('key:', featureKeyAccessor(d))
+        return keys.indexOf(featureKeyAccessor(d)) > -1;
+      });
+
+  }
+};
+
+</script>
