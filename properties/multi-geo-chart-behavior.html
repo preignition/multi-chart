@@ -5,11 +5,10 @@
  *
  */
 
-/** @polymerBehavior */
-// Polymer.multiGeoChartProperties = {
-  window.multi = window.multi || {};
+window.multi = window.multi || {};
 
-  window.multi.geoChart = {
+/** @polymerBehavior multi.geoChart */
+multi.geoChart = {
 
   properties: {
 
@@ -51,24 +50,24 @@
     precision: {
       type: Number
     },
-    
+
     /**
      * [`translate`](https:github.com/d3/d3-geo#projection_translate)
      */
     translate: {
       type: Array,
       notify: true
-      // value: function() {
-      //   return  [480, 250];
-      // }
-      // computed: '_computeTranslate(width, height)'
+        // value: function() {
+        //   return  [480, 250];
+        // }
+        // computed: '_computeTranslate(width, height)'
     },
 
     /**
      * `width` the width for the layer. 
      */
     width: {
-      type: Number, 
+      type: Number,
       notify: true
     },
 

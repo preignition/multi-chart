@@ -9,12 +9,11 @@
 
 'use strict';
 
-/** @polymerBehavior multiResizerImpl */
 
 window.multi = window.multi || {};
 
-window.multi.resizerImpl = {
-// Polymer.multiResizerImpl = {
+/** @polymerBehavior multi.ResizerImpl */
+multi.resizerImpl = {
 
   properties: {
     height: {
@@ -101,7 +100,7 @@ window.multi.resizerImpl = {
   }
 };
 
-/** @polymerBehavior */
+/** @polymerBehavior multi.resizer */
 multi.resizer = [
   Polymer.IronResizableBehavior,
   multi.resizerImpl

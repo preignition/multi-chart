@@ -1,15 +1,15 @@
 <link rel="import" href="../../polymer/polymer.html">
 <script>
 /**
- * `colorProperties` behavior for exposing and documenting properties related to colors
+ * `multi.color` behavior for exposing and documenting properties related to colors
  *
  */
+'use strict';
 
-/** @polymerBehavior */
 window.multi = window.multi || {};
 
-window.multi.color = {
-// Polymer.multiColorProperties = {
+/* @polymerBehavior multi.color */
+multi.color = {
 
   properties: {
 
@@ -41,12 +41,10 @@ window.multi.color = {
     /**
      * `colorScaleType` the type of scale for color
      */
-
     colorScaleType: {
       type: String,
       value: 'scaleOrdinal'
     }
   }
-
 };
 </script>

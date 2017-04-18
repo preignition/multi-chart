@@ -7,11 +7,10 @@
 
 'use strict';
 
-/** @polymerBehavior */
-// multi.config = {
 window.multi = window.multi || {};
 
-window.multi.registerImpl = {
+/* @polymerBehavior  multi.registerImpl */
+multi.registerImpl = {
 
   properties: {
     data: {
@@ -103,7 +102,8 @@ window.multi.registerImpl = {
   }
 };
 
-window.multi.register = [
+/* @polymerBehavior multi.register */
+multi.register = [
   multi.observeNodes,
   multi.registerImpl
 ];

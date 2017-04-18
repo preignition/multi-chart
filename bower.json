@@ -1,6 +1,6 @@
 {
   "name": "multi-chart",
-  "version": "0.7.2",
+  "version": "0.7.3",
   "description": "polymer building blocks elements for building charts and visualization (based on d3.js v4).",
   "license": "MIT",
   "authors": [

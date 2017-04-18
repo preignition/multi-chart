@@ -10,9 +10,9 @@
 
   window.multi = window.multi || {};
 
-  window.multi.shaperImpl = {
-  // Polymer.multiShaperImpl = {
-
+  /** @polymerBehavior multi.shaperImpl */
+  multi.shaperImpl = {
+  
     properties: {
 
       shaper: {
@@ -96,7 +96,7 @@
 
   };
 
-  // Polymer.multiShaper = [
+  /** @polymerBehavior multi.shaper */
   multi.shaper = [
     multi.config,
     multi.shaperImpl

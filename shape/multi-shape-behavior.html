@@ -10,11 +10,10 @@
 
 'use strict';
 
-/** @polymerBehavior Polymer.multiShapeImpl */
 window.multi = window.multi || {};
 
-window.multi.shapeImpl = {
-// Polymer.multiShapeImpl = {
+/** @polymerBehavior multi.shapeImpl */
+multi.shapeImpl = {
 
   properties: {
 
@@ -111,10 +110,9 @@ window.multi.shapeImpl = {
 
 };
 
-/** @polymerBehavior */
+/** @polymerBehavior multi.shape */
 multi.shape = [
   multi.config,
-  // multi.LabelProperties,
   multi.svgUtil,
   multi.shapeImpl
 ];
