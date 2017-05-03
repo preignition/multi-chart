@@ -25,7 +25,7 @@
 
 <body>
   <div class="vertical-section-container centered">
-    <h3>multi-chart Demo</h3>
+    <h3>multi-chart Demo  </h3>
     <demo-snippet>
       <template>
         <template is="dom-bind" id="app">
@@ -47,7 +47,17 @@
               x-scale="[[xScale]]" 
               y-scale="[[yScale]]" 
               color-scale="[[colorScale]]"></multi-shape-line>
-            <h3 header>test line chart</h3>          
+            <multi-shape-line 
+              index="apple"
+              height="[[height]]" 
+              x-accessor="[[xAccessor]]" 
+              y-accessor="[[appleAccessor]]" 
+              x-scale="[[xScale]]" 
+              y-scale="[[yScale]]" 
+              color-scale="[[colorScale]]"></multi-shape-line>
+             
+             <h3 header>test line chart</h3>  
+            <multi-accessor accessor="{{appleAccessor}}" path="+value.apple"></multi-accessor>        
             <multi-legend legend chart-width="[[width]]" scale="[[colorScale]]" position="top-right" ></multi-legend>
             <multi-selector selection-type="brushX" width="[[width]]"  height="[[height]]" x-scale="[[xScale]]" accessor="[[xAccessor]]"></multi-selector> 
           </multi-chart-coordinate>
@@ -81,20 +91,15 @@ window.addEventListener('WebComponentsReady', function() {
 
   var isD1 = false;
 
-  chart.colorDomain = ['banana'];
+  chart.colorDomain = [];
   chart.xAccessorPath = 'key';
   chart.yAccessorPath = '+value.banana';
   chart.data = d1;
-
-  // app.innerRadius = 45;
-  // app.padAngle = 0.1;
 
   app.toggle = function() {
     isD1 = !isD1;
     chart.data = isD1 ? d2 : d1;
   }
-
-
 });
 </script>
 
