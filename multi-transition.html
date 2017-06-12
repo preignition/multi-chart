@@ -1,7 +1,7 @@
 <link rel="import" href="../polymer/polymer.html">
-<!-- <link rel="import" href="multi-config-behavior.html"> -->
+<link rel="import" href="../multi-config-behavior.html">
 <!--
-`multi-scale`
+`multi-transition` an element to construct d3-transition 
 
 -->
 <dom-module id="multi-transition">
@@ -10,68 +10,48 @@
 
     is: 'multi-transition',
 
-    behaviors: [
-      multi.config
-    ],
-
     properties: {
 
-      /* 
-       * `transition` a transition composer as per https://github.com/d3/d3-transition
+      /**
+       * `transition` the [transition](https://github.com/d3/d3-transition) generator function
        */
       transition: {
         type: Function,
         notify: true,
         value: function() {
-          var me = this;
-          return function(transition) {
-            me.applyConfig(transition, ['duration', 'delay', 'ease' ])
-            // if(me.duration) {
-            //   transition.duration(me.duration);
-            // }
-            // if(me.delay) {
-            //   transition.delay(me.delay);
-            // }
-            //  if(me.ease) {
-            //   transition.ease(me.ease);
-            // }
-            return transition;
-
-          };
-          // return d3.transition();
+          var transition = d3.transition();
+          this.applyConfig(transition, ['duration', 'delay', 'ease']);
+          return transition;
         }
       },
 
       /* 
-       * [`duration`](https://github.com/d3/d3-transition#transition_duration) the duration of the transition in ms
-       */
-      duration: {
-        type: Function
-      },
-
-      /* 
-       * [`delay`] (https://github.com/d3/d3-transition#transition_delay) the delay for the transition
+       * `delay` the [delay](https://github.com/d3/d3-transition#transition_delay) function
        */
       delay: {
-        type: Function
+        type: Function,
       },
 
       /* 
-       * `ease` : (https://github.com/d3/d3-transition#transition_ease) Specifies the transition easing function for all selected elements.
+       * `duration` the [duration](https://github.com/d3/d3-transition#transition_duration) function
+       */
+      duration: {
+        type: Function,
+      },
+
+      /* 
+       * `ease` the [ease](https://github.com/d3/d3-transition#transition_ease) function
        */
       ease: {
-        type: Function
-      }
+        type: Function,
+      },
     },
 
-    // observers: [
-    //   'observeConfig(duration, "duration", "transition")',
-    //   'observeConfig(delay, "delay", "transition")',
-    //   'observeConfig(ease, "ease", "transition")'
-    // ]
-
-
-
+    observers: [
+      'observeConfig(ease, "ease", "transition")',
+      'observeConfig(duration, "duration", "transition")',
+      'observeConfig(delay, "delay", "transition")',
+    ],
 
   });
   </script>

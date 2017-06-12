@@ -17,39 +17,25 @@ The container register elements that have a `shallRegister` property set to `tru
 <dom-module id="multi-container-simple">
   <template>
     <style is="custom-style" include="multi-container multi-chart-selector">
-  
-   /* #overlay {
-      fill: none;
-      pointer-events: all;
-      width: 100%;
-    }
-    */
-/*    #background rect {
-      fill: var(--secondary-color);
-      mask: url(#mask-wave);
-      width: 100vw;
-      height: 100vh;
-
-    }*/
 
     </style>
     <div id="observeNodes">
       <content id="content"></content>
     </div>
     <svg id="svg">
-      <!-- <g id="chartContent" transform$="[[translate(xCenter, yCenter)]]"> -->
-      <g id="background"></g>
+      <g id="background">
+        <slot name="background"></slot>
+      </g>
       <g id="chartContent">
         <g id="zoom">
           <g id="chart" class="chart">
+            <slot name="chart"></slot>
           </g>
         </g>
-         <!--  <g >
-            <rect id="overlay"></rect>
-          </g> -->
-        <!-- <g id="selector"></g>   -->
       </g>
-      <g id="legend"></g>
+      <g id="legend">
+          <slot name="legend"></slot>
+      </g>
     </svg>
     <!-- <div id="legend"></div> -->
   </template>
@@ -57,6 +43,11 @@ The container register elements that have a `shallRegister` property set to `tru
   Polymer({
 
     is: 'multi-container-simple',
+
+    behaviors: [
+      multi.container,
+      multi.zoom
+    ],
 
     hostAttributes: {
       multicontainer: ''
@@ -72,12 +63,7 @@ The container register elements that have a `shallRegister` property set to `tru
         value: 'chart'
       },
 
-    },
-
-    behaviors: [
-      multi.container,
-      multi.zoom
-    ]
+    }
 
   });
   </script>

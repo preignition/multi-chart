@@ -18,6 +18,10 @@ a new geographic path generator with the default settings as in [d3.geoPath](htt
 
     is: 'd3-geo-path',
 
+    behaviors: [
+      multi.config
+    ],
+    
     properties: {
       /**
        * `path` the [path](https://github.com/d3/d3-geo#geoPath) generator function
@@ -69,20 +73,16 @@ a new geographic path generator with the default settings as in [d3.geoPath](htt
       return this.path.centroid(object);
     },
 
-    behaviors: [
-      multi.config
-    ],
-
     observers: [
       'observeConfig(projection, "projection", "path")',
       'observeConfig(context, "context", "path")',
       'observeChanged(projection.changed)'
     ],
 
-    observeChanged: function(pr){
+    observeChanged: function(pr) {
       this.notifyChanged('path');
     }
-    
+
 
   });
   </script>

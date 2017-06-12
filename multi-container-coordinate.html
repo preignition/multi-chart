@@ -34,9 +34,12 @@ The container register elements that have a `shallRegister` property set to `tru
       <g id="chartContent" transform$="[[translate(margin.left, margin.top)]]">
         <g id="zoom">
           <g id="chart" class="chart">
+            <slot></slot>
           </g>
         </g>
-        <g id="axisGroup"></g>
+        <g id="axisGroup">
+          <slot name="axisGroup"></slot>
+        </g>
       </g>
       <g id="legend"></g>
     </svg>
@@ -45,6 +48,12 @@ The container register elements that have a `shallRegister` property set to `tru
   Polymer({
 
     is: 'multi-container-coordinate',
+
+    behaviors: [
+      multi.container,
+      multi.xCoordinates,
+      multi.yCoordinates
+    ],
 
     hostAttributes: {
       multicontainer: ''
@@ -60,14 +69,7 @@ The container register elements that have a `shallRegister` property set to `tru
         value: 'chart'
       },
 
-    },
-
-    behaviors: [
-      multi.container,
-      multi.xCoordinates,
-      multi.yCoordinates
-    ]
-
+    }
   });
   </script>
 </dom-module>
