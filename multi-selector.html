@@ -18,8 +18,6 @@ TODO:
       display: none;
     }
     </style>
-    <!-- <multi-scale scale-type="scaleLinear" range="[[xRange]]" domain="[[xDomain]]" scale="{{xScaleContinuous}}"></multi-scale> -->
-    <!-- <multi-scale scale-type="scaleLinear" range="[[yRange]]" domain="[[yDomain]]" scale="{{yScaleContinuous}}"></multi-scale> -->
     <svg>
       <g id="selector" class="selector brush">
       </g>
@@ -30,10 +28,13 @@ TODO:
 
     is: 'multi-selector',
 
+    behaviors: [
+      // multi.lifecycle
+      // Polymer.multi.shape
+    ],
 
     properties: {
-
-      anchor: 'chartContent',
+      // anchor: 'chartContent',
 
       /**
        * `selectionType` the type of selection,  either `brush`, `brushX`, `brushY`,  `multi` or `select`.
@@ -168,11 +169,6 @@ TODO:
       // }
     },
 
-    behaviors: [
-      multi.lifecycle
-      // Polymer.multi.shape
-    ],
-
     observers: [
       // '_observeSelectedItems(selectedItems.splices)',
       '_observeSelectedItems(selectedItems.*)',
@@ -214,17 +210,17 @@ TODO:
       return this.selectionType === 'brush' || this.selectionType === 'brushX' || this.selectionType === 'brushY';
     },
 
-    afterRegister: function(host) {
-      multi.lifecycle.afterRegister.call(this, host);
-      // this.listen(host, 'multi-clear', 'clearSelection');
-      this.listen(host, 'multi-tap', 'onMultiTap');
+    // afterRegister: function(host) {
+    //   multi.lifecycle.afterRegister.call(this, host);
+    //   // this.listen(host, 'multi-clear', 'clearSelection');
+    //   this.listen(host, 'multi-tap', 'onMultiTap');
      
-    },
+    // },
 
-    afterUnregister: function(host) {
-      this.unlisten(host, 'multi-tap', 'onMultiTap');
-      // this.unlisten(host, 'multi-clear', 'clearSelection');
-    },
+    // afterUnregister: function(host) {
+    //   this.unlisten(host, 'multi-tap', 'onMultiTap');
+    //   // this.unlisten(host, 'multi-clear', 'clearSelection');
+    // },
 
     _observeSelectedItems: function(items) {
       // if (itemsSplices) {

@@ -30,7 +30,9 @@ The container register elements that have a `shallRegister` property set to `tru
       <content id="content"></content>
     </div>
     <svg id="svg">
-      <g id="background"></g>
+      <g id="background">
+          <slot name="background"></slot>
+      </g>
       <g id="chartContent" transform$="[[translate(margin.left, margin.top)]]">
         <g id="zoom">
           <g id="chart" class="chart">
@@ -38,10 +40,12 @@ The container register elements that have a `shallRegister` property set to `tru
           </g>
         </g>
         <g id="axisGroup">
-          <slot name="axisGroup"></slot>
+          <slot name="axis"></slot>
         </g>
       </g>
-      <g id="legend"></g>
+      <g id="legend">
+        <slot name="legend"></slot>
+      </g>
     </svg>
   </template>
   <script>

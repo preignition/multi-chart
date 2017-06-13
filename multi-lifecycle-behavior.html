@@ -27,10 +27,10 @@ multi.lifecycle = {
     /**
      * `shallRegister` is a flag to know if this element need to be registered when it is added to a chart-container
      */
-    shallRegister: {
-      type: Boolean,
-      value: true
-    },
+    // shallRegister: {
+    //   type: Boolean,
+    //   value: true
+    // },
 
     /**
      * `isDrawn` flag to know if this element is drawn. 
@@ -43,10 +43,10 @@ multi.lifecycle = {
     /**
      * `hostAnchor` the id of a host element under which this element will be appended (in `afterRegister` method).
      */
-    anchor: {
-      type: String
+    // anchor: {
+      // type: String
       // readOnly: true
-    },
+    // },
 
   },
 
@@ -56,7 +56,7 @@ multi.lifecycle = {
 
   detached: function() {
     // this.fire('multi-register-item', false);
-    this.appendChild(this.targetElement);
+    // this.appendChild(this.targetElement);
   },
 
   __observeIsActive: function(isActive) {
@@ -75,21 +75,21 @@ multi.lifecycle = {
   /**
    * `afterRegister` is called by the host once this element has been registered. It placed the axis element into the chart. 
    */
-  afterRegister: function(host) {
-    if (!this.anchor && !host.chartInsertionPoint) {
-      this._error('insertionPoint is missing. specify either and anchor or a chartInsertionPoint.');
-    }
-    if (this.targetElement) {
-      host.$[this.anchor || host.chartInsertionPoint].appendChild(this.targetElement);
-    }
-  },
+  // afterRegister: function(host) {
+  //   if (!this.anchor && !host.chartInsertionPoint) {
+  //     this._error('insertionPoint is missing. specify either and anchor or a chartInsertionPoint.');
+  //   }
+  //   if (this.targetElement) {
+  //     host.$[this.anchor || host.chartInsertionPoint].appendChild(this.targetElement);
+  //   }
+  // },
 
   draw: function() {},
 
-  remove: function() {
-    if (this.targetElement) {
-      d3.select(this.targetElement).selectAll('*').remove();
-    }
-  }
+  // remove: function() {
+  //   if (this.targetElement) {
+  //     d3.select(this.targetElement).selectAll('*').remove();
+  //   }
+  // }
 };
 </script>
