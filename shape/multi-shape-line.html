@@ -90,7 +90,8 @@ polymer elements resobpible for drawing lines in a coordinate chart
       }  
       
       chart.attr('stroke',  this.colorScale(this.index))
-        .attr('key', this.key)
+        .attr('key', this.key) // shall we remove this 
+        .attr('index', this.index)
         .attr('d', this.line);
     },
 

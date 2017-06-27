@@ -17,8 +17,12 @@
   <link rel="import" href="../chart/multi-chart-coordinate.html">
   <link rel="stylesheet" href="../multichart.css">
   <style is="custom-style" include="demo-pages-shared-styles">
-  #chart {
-    height: 400px;
+  #chart, #timeChart {
+    height: 250px;
+    --axis-color: blue;
+  }
+  #timeChart rect {
+    fill: red;
   }
   </style>
 </head>
@@ -29,7 +33,7 @@
     <demo-snippet>
       <template>
         <template is="dom-bind" id="app">
-         <multi-chart-coordinate id="chart" 
+<!--          <multi-chart-coordinate id="chart" 
             width="{{width}}" 
             height="{{height}}" 
             color-scale="{{colorScale}}" 
@@ -48,6 +52,28 @@
             <h3 header>test stack chart</h3>  
             <multi-legend legend chart-width="[[width]]" scale="[[colorScale]]" position="top-right" ></multi-legend>
             <multi-selector selection-type="brushX" width="[[width]]"  height="[[height]]" x-scale="[[xScale]]" accessor="[[xAccessor]]"></multi-selector> 
+          </multi-chart-coordinate> -->
+          <multi-chart-coordinate id="timeChart" 
+            width="{{width}}" 
+            height="{{height}}" 
+            color-scale="{{colorScale}}" 
+            x-scale="{{xScale}}" 
+            x-accessor="{{xAccessor}}" 
+            x-scale-type="scaleTime"
+            y-scale="{{yScale}}" 
+            y-accessor="{{yAccessor}}"
+            y-ticks='[2]'
+            >
+            <multi-shape-bar 
+              index="banana"
+              height="[[height]]" 
+              x-accessor="[[xAccessor]]" 
+              y-accessor="[[yAccessor]]" 
+              x-scale="[[xScale]]" 
+              y-scale="[[yScale]]" 
+              color-scale="[[colorScale]]"></multi-shape-bar>
+            <h3 header>test stack chart (time serie)</h3>  
+            <multi-legend legend chart-width="[[width]]" scale="[[colorScale]]" position="top-right" ></multi-legend>
           </multi-chart-coordinate>
           <paper-button raised on-tap="toggle">toggle data</paper-button>
         </template>
@@ -57,11 +83,7 @@
 </body>
 <script>
 window.addEventListener('WebComponentsReady', function() {
-  var chart = app.$.chart;
-    var data;
-
-    var keys = ['apple', 'banana', 'grape'];
-    var n = 10;
+    var app = document.querySelector('#app');
 
     function rnd(size, keys, max) {
       return d3.range(size).map(function(d,i) {
@@ -70,22 +92,48 @@ window.addEventListener('WebComponentsReady', function() {
         keys.forEach(function(k){
           value[k] = r();
         });
-        return {key: i, value: value}
+        return {key: i, value: value};
       });
     }
 
-    var d1 = rnd(10, keys, 50);
-    var d2 = rnd(10, keys, 50);
+    function timeRnd(size, keys, max){
+      var d = new Date();
+      var range = d3.timeDay.range(d3.timeDay.offset(d ,-size), d, 1);
 
-  var isD1 = false;
+      return range.map(function(d, i) {
+        var value = {};
+        var r = d3.randomUniform(max);
+        keys.forEach(function(k) {
+          value[k] = r();
+        });
+        return {
+          key: d,
+          value: value
+        };
+      });
+    }
 
-  chart.colorDomain = ['banana'];
-  chart.xAccessorPath = 'key';
-  chart.yAccessorPath = '+value.banana';
-  chart.data = d1;
+    var chart = app.$.chart || {};
+    var timeChart = app.$.timeChart || {}; 
+    var data;
 
-  // app.innerRadius = 45;
-  // app.padAngle = 0.1;
+    var keys = ['apple', 'banana', 'grape'];
+    var n = 10;
+
+    var d1 = rnd(n, keys, 50);
+    var d2 = rnd(n, keys, 50);
+    var dtime = timeRnd(50, keys, 50);
+
+    var isD1 = false;
+
+    chart.colorDomain = timeChart.colorDomain = ['banana'];
+    chart.xAccessorPath = timeChart.xAccessorPath = 'key';
+    chart.yAccessorPath =  timeChart.yAccessorPath = '+value.banana';
+    chart.data = d1;
+
+   timeChart.xTicks =  [d3.timeDay.every(10)];
+   // timeChart.xTicks =  [2];
+   timeChart.data = dtime;
 
   app.toggle = function() {
     isD1 = !isD1;

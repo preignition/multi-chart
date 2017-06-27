@@ -32,8 +32,17 @@
     ::content .title,  ::content .subtitle    {
       margin: 0;
     }
-    ::content .subtitle {
+    
+    /*::content .subtitle {
       color: red;
+    }*/
+
+    #axisGroup ::content line, #axisGroup ::content path {
+      stroke: var(--axis-color);
+    }
+
+    #axisGroup ::content text {
+      fill: var(--axis-color);
     }
 
     </style>

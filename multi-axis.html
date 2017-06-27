@@ -153,13 +153,17 @@
     },
 
     _computeAxis: function(type, scale) {
+      console.log('COMPUTE AXIS');
       var axis = type === 'right' ? d3.axisRight() : type === 'left' ? d3.axisLeft() : type === 'top' ? d3.axisTop() : d3.axisBottom();
 
       return axis.scale(scale);
     },
 
     _observeTicks: function(axis, ticks) {
-        return axis.ticks.apply(axis, ticks );
+        if(!ticks instanceof(Array)) {
+          console.error('ticks must be set ans an array')
+        }
+        return axis.ticks.apply(axis,ticks);
     },
 
     _observeWidth: function(w, position) {
@@ -188,7 +192,6 @@
 
 
     draw: function(host, data, transition) {
-
       var sel = d3.select(this.targetElement);
 
       if (transition) {

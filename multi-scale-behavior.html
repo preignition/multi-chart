@@ -37,8 +37,8 @@ multi.scaleImpl = {
     domain: {
       type: Array,
       notify: true
-    },
-
+    }
+,
     accessor: {
       type: Function
     },
@@ -111,12 +111,12 @@ multi.scaleImpl = {
         
         if(this.scaleType === 'scaleBand' && this.pretendContinuous) {
           var min = 100000000;
-          var minStep = domain.reduce(function(b,c){
+          var calcMin = domain.reduce(function(b,c){
               var diff = c-b; 
-              if(diff<min) {min = diff} ; 
+              if(diff<min) {min = diff;}  
               return c;
            }, -min);
-          this.domain = d3.range(domain[0], domain.pop() + 1, min)
+          this.domain = d3.range(domain[0], domain.pop() + 1, min);
         } else {
           // console.info('DOMAIN', domain);
           this.domain = domain;

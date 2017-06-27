@@ -65,6 +65,12 @@ polymer elements responsible for drawing bars in a coordinate chart
 
       var height = this.height;
       var y = this.y;
+      var bandwidth = this.xScale.bandwidth;
+
+      // we might have an x-scale that does not have a bandwidth, e.g. when we hav date on x-axis and use a timeScale
+      if(!bandwidth) {
+        bandwidth = d3.scaleBand().domain(data.map(this.x)).range(this.xScale.range()).bandwidth;
+      }
 
       var chart = d3.select(this.targetElement).selectAll('rect.shape').data(data);
       
@@ -87,8 +93,9 @@ polymer elements responsible for drawing bars in a coordinate chart
         .attr('height', function(d) {
           return height - y(d) ;
         })
-        .attr('width', this.xScale.bandwidth())
-        .attr('key', this.key)
+        .attr('width', bandwidth)
+        .attr('key', this.key)  // shall we remove this 
+        .attr('index', this.index)
         .attr('fill', this.colorScale(this.index));
     }
 

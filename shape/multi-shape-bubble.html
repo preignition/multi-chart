@@ -84,7 +84,8 @@ polymer elements responsible for drawing bubbles in a coordinate chart
       chart.attr('cx', this.x)
         .attr('cy', this.y)
         .attr('r', this.z)
-        .attr('key', this.key)
+        .attr('key', this.key) // shall we remove this 
+        .attr('index', this.index)
         .attr('fill', this.colorScale(this.index));
     }
 
