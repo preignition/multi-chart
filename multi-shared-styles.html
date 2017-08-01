@@ -38,11 +38,11 @@
     }*/
 
     #axisGroup ::content line, #axisGroup ::content path {
-      stroke: var(--axis-color);
+      stroke: var(--multi-axis-color);
     }
 
     #axisGroup ::content text {
-      fill: var(--axis-color);
+      fill: var(--multi-axis-color);
     }
 
     </style>
@@ -54,7 +54,7 @@
     :host {
       @apply(--layout-vertical);
       @apply(--layout-justified);
-      height: 200px;
+      height: var(--multi-chart-height, 200px);
     }
     
     [multicontainer] {
@@ -74,10 +74,12 @@
     <style>
     :host[is-selecting] ::content .selectable, :host[has-selection] ::content .selectable  {
       fill-opacity: 0.35;
+      stroke-opacity: 0.45;
     }  
     
     :host[is-selecting] ::content .selected, :host[has-selection] ::content .selected { 
       fill-opacity: 1;
+      stroke-opacity: 1;
     } 
 
     ::content .selectable {
@@ -86,7 +88,8 @@
 
     ::content .selectable:hover {
       stroke-width : 3px;
-      fill-opacity: 0.85;
+      stroke-opacity: 0.7;
+      fill-opacity: 0.7;
     } 
 
 

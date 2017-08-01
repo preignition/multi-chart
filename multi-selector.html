@@ -30,6 +30,10 @@ TODO:
 
     is: 'multi-selector',
 
+    behaviors: [
+      multi.lifecycle
+      // Polymer.multi.shape
+    ],
 
     properties: {
 
@@ -134,6 +138,14 @@ TODO:
         }
       },
 
+       /**
+       * `selectedItem` the key of item selected (when selectionType === 'select'  )
+       */
+      selected: {
+        type: Object,
+        notify: true
+      },
+
       isRange: {
         type: Boolean,
         notify: true,
@@ -167,11 +179,6 @@ TODO:
       //   }
       // }
     },
-
-    behaviors: [
-      multi.lifecycle
-      // Polymer.multi.shape
-    ],
 
     observers: [
       // '_observeSelectedItems(selectedItems.splices)',
@@ -244,7 +251,7 @@ TODO:
       this.fire('multi-select', {
         // type: d3.event.type,
         isRange: this.isRange,
-        selection: this.selectedItems
+        selection: this.selectedItems || this.selected
       });
     },
 
@@ -367,17 +374,22 @@ TODO:
 
     onMultiTap: function(e, d) {
       e.stopPropagation();
+      // console.log('SELECTING');
       if (this.selectionType === 'select' || this.selectionType === 'multi') {
         // for some path constror (e.g. d3.pie initial data is stored under d.data)
         var key = this.accessor(d.data || d);
         var index = this.selectedItems.indexOf(key);
         if (index > -1) {
           this.splice('selectedItems', index, 1);
+          if(this.selectionType === 'select') {
+            this.selected = null;
+          }
         } else {
           if (this.selectionType === 'multi') {
             this.push('selectedItems', key);
           } else {
             this.splice('selectedItems', 0, 1, key);
+            this.selected = key;
             // this._setSelectedItems([key]);
           }
         }

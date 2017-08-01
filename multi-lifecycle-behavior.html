@@ -56,7 +56,9 @@ multi.lifecycle = {
 
   detached: function() {
     // this.fire('multi-register-item', false);
-    this.appendChild(this.targetElement);
+    if(this.targetElement) {
+      this.appendChild(this.targetElement);
+    }
   },
 
   __observeIsActive: function(isActive) {

@@ -66,7 +66,6 @@
       
       <multi-container-simple 
       selection-type="[[selectionType]]" 
-      selected-items="{{selectedItems}}" 
       hovered-item="{{hoveredItem}}" 
       height="{{height}}" 
       width="{{width}}"
@@ -74,7 +73,7 @@
       data="[[data]]" 
       >
       <multi-scale scale-type="[[colorScaleType]]" accessor="[[keyAccessor]]" domain="[[colorDomain]]" range="[[colorRange]]" scale="{{colorScale}}"></multi-scale>
-    <content select=":not([header]):not([footer])"></content>
+      <content select=":not([header]):not([footer])"></content>
     </multi-container-simple>
     <content select="[footer]"></content>
   </template>
