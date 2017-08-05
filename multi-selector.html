@@ -233,11 +233,12 @@ TODO:
       // this.unlisten(host, 'multi-clear', 'clearSelection');
     },
 
-    _observeSelectedItems: function(items) {
+    _observeSelectedItems: function(canghedItems) {
       // if (itemsSplices) {
       //   return this._setHasSelection(!!itemsSplices.base.length);
       // }
-      this._setHasSelection(!!items.base.length);
+      var length = this.selectedItems && this.selectedItems.length;
+      this._setHasSelection(length > 0);
 
       // notify the selection 
       this.notifySelection();
