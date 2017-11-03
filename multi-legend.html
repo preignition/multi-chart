@@ -144,6 +144,9 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
       labelAlign: {
         type: String
       },
+      labelWrap: {
+        type: Number
+      },
       labelFormat: {
         type: Function
       },
@@ -171,6 +174,7 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
       'observeConfig(title, "title", "legend", "refresh")',
       'observeConfig(labels, "labels", "legend", "refresh")',
       'observeConfig(labelAlign, "labelAlign", "legend", "refresh")',
+      'observeConfig(labelWrap, "labelWrap", "legend", "refresh")',
       'observeConfig(labelFormat, "labelFormat", "legend", "refresh")',
       'observeConfig(labelOffset, "labelOffset", "legend", "refresh")',
       'observeConfig(labelDelimiter, "labelDelimiter", "legend", "refresh")'
@@ -193,44 +197,61 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
     //   }
     // },
 
-    _observePosition: function(position, padding , chartWidth, chartHeight) {
-      var isRight = ~position.indexOf('right');
-      var isBottom = ~position.indexOf('bottom');
-
-      var size = this.getBoundingClientRect();
-      if (isRight) {
-        this.x = chartWidth - size.width - padding;
-      }
-
-      if (isBottom) {
-        this.y = chartHeight - size.height - padding;
-      }
+    _observePosition: function() {
+      this.debounce('multi-legend-debounce-position', this.setPosition, 30);
     },
 
     /**
      * `targetElement` getter override lifecycle Behavior and called during attached
      */
-      get targetElement() {
+    get targetElement() {
       return this.$.legendG;
     },
 
     _computeLegend: function(legendType) {
       if (d3[legendType]) {
         var legend = d3[legendType]();
-        this.applyConfig(legend, ['scale', 'cells', 'orient', 'ascending', 'shape', 'shapeWidth', 'shapeHeight', 'shapeRadius', 'shapePadding', 'useClass', 'classPrefix', 'title', 'labels', 'labelAlign', 'labelFormat', 'labelOffset', 'labelDelimiter']);
+        this.applyConfig(legend, ['scale', 'cells', 'orient', 'ascending', 'shape', 'shapeWidth', 'shapeHeight', 'shapeRadius', 'shapePadding', 'useClass', 'classPrefix', 'title', 'labels', 'labelAlign', 'labelWrap', 'labelFormat', 'labelOffset', 'labelDelimiter']);
         
         var me = this;
-        legend.on('cellclick', function(d){me.fire('multi-cell-click', d)});
-        legend.on('cellover', function(d){me.fire('multi-cell-over', d)});
-        legend.on('cellout', function(d){me.fire('multi-cell-out', d)});
+        legend.on('cellclick', function(d){me.fire('multi-cell-click', d);});
+        legend.on('cellover', function(d){me.fire('multi-cell-over', d);});
+        legend.on('cellout', function(d){me.fire('multi-cell-out', d);});
 
         return legend;
       }
     },
 
+    setPosition: function(position, padding) {
+      position = position || this.position;
+      padding = padding || this.padding;
+
+      var isRight = ~position.indexOf('right');
+      var isBottom = ~position.indexOf('bottom');
+
+      var chartSize = this.targetElement.ownerSVGElement.getBoundingClientRect();  
+      
+      if(!chartSize.width) {
+        return;
+      }
+      
+      var size = this.targetElement.getBoundingClientRect();
+
+      if (isRight) {
+        // console.info('SIZE: ', size,chartWidth, padding )
+        this.x = chartSize.width - size.width - padding;
+      }
+
+      if (isBottom) {
+        this.y = chartSize.height - size.height - padding;
+      }
+    },
+
     draw: function(host, data, transition) {
       // console.info('Legend Draw', arguments);
-      var legend = d3.select(this.targetElement).call(this.legend);
+      d3.select(this.targetElement).call(this.legend);
+      this.setPosition(this.position, this.padding);
+
 
     }
   });
