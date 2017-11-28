@@ -24,6 +24,10 @@ polymer elements responsible for drawing bars in a coordinate chart
 
     is: 'multi-shape-bar',
 
+    behaviors: [
+      multi.lifecycle,
+      multi.shape
+    ],
 
     properties: {
 
@@ -45,14 +49,15 @@ polymer elements responsible for drawing bars in a coordinate chart
 
       index: {
         type: String
+      },
+      /* 
+       * `bandwidthOffset` is set will move x value of indivibars by the offset amount. typical value = 0.5 to recenter bars after grouping
+       */
+      bandwidthOffset: {
+        type: Number
       }
      
     },
-
-    behaviors: [
-      multi.lifecycle,
-      multi.shape
-    ],
 
     /**
      * `targetElement` getter override lifecycle Behavior and called during attached
@@ -66,11 +71,12 @@ polymer elements responsible for drawing bars in a coordinate chart
       var height = this.height;
       var y = this.y;
       var bandwidth = this.xScale.bandwidth;
-
-      // we might have an x-scale that does not have a bandwidth, e.g. when we hav date on x-axis and use a timeScale
+      var bandwidthOffset = this.bandwidthOffset;
+      // we might have an x-scale that does not have a bandwidth, e.g. when we have date on x-axis and use a timeScale
       if(!bandwidth) {
         bandwidth = d3.scaleBand().domain(data.map(this.x)).range(this.xScale.range()).bandwidth;
       }
+      this.bandwidth = bandwidth; 
 
       var chart = d3.select(this.targetElement).selectAll('rect.shape').data(data);
       
@@ -88,10 +94,14 @@ polymer elements responsible for drawing bars in a coordinate chart
         chart = chart.transition().call(transition);
       }  
       
-      chart.attr('x', this.x)
+
+      chart.attr('x', bandwidthOffset ? (d,i) => {
+          return this.x(d,i) - bandwidth(d,i) * bandwidthOffset;
+        } : this.x)
         .attr('y', this.y)
         .attr('height', function(d) {
-          return height - y(d) ;
+          var h = height - y(d);
+          return h < 0 ? 0 : h; // prevent negative height
         })
         .attr('width', bandwidth)
         .attr('key', this.key)  // shall we remove this 

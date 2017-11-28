@@ -104,8 +104,11 @@ multi.scaleImpl = {
    * `preDraw` re-calculate the domain if/when needed - called by the host 
    */
   preDraw: function(host, data, transition, isStack) {
+     if(!data.length) {
+      return;
+    }
     if(!this.accessor) {
-      console.error('scale is missing accessor') 
+      console.error('scale is missing accessor') ;
       return;
     }
     if (this.elastic === true || !this.domain) {
