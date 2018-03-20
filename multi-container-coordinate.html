@@ -2,6 +2,7 @@
 <link rel="import" href="properties/multi-x-coordinates-behavior.html">
 <link rel="import" href="properties/multi-y-coordinates-behavior.html">
 <link rel="import" href="multi-container-behavior.html">
+<link rel="import" href="multi-resizer-behavior.html">
 <!-- <link rel="import" href="multi-color-behavior.html"> -->
 <link rel="import" href="multi-axis.html">
 <!-- <link rel="import" href="multi-scale.html"> -->
@@ -69,6 +70,7 @@ The container register elements that have a `shallRegister` property set to `tru
 
     behaviors: [
       multi.container,
+      multi.resizer,
       multi.xCoordinates,
       multi.yCoordinates
     ]

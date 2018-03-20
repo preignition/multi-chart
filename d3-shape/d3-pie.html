@@ -61,7 +61,7 @@
       sortValues: {
         type: Function,
         value: null
-      },
+      }
 
      
     },
@@ -74,6 +74,7 @@
     observers: [
       'observeConfig(value, "value", "shaper","refresh")',
       'observeConfig(padAngle, "padAngle", "shaper","refresh")',
+      // 'observeConfig(cornerRadius, "cornerRadius", "shaper","refresh")',
       'observeConfig(sort, "sort", "shaper","refresh")',
       'observeConfig(sortValues, "sortValues", "shaper", "refresh")'
     ]

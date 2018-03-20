@@ -1,6 +1,5 @@
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="multi-container-behavior.html">
-<link rel="import" href="multi-resizer-behavior.html">
 <link rel="import" href="multi-zoom-behavior.html">
 <link rel="import" href="multi-axis.html">
 <link rel="import" href="multi-scale.html">
@@ -15,43 +14,22 @@ The container register elements that have a `shallRegister` property set to `tru
 @demo demo/index-pie.html Demo: pie
 @demo demo/index-choropleth.html Demo: choropleth
 -->
-<dom-module id="multi-container-simple">
+<dom-module id="multi-group">
   <template>
     <style is="custom-style" include="multi-container multi-chart-selector">
-  
-   /* #overlay {
-      fill: none;
-      pointer-events: all;
-      width: 100%;
-    }
-    */
-/*    #background rect {
-      fill: var(--secondary-color);
-      mask: url(#mask-wave);
-      width: 100vw;
-      height: 100vh;
-
-    }*/
 
     </style>
     <div id="observeNodes">
-      <content id="content"></content>
+      <content id="content" ></content>
     </div>
-    <svg id="svg">
-      <g id="background"></g>
-      <g id="chartContent">
-        <g id="zoom">
-          <g id="chart" class="chart">
-          </g>
-        </g>
-      </g>
-      <g id="legend"></g>
+    <svg >
+      <g id="group" data-key$="[[key]]" class="chart"></g>
     </svg>
   </template>
   <script>
   Polymer({
 
-    is: 'multi-container-simple',
+    is: 'multi-group',
 
     hostAttributes: {
       multicontainer: ''
@@ -59,20 +37,34 @@ The container register elements that have a `shallRegister` property set to `tru
 
     properties: {
 
+      key: {
+        type: String
+      },
+
       /**
        * `chartInsertionPoint` the id for anchoring contents - as Polymer does not support external namespaces, we cheat with the way SVG nodes are inserted into this component. (see [multi-lifecycle-behavior.html]())
        */
       chartInsertionPoint: {
         type: String,
-        value: 'chart'
+        value: 'group'
       },
 
+    },
+        /**
+     * `targetElement` getter override lifecycle Behavior and called during attached
+     */
+     get targetElement() {
+      return this.$.group;
+    },
+
+    draw: function() {
+      this.render();
     },
 
     behaviors: [
       multi.container,
-      multi.resizer,
-      multi.zoom
+      multi.lifecycle
+      // multi.zoom
     ]
 
   });

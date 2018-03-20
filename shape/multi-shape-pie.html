@@ -63,9 +63,16 @@ polymer elements responsible for drawing pie shapes
           computed: '_computeRadius(width, height)'
         },
 
+
+      cornerRadius: {
+        type: Number,
+        value: 0
+      },
+
+
         arc: {
           type: Function,
-          computed: '_computeArc(innerRadius, outerRadius)'
+          computed: '_computeArc(innerRadius, outerRadius, cornerRadius)'
         },
 
         height: {
@@ -98,9 +105,9 @@ polymer elements responsible for drawing pie shapes
         return this.$.shape;
       },
 
-      _computeArc: function(innerRadius, outerRadius) {
+      _computeArc: function(innerRadius, outerRadius, cornerRadius) {
         var arc = this.arc || d3.arc();
-        arc.innerRadius(innerRadius).outerRadius(outerRadius);
+        arc.innerRadius(innerRadius).outerRadius(outerRadius).cornerRadius(cornerRadius);
         this.fire('multi-refresh');
         return arc;
       },
@@ -131,14 +138,14 @@ polymer elements responsible for drawing pie shapes
         var arcs = this.arcs; //this.$.shaper.shapedData;
         var arc = this.arc;
         var colorScale = this.colorScale;
-        // ver me = this;
+        var classAttr = this.classAttr ? this.classAttr : d => {return 'shape pie selectable';};
 
         chart = chart.data(arcs);
 
         chart.exit().remove();
 
         chart = chart.enter().append('path')
-          .attr('class', 'shape pie selectable')
+          .attr('class', classAttr)
           .on('click', function(d) {
             host.fire('multi-tap', d);
           })
