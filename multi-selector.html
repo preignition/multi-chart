@@ -146,6 +146,14 @@ TODO:
         notify: true
       },
 
+      /** 
+       * `selectedType` if selectionType === 'select' and selected item has a type - this will be it 
+       */
+      selectedType: {
+        type: String,
+        notify: true
+      },
+
       isRange: {
         type: Boolean,
         notify: true,
@@ -181,7 +189,7 @@ TODO:
     },
 
     observers: [
-      // '_observeSelectedItems(selectedItems.splices)',
+      '_observeSelected(selected)',
       '_observeSelectedItems(selectedItems.*)',
       '_observeXScale(xScale)',
       '_observeYScale(yScale)',
@@ -233,10 +241,7 @@ TODO:
       // this.unlisten(host, 'multi-clear', 'clearSelection');
     },
 
-    _observeSelectedItems: function(canghedItems) {
-      // if (itemsSplices) {
-      //   return this._setHasSelection(!!itemsSplices.base.length);
-      // }
+    _observeSelectedItems: function(changedItems) {
       var length = this.selectedItems && this.selectedItems.length;
       this._setHasSelection(length > 0);
 
@@ -246,6 +251,16 @@ TODO:
       // refresh the selection
       this.refreshSelection();
 
+    },
+
+    _observeSelected: function(selected) {
+      if(this.selectionType === 'select') {
+        if(selected) {
+          this.splice('selectedItems', 0, 1, selected);
+          return;
+        }
+        this.splice('selectedItems', 0, 1); 
+      }
     },
 
     notifySelection: function() {
@@ -384,6 +399,7 @@ TODO:
           this.splice('selectedItems', index, 1);
           if(this.selectionType === 'select') {
             this.selected = null;
+            this.selectedType = null;
           }
         } else {
           if (this.selectionType === 'multi') {
@@ -391,7 +407,11 @@ TODO:
           } else {
             this.splice('selectedItems', 0, 1, key);
             this.selected = key;
-            // this._setSelectedItems([key]);
+            if(d.selectionType) {
+              this.selectedType = d.selectionType;
+              
+            }
+            
           }
         }
       }
