@@ -87,10 +87,11 @@ multi.containerImpl = {
     data = data || this.data;
 
     if (data && this.width > 0) {
-
-      this.callRegistered('preDraw', data, this.transition);
-      this.callRegistered('draw', data, this.transition);
-      this.fire('multi-render');
+      this.debounce('multi-container-behavior-render', function() {
+        this.callRegistered('preDraw', data, this.transition);
+        this.callRegistered('draw', data, this.transition);
+        this.fire('multi-render');
+      }, 10);
     }
 
     // }
