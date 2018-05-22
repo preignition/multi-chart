@@ -107,11 +107,11 @@ multi.scaleImpl = {
      if(!data.length) {
       return;
     }
-    if(!this.accessor) {
-      console.error('scale is missing accessor') ;
-      return;
-    }
     if (this.elastic === true || !this.domain) {
+      if(!this.accessor) {
+        console.error('scale is missing accessor') ;
+        return;
+      }
       if (this.family === 'ordinal') {
       // if (this.family === 'ordinalBand') {
         var domain = data.map(this.accessor);
