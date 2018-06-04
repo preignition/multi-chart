@@ -14,9 +14,10 @@ TODO:
 <dom-module id="multi-selector">
   <template>
     <style is="custom-style">
-    :host {
+     :host {
       display: none;
     }
+
     </style>
     <!-- <multi-scale scale-type="scaleLinear" range="[[xRange]]" domain="[[xDomain]]" scale="{{xScaleContinuous}}"></multi-scale> -->
     <!-- <multi-scale scale-type="scaleLinear" range="[[yRange]]" domain="[[yDomain]]" scale="{{yScaleContinuous}}"></multi-scale> -->
@@ -45,7 +46,7 @@ TODO:
        */
       selectionType: {
         type: String
-          // observer: '__observeSelectionType'
+        // observer: '__observeSelectionType'
       },
 
       /**
@@ -132,14 +133,14 @@ TODO:
       selectedItems: {
         type: Array,
         readOnly: true,
-        notify: true,
+        // notify: true,
         value: function() {
           return [];
         }
       },
 
-       /**
-       * `selectedItem` the key of item selected (when selectionType === 'select'  )
+      /**
+       * `selected` the key of item selected (when selectionType === 'select'  )
        */
       selected: {
         type: Object,
@@ -189,8 +190,8 @@ TODO:
     },
 
     observers: [
-      '_observeSelected(selected)',
-      '_observeSelectedItems(selectedItems.*)',
+      // '_observeSelected(selected)',
+      '_observeSelectedItems(selectedItems.splices)',
       '_observeXScale(xScale)',
       '_observeYScale(yScale)',
       '_observeXScale(xScale.changed)',
@@ -233,7 +234,7 @@ TODO:
       multi.lifecycle.afterRegister.call(this, host);
       // this.listen(host, 'multi-clear', 'clearSelection');
       this.listen(host, 'multi-tap', 'onMultiTap');
-     
+
     },
 
     afterUnregister: function(host) {
@@ -245,23 +246,26 @@ TODO:
       var length = this.selectedItems && this.selectedItems.length;
       this._setHasSelection(length > 0);
 
-      // notify the selection 
-      this.notifySelection();
+      this.debounce('multi-selector-debounce', () => {
 
-      // refresh the selection
-      this.refreshSelection();
+        // notify the selection 
+        this.notifySelection();
+
+        // refresh the selection
+        this.refreshSelection();
+      }, 10);
 
     },
 
-    _observeSelected: function(selected) {
-      if(this.selectionType === 'select') {
-        if(selected) {
-          this.splice('selectedItems', 0, 1, selected);
-          return;
-        }
-        this.splice('selectedItems', 0, 1); 
-      }
-    },
+    // _observeSelected: function(selected) {
+    //   if (this.selectionType === 'select') {
+    //     if (selected) {
+    //       this.splice('selectedItems', 0, 1, selected);
+    //       return;
+    //     }
+    //     this.splice('selectedItems', 0, 1);
+    //   }
+    // },
 
     notifySelection: function() {
       this.fire('multi-select', {
@@ -294,7 +298,7 @@ TODO:
 
     clearSelection: function() {
       // this.brush.move(null);
-      if(this.brush && this.brush.move) {
+      if (this.brush && this.brush.move) {
         d3.select(this.targetElement).call(this.brush.move, null);
       }
       // this.splice('selectedItems', 0);
@@ -397,7 +401,7 @@ TODO:
         var index = this.selectedItems.indexOf(key);
         if (index > -1) {
           this.splice('selectedItems', index, 1);
-          if(this.selectionType === 'select') {
+          if (this.selectionType === 'select') {
             this.selected = null;
             this.selectedType = null;
           }
@@ -407,11 +411,11 @@ TODO:
           } else {
             this.splice('selectedItems', 0, 1, key);
             this.selected = key;
-            if(d.selectionType) {
+            if (d.selectionType) {
               this.selectedType = d.selectionType;
-              
+
             }
-            
+
           }
         }
       }
@@ -426,10 +430,10 @@ TODO:
       if (scale) {
         if (scale && !scale.invert && this.xContinuous) {
           var range = scale.range();
-          if(scale.bandwidth) {
+          if (scale.bandwidth) {
             // it is a scaleBand; we need to re-adjust the range taking bandWIdth and padding into account (see https://github.com/d3/d3-scale#band-scales)
             var step = scale.step();
-            range = [range[0] + step / 2  , range[1] - step / 2 ] ;
+            range = [range[0] + step / 2, range[1] - step / 2];
           }
           this.__xContinuous = this.xContinuousScale.domain(d3.extent(scale.domain())).range(range);
         } else {
@@ -456,5 +460,6 @@ TODO:
     }
 
   });
+
   </script>
 </dom-module>
