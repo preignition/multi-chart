@@ -53,6 +53,8 @@ multi.registerImpl = {
 
     this.fire('multi-attached', this.groupName);
     this.render();
+    this.fire('iron-resize');
+    
   },
 
   detached: function() {
