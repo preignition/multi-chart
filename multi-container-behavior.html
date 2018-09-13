@@ -139,13 +139,13 @@ multi.containerImpl = {
   __onRefresh: function(e, detail) {
     e.stopPropagation();
     var el = e.srcElement;
-    if (el.onRefresh) {
+    if (el && el.onRefresh) {
       // shaper web-component
       return this.debounce('multi-container-behavior-refresh', function(){
         el.onRefresh(this.data);
       }, 50);
     }
-    if (this.data) {
+    if (el && this.data) {
       if (el.isDrawn && this.registeredItems.indexOf(el) > -1) {
         el.draw(this, this.data, this.transition);
       }

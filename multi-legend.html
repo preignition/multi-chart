@@ -250,8 +250,11 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
     draw: function(host, data, transition) {
       // console.info('Legend Draw', arguments);
       d3.select(this.targetElement).call(this.legend);
-      this.setPosition(this.position, this.padding);
-
+      this.debounce('multi-legend-set-position', function() {
+        this.setPosition(this.position, this.padding);
+      }, 500);
+      // Note(cg): we should be better at knowing when to resize and when not. Polymer 2.0
+      // this.fire('iron-resize');
 
     }
   });

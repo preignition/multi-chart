@@ -133,7 +133,7 @@ TODO:
       selectedItems: {
         type: Array,
         readOnly: true,
-        // notify: true,
+        notify: true, 
         value: function() {
           return [];
         }
@@ -191,7 +191,8 @@ TODO:
 
     observers: [
       // '_observeSelected(selected)',
-      '_observeSelectedItems(selectedItems.splices)',
+      // '_observeSelectedItems(selectedItems.splices)',
+      '_observeSelectedItems(selectedItems.*)',
       '_observeXScale(xScale)',
       '_observeYScale(yScale)',
       '_observeXScale(xScale.changed)',
