@@ -1,4 +1,4 @@
-[![Published on webcomponents.org](https://img.shields.io/badge/webcomponents.org-published-blue.svg)](https://webcomponents.org/element/polymerEl/multi-chart)
+[![Published on webcomponents.org](https://img.shields.io/badge/webcomponents.org-published-blue.svg)](https://webcomponents.org/element/multi-chart)
 
 # \<multi-chart\>
 Build composable, markup-based, extensible visualizations for the web. 
@@ -6,7 +6,7 @@ Build composable, markup-based, extensible visualizations for the web.
 \<multi-chart\> is a Polymer/Webcomponent library to compose markup-driven and data-driven vizualization layers.
 
 ## Motivation
-Wwhile building vizualisation for the web, it is difficult to find the right balance between low-level vizualization kernel (like d3) that requires a lot of development work, and high-level black box library that are difficult to configure beyond a certain point. 
+While building vizualisation for the web, it is difficult to find the right balance between low-level vizualization kernel (like d3) that requires a lot of development work, and high-level black box library that are difficult to configure beyond a certain point. 
 
 \<multi-chart\> is a attempt to provide the best of two the worlds: low level extensible webcomponents (often wrapper around d3.js modules like d3-axis) composed together to build complex charts. The library proposes ready-to-use configurable charts, but also the building blocks for accomodating more complex use case. 
 
@@ -14,7 +14,7 @@ Wwhile building vizualisation for the web, it is difficult to find the right bal
 
 ## Examples
 
-[Demo](https://webcomponents.org/element/polymerEl/multi-chart/demo/index.html) are [and API documentation available here](https://webcomponents.org/element/polymerEl/multi-chart).
+[Demo](https://webcomponents.org/element/multi-chart/demo/index.html) are [and API documentation available here](https://webcomponents.org/element/multi-chart).
 
 ### Pie 
 <div>
