@@ -1,0 +1,105 @@
+<link rel="import" href="../../polymer/polymer.html">
+<link rel="import" href="multi-drawable.html">
+<link rel="import" href="multi-drawable-serie-mixin.html">
+<dom-module id="multi-drawable-bubble">
+  <template>
+    <svg>
+      <g id="drawable" slot-svg="slot-chart" class="drawable bubble"></g>
+    </svg>
+  </template>
+  <script>
+  (function() {
+
+    /**
+     * ## MultiDrawableBubble
+     *
+     * `<multi-drawable-bubble>` draw bubbles from serie data
+     *
+     * @memberof MultiChart
+     * @customElement
+     * @polymer
+     * @appliesMixin MultiChart.mixin.MultiDrawableSerie
+     * @appliesMixin MultiChart.mixin.D3ShapeCoordinate
+     * @demo
+     **/
+    class MultiDrawableBubble extends
+    	MultiChart.mixin.MultiDrawableSerie(
+    		MultiChart.mixin.D3ShapeCoordinate(
+    			MultiChart.MultiDrawable)) {
+
+      static get is() { return 'multi-drawable-bubble'; }
+
+      static get properties() {
+        return {
+
+        	/* 
+        	 * `z` calculating radius for all data point radius = z(d)
+        	 */
+          z: {
+            type: Function,
+            readOnly: true
+          },
+
+           /* 
+           * `zAccessor`  the accessor function for z data (circle radius)
+           */
+          zAccessor: {
+            type: Function,
+            value: function() {
+              return this.identity;
+            }
+          },
+
+          /* 
+           * `zScale` scale function for z domain (circle radius)
+           */
+          zScale: {
+            type: Function
+          }
+
+        };
+      }
+
+      static get observers() {
+        return [
+           '_observeScaleAccessor(zScale, zAccessor, "Z")',
+        ];
+      }
+      get shapeClass() {
+        return 'bubble';
+      }
+
+      get shapeName() {
+        return 'g';
+      }
+
+      drawSerieElement(chart, data) {
+      	chart
+      		.attr('fill', d => this.colorScale(d.key))
+          .attr('class', `${this.shapeClass} selectable`)
+          .attr('key', d => d.key);
+
+        chart = this.drawSerieGroup(data, 'circle', this.shapeClass, chart, this.transition);
+
+        return chart.attr('cx', this.x)
+          .attr('cy', this.y)
+          .attr('r', this.z)
+          .attr('index', (d,i) => i);
+      }
+
+    }
+
+    customElements.define(MultiDrawableBubble.is, MultiDrawableBubble);
+
+    if (!window.MultiChart) {
+      window.MultiChart = {};
+    }
+
+    /* 
+     * @namespace MultiChart
+     */
+    window.MultiChart.MultiDrawableBubble = MultiDrawableBubble;
+
+  })();
+  </script>
+</dom-module>

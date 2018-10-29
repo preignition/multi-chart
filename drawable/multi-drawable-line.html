@@ -1,0 +1,78 @@
+<link rel="import" href="../../polymer/polymer.html">
+<link rel="import" href="../d3-shape/d3-shape-line.html">
+<link rel="import" href="multi-drawable.html">
+<link rel="import" href="multi-drawable-serie-mixin.html">
+<dom-module id="multi-drawable-line">
+  <template>
+  	<d3-shape-line 
+  		shaper="{{shaper}}" 
+      x-scale="[[xScale]]"
+      y-scale="[[yScale]]"
+      x-accessor="[[xAccessor]]"
+			y-accessor="[[yAccessor]]"
+      y="[[y]]"
+			x="[[x]]"
+			defined="[[defined]]"
+  	></d3-shape-line>
+    <svg>
+      <g id="drawable" slot-svg="slot-chart" class="drawable line"></g>
+    </svg>
+  </template>
+  <script>
+  (function() {
+
+    /**
+     * ## MultiDrawableLine
+     *
+     * `<multi-drawable-line>` draws series of lines
+     *
+     * @memberof MultiChart
+     * @customElement
+     * @polymer
+     * @appliesMixin MultiChart.mixin.MultiDrawableSerie
+     * @demo /demo/#multi-line-demo
+     **/
+    class MultiDrawableLine extends  MultiChart.mixin.MultiDrawableSerie(MultiChart.MultiDrawable) {
+
+      static get is() { return 'multi-drawable-line'; }
+
+      static get properties() {
+        return {
+
+          /* 
+           * `shaper`  shaper function for generating a line path ([pie](https://github.com/d3/d3-shape#lines)
+           */
+          shaper: {
+            type: Function
+          }
+        };
+      }
+
+      get shapeClass() {
+        return 'line';
+      }
+
+      drawSerieElement(chart) {
+        return chart.attr('stroke', d => this.colorScale(d.key))
+          .attr('class', `${this.shapeClass} selectable`)
+          .attr('title', d => d.label)
+          .attr('key', d => d.key)
+          .attr('d', d => this.shaper(d.data));
+      }
+      
+    }
+
+    customElements.define(MultiDrawableLine.is, MultiDrawableLine);
+
+    if (!window.MultiChart) {
+      window.MultiChart = {};
+    }
+
+    /* 
+     * @namespace MultiChart
+     */
+    window.MultiChart.MultiDrawableLine = MultiDrawableLine;
+
+  })();
+  </script>
+</dom-module>

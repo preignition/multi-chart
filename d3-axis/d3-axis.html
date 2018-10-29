@@ -1,0 +1,265 @@
+<link rel="import" href="../../polymer/polymer.html">
+<link rel="import" href="../d3-scale/d3-scale-property-mixin.html">
+<link rel="import" href="../d3-scale/d3-scale.html">
+<link rel="import" href="../drawable/multi-drawable.html">
+<link rel="import" href="../helper/multi-accessor.html">
+
+<dom-module id="d3-axis-style" theme-for="multi-container-svg">
+  <template>
+    <style>
+      #axis.axis {
+        @apply --multi-container-axis;
+      }
+
+      #axis.axis([left-axis]) {
+        @apply --multi-chart-left-axis;
+      }
+      
+      #axis.axis([right-axis]) {
+        @apply --multi-chart-right-axis;
+      }
+        
+      #axis.axis([bottom-axis]) {
+        @apply --multi-chart-bottom-axis;
+      }  
+      
+      #axis.axis([top-axis]) {
+        @apply --multi-chart-top-axis;
+      }
+
+      #axis.axis line,
+      #axis.axis path {
+        stroke: var(--multi-axis-color, var(--secondary-text-color, grey));
+      }
+
+      #axis.axis text {
+        fill: var(--multi-axis-color, var(--secondary-text-color, grey));
+      }
+    </style>
+  </template>
+</dom-module>
+
+
+<dom-module id="d3-axis">
+  <template>
+    <svg>
+      <g id="axis" slot-svg="slot-axis" class="axis" transform$="[[translate(_x,_y)]]">
+        <text 
+          class="axis-text" 
+          transform$="[[rotate(textAngle)]]" 
+          x$="[[xText]]" 
+          y$="[[yText]]" 
+          dx$="[[dx]]" 
+          dy$="[[dy]]" 
+          text-anchor="end">[[text]]</text>
+      </g>
+    </svg>
+  </template>
+  <script>
+  (function() {
+
+      /**
+       * ## D3Axis
+       *
+       * `<d3-axis>` a wrapper for d3-axis 
+       *
+       * @memberof MultiChart
+       * @customElement
+       * @polymer
+       * @element multi-axis
+       **/
+      class D3Axis extends MultiChart.MultiDrawable {
+
+      static get is() { return 'd3-axis'; }
+
+      static get properties() {
+        return {
+          /**
+           * `axis` the [d3 axis](https://github.com/d3/d3-axis) function 
+           */
+          axis: {
+            type: Function,
+            computed: 'computeAxis(scale)'
+          },
+
+
+          /* 
+           * `scale`  the [d3-scale](https://github.com/d3/d3-axis) to use for this axis
+           */
+          scale: {
+            type: Function
+          },
+
+          /* 
+           * `scale`  the [range](https://github.com/d3/d3-scale#range) to be user by the 
+           * associated axis scale. 
+           * Axis range is being re-calculated on every resize. 
+           */
+          range: {
+            type: Array,
+            notify: true
+          },
+
+          /**
+           * `_x` x translation for the axis. is set depending on position and height 
+           */
+          _x: {
+            type: Number,
+            value: 0
+          },
+
+          /**
+           * `_y` y translation for the axis. is set depending on position and width
+           */
+          _y: {
+            type: Number,
+            value: 0
+          },
+
+          /**
+           * `text` text for the axis 
+           */
+          text: {
+            type: String,
+            _multiFactory: true
+          },
+
+          /**
+           * `xText` value to be set to the axisText x attribute
+           */
+          xText: {
+            type: Number,
+            _multiFactory: true
+          },
+
+          /**
+           * `yText` value to be set to the axisText `y` attribute
+           */
+          yText: {
+            type: Number,
+            value: 0,
+            _multiFactory: true
+          },
+
+          /**
+           * `dx` value to be set to the axisText `dx` attribute
+           */
+          dx: {
+            type: String,
+            _multiFactory: true
+          },
+
+          /**
+           * `dy` value to be set to the axisText `dy` attribute
+           */
+          dy: {
+            type: String,
+            _multiFactory: true
+          },
+
+          /**
+           * `textAngle` rotation angle to be applied to text axis
+           */
+          textAngle: {
+            type: Number,
+            value: 0,
+            _multiFactory: true
+          },
+
+          /* 
+           * [`ticks`] (https://github.com/d3/d3-axis/blob/master/README.md#axis_ticks) The meaning of the arguments depends on the axis’ scale type: 
+           * most commonly, the arguments are a suggested count for the number of ticks (or a time interval for time scales), and an optional 
+           * format specifier to customize how the tick values are formatted.
+           * 
+           * For example, to generate twenty ticks with SI-prefix formatting on a linear scale, say: [20, "s"];
+           */
+          ticks: {
+            type: Array,
+            _multiFactory: true
+          },
+
+          /* 
+           * [`tickFormat`](https://github.com/d3/d3-axis/blob/master/README.md#axis_tickFormat) sets the tick format.
+           * See [d3-format](https://github.com/d3/d3-format). 
+           * Tick format can also be specified as a function. For example `d3.timeFormat("%B %d, %Y");`
+           */
+           tickFormat : {
+             type:  String,
+            _multiFactory: true
+          },
+
+          position: {
+            type: String,
+            value: function() {
+              return this.constructor.position;
+            }
+          }
+        };
+      }
+
+      static get observers() {
+        return [
+          'observeTicks(axis, ticks)',
+          'observeTickFormat(axis, tickFormat)'
+          ];
+      }
+
+      // TODO(cg): Review if this is usefull ?.
+      connectedCallback() {
+        super.connectedCallback();
+        d3.select(this.$.axis).attr(`${this.position}-axis`, '');
+      }
+
+      computeAxis() {
+        throw '[multi-chart] axis must be computed in axis mixin.';
+      }
+
+      observeTicks(axis, ticks) {
+        if (ticks && axis) {
+          if (!ticks instanceof(Array)) {
+            ticks = [ticks];
+          }
+          axis.tickArguments(ticks);
+          this.fire('multi-refresh');
+          return axis;
+        }
+      }
+
+      observeTickFormat(axis, format) {
+        if (format && axis) {
+          if (typeof format === 'string') {
+            format = d3.format(format);
+          }
+          axis.tickFormat(format);
+          this.fire('multi-refresh');
+          return axis;
+        }
+      }
+
+      draw(data) {
+        const sel = d3.select(this.$.axis);
+        
+        // Note(cg): we skip transition first time we draw.
+        if (this.shallTransition) {
+          sel.transition().call(this.transition).call(this.axis.scale(this.scale));
+        } else {
+          sel.call(this.axis.scale(this.scale));
+        }
+      }
+
+    }
+
+    customElements.define(D3Axis.is, D3Axis);
+
+    if (!window.MultiChart) {
+      window.MultiChart = {};
+    }
+
+    /* 
+     * @namespace MultiChart
+     */
+    window.MultiChart.D3Axis = D3Axis;
+
+  })();
+  </script>
+</dom-module>

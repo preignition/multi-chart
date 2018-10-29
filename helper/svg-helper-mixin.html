@@ -1,0 +1,69 @@
+<script>
+(function() {
+
+  /**
+   * ##  SVGHelper
+   * 
+   * A helper mixin for some SVG utility methods
+   * 
+   * @memberof MultiChart.mixin   
+   * @polymer
+   * @mixinFunction
+   */
+  const SVGHelper = superClass => {
+
+    return class extends superClass {
+
+      translateCenter(w, h) {
+        return `translate(${w / 2 || 0},${h /2 || 0})`;
+      }
+
+      translate(x, y) {
+        return `translate(${x || 0},${y || 0})`;
+      }
+      rotate(angle) {
+        return `rotate(${angle || 0})`;
+      }
+
+      svgScale(factor) {
+        return `scale(${factor || 1})`;
+      }
+
+      //TODO
+      matrix() {
+        return 'matrix(' + ',' + ')';
+      }
+
+      fitTo(source, target, factor) {
+        //reset the transform attribute
+        factor = factor || 0.95;
+        d3.select(source).attr('transform', null);
+
+        var sourceRect = source.getBoundingClientRect(),
+          targetRect = target.getBoundingClientRect(),
+          dx = sourceRect.width,
+          dy = sourceRect.height,
+          x = (-sourceRect.left + sourceRect.right) / 2,
+          y = (-sourceRect.top + sourceRect.bottom) / 2,
+          scale = factor / Math.max(dx / targetRect.width, dy / targetRect.height),
+          translate = [targetRect.width / 2 - scale * x, targetRect.height / 2 - scale * y];
+
+        d3.select(source).attr('transform', 'translate(' + translate[0] + ',' + translate[1] + ') scale(' + scale + ')');
+      }
+    };
+  };
+
+  if (!window.MultiChart) {
+    window.MultiChart = {};
+  }
+  /* 
+   * @namespace MultiChart.mixin
+   */
+  window.MultiChart.mixin = window.MultiChart.mixin || {};
+  /*
+   * @mixinFunction
+   */
+  window.MultiChart.mixin.SVGHelper = SVGHelper;
+
+})();
+</script>

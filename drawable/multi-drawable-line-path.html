@@ -1,0 +1,78 @@
+<link rel="import" href="../../polymer/polymer.html">
+<link rel="import" href="../d3-shape/d3-shape-line.html">
+<link rel="import" href="multi-drawable.html">
+<dom-module id="multi-drawable-line-path">
+  <template>
+  	<d3-shape-line 
+  		shaper="{{shaper}}" 
+      x-scale="[[xScale]]"
+      y-scale="[[yScale]]"
+      x-accessor="[[xAccessor]]"
+			y-accessor="[[yAccessor]]"
+      y="[[y]]"
+			x="[[x]]"
+			defined="[[defined]]"
+  	></d3-shape-line>
+    <svg>
+      <path id="drawable" slot-svg="slot-chart" class="drawable selectable line"> </path>
+    </svg>
+  </template>
+  <script>
+  (function() {
+
+    /**
+     * ## MultiDrawableLinePath
+     *
+     * `<multi-drawable-line-path>` draws a line in a single svg path element
+     *
+     * @memberof MultiChart
+     * @customElement
+     * @polymer
+     * @demo
+     **/
+    class MultiDrawableLinePath extends  MultiChart.MultiDrawable {
+
+      static get is() { return 'multi-drawable-line-path'; }
+
+      static get properties() {
+        return {
+          /* 
+           * `shaper`  shaper function for generating a line path ([pie](https://github.com/d3/d3-shape#lines)
+           */
+          shaper: {
+            type: Function
+          }
+        };
+      }
+
+      draw(data) {
+
+        let chart = d3.select(this.targetElement).datum(data);
+
+        if (this.shallTransition) {
+          chart = this.applyTransition(chart, this.transition);
+        }
+
+        chart.attr('stroke', this.colorScale(this.key))
+          .attr('key', this.key)
+          .attr('d', this.shaper);
+
+       return chart;
+
+      }
+    }
+
+    customElements.define(MultiDrawableLinePath.is, MultiDrawableLinePath);
+
+    if (!window.MultiChart) {
+      window.MultiChart = {};
+    }
+
+    /* 
+     * @namespace MultiChart
+     */
+    window.MultiChart.MultiDrawableLinePath = MultiDrawableLinePath;
+
+  })();
+  </script>
+</dom-module>

@@ -1,0 +1,139 @@
+<link rel="import" href="../../polymer/polymer.html">
+<link rel="import" href="../drawable/multi-drawable-pie.html">
+<link rel="import" href="../helper/multi-accessor.html">
+<link rel="import" href="../container/multi-container-svg.html">
+<link rel="import" href="multi-chart-property-mixin.html">
+
+<dom-module id="multi-chart-pie">
+  <template>
+    <style>
+    :host {
+      display: block;
+    }
+    </style>
+    <multi-accessor accessor="{{accessor}}" path="[[valuePath]]" ></multi-accessor>
+    <multi-container-svg data="[[data]]">
+      <slot name="header" slot="header"></slot>
+      <multi-drawable-pie 
+        transition="[[transition]]"
+        value="[[valueAccessor]]" 
+        pad-angle="[[padAngle]]" 
+        sort="[[sort]]" 
+        sort-values="[[sortValues]]" 
+        inner-radius="[[innerRadius]]" 
+        outer-radius="[[outerRadius]]" 
+        corner-radius="[[cornerRadius]]" 
+        pie-width="[[pieWidth]]" 
+        accessor="[[accessor]]"
+        color-scale="[[colorScale]]"></multi-drawable-pie>
+      <slot></slot>
+      <slot name="footer" slot="footer"></slot>
+    </multi-container-svg>
+  </template>
+  <script>
+  (function() {
+
+    /**
+     * ## MultiChartPie
+     *
+     * `<multi-chart-pie>` a simple Pie chart
+     *
+     *  ### Example
+     *  ```html
+     *   <multi-chart-pie 
+     *     id="chart" 
+     *     value-path="[[valuePath]]" 
+     *     inner-radius="[[innerRadius]]" 
+     *     pad-angle="[[padAngle]]" 
+     *     color-scale="[[colorScale]]"
+     *     data="[[data]]">
+     *     <!-- add a legend -->
+     *     <multi-legend scale="[[colorScale]]" position="top-right"></multi-legend>
+     *     <!-- make it selectable -->
+     *     <multi-selector selected="{{selected}}" track-hover></multi-selector>
+     *     <h2 slot="header">[[title]]</h2>
+     *     <code slot="footer">selected: [[selected]]</code>
+     *   </multi-chart-pie>
+     *  ```
+     *
+     * @memberof MultiChart
+     * @group App Elements
+     * @element multi-chart-pie
+     * appliesMixin MultiChart.mixin.MultiChartProperty
+     * @demo /demo/#multi-pie-demo
+     **/
+    class MultiChartPie extends MultiChart.mixin.MultiChartProperty(Polymer.Element) {
+
+      static get is() { return 'multi-chart-pie'; }
+
+      static get properties() {
+        return {
+          
+          /**
+           * `innerRadius` the inner radius for the pie chart. It might be calculated by setting `radiusWidth` property
+           */
+          innerRadius: {
+            value: 0
+          },
+
+          /**
+           * `pieWidth` a way to indicate the width of the radius (either in % or absolute value). 
+           * If set, inner radius will be inferred. 
+           */
+          pieWidth: {
+            type: String
+          },
+
+          /**
+           * `outerRadius` the outer radius for the pie. Computed as half the max size of the chart. 
+           * It can be set as a Function :
+           * `function(d){return 20 + Math.sqrt(d.value)}` 
+           */
+          outerRadius: {
+            type: Function
+          },
+
+          /* 
+           * `cornerRadius`corner radius for the arc as in [cornerRadius](https://github.com/d3/d3-shape#arc_cornerRadius)
+           */
+          cornerRadius: {
+            type: Number,
+            value: 0
+          },
+
+          /**
+           * `sort` as in [sort](https://github.com/d3/d3-shape#pie_sort). It is null by default so as to render arcs in the provided order (same order as bound data)
+           */
+          sort: {
+            type: Function
+          },
+
+          /**
+           * `sortValue` as in [sortValues](https://github.com/d3/d3-shape#pie_sortValues). It is null by default so as to render arcs in the provided order (same order as bound data)
+           */
+          sortValues: {
+            type: Function
+          },
+
+          accessor: {
+            type: Function
+          }
+
+        };
+      }
+    }
+
+    customElements.define(MultiChartPie.is, MultiChartPie);
+
+    /* 
+     * @namespace MultiChart
+     */
+    if (!window.MultiChart) {
+      window.MultiChart = {};
+    }
+
+    window.MultiChart.MultiChartPie = MultiChartPie;
+
+  })();
+  </script>
+</dom-module>

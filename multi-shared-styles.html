@@ -1,15 +1,15 @@
-<link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../iron-flex-layout/iron-flex-layout.html">
 <!-- shared styles for all elements and index.html -->
-<dom-module id="multi-container">
+<!-- <dom-module id="multi-container">
   <template>
     <style>
     :host {
+        
       @apply(--layout-vertical);
       @apply(--layout-justified);
     }
     
-    #observeNodes {
+    #observedNode {
      display: none;
     }
 
@@ -19,40 +19,36 @@
       @apply(--layout-self-stretch);
     }
     
-    ::content .axis-text {
+    ::slotted .axis-text {
       fill: var(--secondary-text-color, grey);
     }
     
-    ::content .brush::content rect.extent {
+    ::slotted .brush::slotted rect.extent {
       fill: steelblue;
       fill-opacity: .125;
     }
     
-    ::content .brush::content .resize::content path {
+    ::slotted .brush::slotted .resize::slotted path {
       fill: #eee;
       stroke: #666;
     }
 
-    ::content .title,  ::content .subtitle    {
+    ::slotted .title,  ::slotted .subtitle    {
       margin: 0;
     }
     
-    /*::content .subtitle {
-      color: red;
-    }*/
-
-    #axisGroup ::content line, #axisGroup ::content path {
+    #axisGroup ::slotted line, #axisGroup ::slotted path {
       stroke: var(--multi-axis-color);
     }
 
-    #axisGroup ::content text {
+    #axisGroup ::slotted text {
       fill: var(--multi-axis-color);
     }
 
     </style>
   </template>
-</dom-module>
-<dom-module id="multi-chart">
+</dom-module> -->
+<!-- <dom-module id="multi-chart">
   <template>
     <style>
     :host {
@@ -65,32 +61,31 @@
       @apply(--layout-flex-auto);
     }
 
-    ::content [header],  ::content [footer]    {
+    ::slotted [header],  ::slotted [footer]    {
       margin: 0;
     }
-    
 
     </style>
   </template>
-</dom-module>
+</dom-module> -->
 <dom-module id="multi-chart-selector">
   <template>
     <style>
-    :host[is-selecting] ::content .selectable, :host[has-selection] ::content .selectable  {
+    :host[is-selecting] ::slotted .selectable, :host[has-selection] ::slotted .selectable  {
       fill-opacity: 0.35;
       stroke-opacity: 0.45;
     }  
     
-    :host[is-selecting] ::content .selected, :host[has-selection] ::content .selected { 
+    :host[is-selecting] ::slotted .selected, :host[has-selection] ::slotted .selected { 
       fill-opacity: 1;
       stroke-opacity: 1;
     } 
 
-    ::content .selectable {
+    ::slotted .selectable {
       cursor: pointer;
     } 
 
-    ::content .selectable:hover {
+    ::slotted .selectable:hover {
       stroke-width : 3px;
       stroke-opacity: 0.7;
       fill-opacity: 0.7;
@@ -111,7 +106,7 @@
 <dom-module id="multi-chart-line">
   <template>
     <style>
-    ::content .line {
+    ::slotted .line {
       fill: none;
     }
     </style>

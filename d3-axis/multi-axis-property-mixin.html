@@ -1,0 +1,55 @@
+<link rel="import" href="d3-axis.html">
+<script>
+(function(){
+	
+	/**
+	 * ## AxisProperty
+	 * 
+	 * a mixin for constructing `top`, `left`, `bottom` and `right` properties
+	 * 
+	 * @memberof MultiChart.mixin
+   * @polymer
+   * @mixinFunction
+   */
+	const AxisProperty = (superClass, name) =>  {
+   
+		const properties = Object.assign({},MultiChart.D3Axis.properties, MultiChart.mixin.D3ScaleProperty(null).properties);
+		const namedProperties = {};
+		const capitalize = (string) => {
+			return string.charAt(0).toUpperCase() + string.slice(1);
+		};
+
+		Object.keys(properties).forEach(k =>{
+			// Note(cg): properties that need to be exported as named properies (e.g. `bottomElastic`, `rightDomain`) are marked as _multiFactory: true .
+			if(properties[k]._multiFactory) {
+				namedProperties[`${name}${capitalize(k)}`] = properties[k]
+			}
+		});
+   /*
+    * @polymer
+    * @mixinClass
+    */
+	  class Mixin extends superClass {
+
+	    static get properties() {
+	      return namedProperties;
+	    }
+	  };
+
+		return Mixin;	  
+	};
+
+	if (!window.MultiChart) {
+	 window.MultiChart = {};
+	}
+	/* 
+	 * @namespace MultiChart.mixin
+	 */
+	window.MultiChart.mixin = window.MultiChart.mixin || {};
+	/* 
+	 * @mixinClass
+	 */
+  window.MultiChart.mixin.AxisProperty = AxisProperty;
+    
+	})();	
+</script>

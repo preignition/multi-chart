@@ -1,0 +1,71 @@
+<link rel="import" href="../../polymer/polymer.html">
+<dom-module id="multi-serie">
+  <script>
+  (function() {
+
+    /**
+		 * ## MultiSerie
+		 *
+		 * `<multi-serie>` a helper to transform data so that it is easier to draw.
+
+		 *
+		 * @memberof MultiChart
+		 * @customElement
+     * @polymer
+     * @demo
+     * @appliesMixin MultiChart.mixin.Registerable
+		 **/
+    class MultiSerie extends MultiChart.mixin.Registerable(Polymer.Element) {
+
+      static get is() { return 'multi-serie'; }
+
+      static get properties() {
+        return {
+          /* 
+           * `key` the key used for this data serie
+           */
+          key: {
+            type: String
+          },
+
+          /* 
+           * `label` a label describing the serie
+           */
+          label: {
+            type: String
+          },
+
+          /* 
+           * `accessor` the accessor function for transforming data. 
+           * Data will be reshaped as  `[{key: key, label: label, value: data.map(d=>accessor(d))}]
+           */
+          accessor: {
+            type: Function,
+          },
+
+          /* 
+           * `registerEventName`  the name of the event to be used for registering
+           * @override `registerable-mixin`
+           */
+          registerEventName: {
+            type: String,
+            value: 'multi-serie-register'
+          }
+        };
+      }
+    }
+
+    customElements.define(MultiSerie.is, MultiSerie);
+
+    if (!window.MultiChart) {
+      window.MultiChart = {};
+    }
+
+    /* 
+     * @namespace MultiChart
+     */
+    window.MultiChart.MultiSerie = MultiSerie;
+
+  })();
+  </script>
+</dom-module>

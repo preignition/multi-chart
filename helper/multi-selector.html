@@ -1,0 +1,169 @@
+<link rel="import" href="../../polymer/polymer.html">
+<link rel="import" href="../../iron-selector/iron-multi-selectable.html">
+<link rel="import" href="dispatch-svg-mixin.html">
+<link rel="import" href="registerable-mixin.html">
+<link rel="import" href="track-hover-mixin.html">
+
+<dom-module id="multi-selector-style" theme-for="multi-container-svg">
+  <template>
+    <style>
+    
+    :host([has-selection]) .selectable {
+      opacity: 0.6;
+    }
+
+    :host([has-selection]) [selected] {
+      opacity: 1;
+    }
+
+    :host([is-hovered]) .selectable, :host([is-hovered]) .cell {
+      opacity: 0.6;
+    }    
+    :host([is-hovered]) [hovered] {
+      opacity: 1;
+    }    
+    </style>
+  </template>
+</dom-module>
+
+<dom-module id="multi-selector">
+  <script>
+  (function() {
+
+    /**
+     * ## MultiSelector
+     *
+     * `<multi-selector>` is an element for selecting ranges or chart shapes. 
+     *  
+     *
+     * @memberof MultiChart
+     * @customElement
+     * @polymer
+     * @appliesMixin MultiChart.mixin.DispatchSVG
+     * @appliesMixin MultiChart.mixin.Registerable
+     * @appliesMixin MultiChart.mixin.TrackHover
+     * @demo
+     **/
+    class MultiSelector extends
+    Polymer.mixinBehaviors([Polymer.IronMultiSelectableBehavior],
+      MultiChart.mixin.DispatchSVG(
+        MultiChart.mixin.Registerable(
+        	MultiChart.mixin.TrackHover(
+          	Polymer.Element)))) {
+
+      static get is() { return 'multi-selector'; }
+
+      static get properties() {
+        return {
+          /* 
+           * `registerOrder` - registerable elements are sorted on the basis of this property. 
+           * `multi-selector` need to be last in the list of registered items, so that we attach 
+           * events after all shapes are drawn.
+           */
+          registerOrder: {
+            type: Number,
+            readOnly: true,
+            value: 100
+          },
+
+          /**
+           * If you want to use an attribute value or property of an element for
+           * `selected` instead of the index, set this to the name of the attribute
+           * or property. Hyphenated values are converted to camel case when used to
+           * look up the property of a selectable element. Camel cased values are
+           * *not* converted to hyphenated values for attribute lookup. It's
+           * recommended that you provide the hyphenated form of the name so that
+           * selection works in both cases. (Use `attr-or-property-name` instead of
+           * `attrOrPropertyName`.)
+           */
+          attrForSelected: {
+            type: String,
+            value: 'key'
+          },
+
+
+          /**
+           * The attribute to set on elements when selected.
+           */
+          selectedAttribute: {
+            type: String,
+            value: 'selected'
+          }
+        };
+      }
+
+      dataChanged() {
+        this.attachListeners();
+      }
+
+      postRemove() {
+        this.detatchListeners();
+      }
+      
+      /* 
+       * `attachListeners` listen to click, mouseenter and mouseleave and 
+       * fires their respective `multi` events (`multi-tap`, `multi-mouse-enter` and `multi-mouse-leave`)
+       */
+      attachListeners() {
+        const me = this;
+        const sel = d3.select(this.svgHost.shadowRoot).selectAll('.selectable')
+          .on('click', function(d, i) { me.onClick(d, i, this); });
+
+        // Note(cg): store those items into _items.  
+        this._setItems(sel.nodes());
+       	
+       	// attach Listeners in TrackHover
+       	super.attachListeners(sel);
+      }
+
+      detatchListeners() {
+        const sel = d3.select(this.svgHost.shadowRoot).selectAll('.selectable')
+          .on('click', null);
+
+       	// detatch Listeners in TrackHover
+       	super.detatchListeners(sel);
+      }
+
+      getKey(d) {
+        return d.data ? d.data.key : d.key ? d.key : d;
+      }
+
+      onClick(d, i, el) {
+        // handle selection 
+        this.select(this.getKey(d));
+        // let the world know we have a multi-tap event.
+        this.fire('multi-tap', { data: d, index: i, element: el });
+      }
+
+
+      get _hasSelection() {
+      	return this.multi ? this.selectedValue && this.selectedValue.length : !!this.selected;
+      }
+      /* 
+       * `_updateSelected` will set `has-selection` attribute to svgHost. 
+       * This is used in multi-container-svg css rules.
+       */
+      _updateSelected() {
+        super._updateSelected();
+        if (this.svgHost) {
+          d3.select(this.svgHost).attr('has-selection', this._hasSelection ? true : null);
+        }
+      }
+
+    }
+
+
+    customElements.define(MultiSelector.is, MultiSelector);
+
+    if (!window.MultiChart) {
+      window.MultiChart = {};
+    }
+
+    /* 
+     * @namespace MultiChart
+     */
+    window.MultiChart.MultiSelector = MultiSelector;
+
+  })();
+  </script>
+</dom-module>

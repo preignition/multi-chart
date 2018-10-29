@@ -1,0 +1,95 @@
+<link rel="import" href="../../polymer/polymer.html">
+<link rel="import" href="../helper/multi-accessor.html">
+<link rel="import" href="d3-scale-property-mixin.html">
+<link rel="import" href="d3-scale.html">
+
+<dom-module id="multi-scale">
+	<template>
+		<style>
+			:host {
+				display: block;
+			}
+		</style>
+		<multi-accessor
+      path="[[accessorPath]]"
+      sub-path="[[subPath]]"
+      accessor="{{accessor}}"
+    ></multi-accessor>
+    <d3-scale 
+      scale="{{scale}}" 
+      domain="{{domain}}" 
+      scale-type="[[scaleType]]" 
+      elastic="[[elastic]]" 
+      accessor="[[accessor]]" 
+      domain-min="[[domainMin]]" 
+      domain-max="[[domainMax]]" 
+      range="[[range]]" 
+      padding="[[padding]]"
+      family="{{family}}"></d3-scale>
+	</template>
+
+	<script>
+		(function() {
+
+		/**
+		 * ## MultiScale
+		 *
+		 * `<multi-scale>` compute a scale that can be passed on to an axis
+		 *
+		 * @memberof MultiChart
+		 * @customElement
+     * @polymer
+     * @appliesMixin MultiChart.mixin.D3ScaleProperty
+     * @demo
+		 **/
+		class MultiScale extends MultiChart.mixin.D3ScaleProperty(Polymer.Element) {
+
+			static get is() { return 'multi-scale'; }
+
+			static get properties() {
+				return {
+				  
+				  scale: {
+				  	type: Function,
+				  	notify: true
+				  },
+
+				  /**
+           * `accessorPath` the path from which tha accessor function is built
+           * For instance `+d.count`
+           */
+          accessorPath: {
+            type: String
+          },
+          
+          /* 
+           * `family` inferred by scaleType . 
+           * One of `continuous`, `sequential`, `quantize`, `quantile`, `threshold`, `ordinal`,            
+           */
+          family: {
+            type: String,
+            notify: true
+          }
+
+          // accessor: {
+          // 	type: Function, 
+          // 	notify: true
+          // }
+				};
+			}
+		}
+
+		customElements.define(MultiScale.is, MultiScale);
+
+		if (!window.MultiChart) {
+		  window.MultiChart = {};
+		}
+   
+   /* 
+    * @namespace MultiChart
+    */
+    window.MultiChart.MultiScale = MultiScale;
+
+		})();
+	</script>
+</dom-module>

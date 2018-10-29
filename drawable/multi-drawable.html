@@ -1,0 +1,82 @@
+<link rel="import" href="../../polymer/polymer.html">
+<link rel="import" href="../helper/svg-helper-mixin.html">
+<link rel="import" href="../helper/registerable-mixin.html">
+<link rel="import" href="../helper/dispatch-svg-mixin.html">
+<link rel="import" href="../helper/resizable-mixin.html">
+<link rel="import" href="../helper/logger-mixin.html">
+<link rel="import" href="draw-mixin.html">
+
+<dom-module id="multi-drawable">
+  <script>
+  (function() {
+
+    /**
+     * ## MultiDrawable
+     *
+     * `<multi-drawable>` it a base Class for chart element that can be drawn (e.g. line, circle ...)
+     *
+     * @memberof MultiChart
+     * @customElement
+     * @polymer
+     * @appliesMixin MultiChart.mixin.SVGHelper
+     * @appliesMixin MultiChart.mixin.Registerable
+     * @appliesMixin MultiChart.mixin.DispatchSVG
+     * @appliesMixin MultiChart.mixin.Resizable
+     * @appliesMixin MultiChart.mixin.Draw
+     * @appliesMixin MultiChart.mixin.Logger
+     **/
+    class MultiDrawable extends(
+      MultiChart.mixin.SVGHelper(
+        MultiChart.mixin.DispatchSVG(
+            MultiChart.mixin.Draw(
+              MultiChart.mixin.Registerable( 
+                MultiChart.mixin.Resizable(
+                  MultiChart.mixin.Logger(
+                    Polymer.Element))))))) {
+
+      static get is() { return 'multi-drawable'; }
+
+      static get properties() {
+        return {
+          /* 
+           * `key`  some drawable need to have a key (for example lines in a line chart, to as to apply a colorScale)
+           */
+           key: {
+            type: String
+           }
+           
+        };
+      }
+
+      /**
+       * `targetElement` getter override lifecycle Behavior and called during attached
+       */
+      get targetElement() {
+        return this.$.drawable;
+      }
+
+      /* 
+       * helper functions  
+       */
+       identity(d) {return d;}
+       indexAccessor(d, i) {return i;}
+       keyAccessor(d, i) {return d.key;}
+       valueAccessor(d, i) {return d.value;}
+       dataAccessor(d, i) {return d.data;}
+
+    }
+
+    customElements.define(MultiDrawable.is, MultiDrawable);
+
+    /* 
+     * @namespace MultiChart.mixin
+     */
+    if (!window.MultiChart) {
+      window.MultiChart = {};
+    }
+
+    window.MultiChart.MultiDrawable = MultiDrawable;
+
+  })();
+  </script>
+</dom-module>

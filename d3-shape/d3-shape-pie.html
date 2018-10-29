@@ -1,0 +1,88 @@
+<link rel="import" href="../../polymer/polymer.html">
+<link rel="import" href="../helper/multi-accessor.html">
+<link rel="import" href="d3-shape.html">
+<dom-module id="d3-shape-pie">
+  <script>
+  (function() {
+
+    /**
+     * ## D3ShapePie
+     *
+     * `<d3-shape-pie>` a path generator for pie 
+     *
+     * @memberof MultiChart
+     * @customElement
+     * @polymer
+     * @demo /demo/#multi-pie-demo
+     **/
+    class D3ShapePie extends MultiChart.D3Shape {
+
+      static get is() { return 'd3-shape-pie'; }
+
+      static get properties() {
+        return {
+          /**
+           * `shaper` the [pie](https://github.com/d3/d3-shape#pie) shaper function 
+           */
+          shaper: {
+            type: Function,
+            value: function() {
+              const pie = d3.pie();
+              this.applyConfig(pie, ['value', 'padAngle', 'sort', 'sortValues']);
+              return pie;
+            }
+          },
+
+          /**
+           * `value` as in [value](https://github.com/d3/d3-shape#pie_value) to be applied to the pie. If not set by host, can be computed by providing a valuePath. 
+           */
+          value: {
+            type: Function
+          },
+
+          /**
+           * `padAngle` as in [padAngle](https://github.com/d3/d3-shape#pie_padAngle) to be applied to the pie. 
+           */
+          padAngle: {
+            value: 0
+          },
+
+          /**
+           * `sort` as in [sort](https://github.com/d3/d3-shape#pie_sort). It is null by default so as to render arcs in the provided order (same order as bound data)
+           */
+          sort: {
+            type: Function,
+            value: null
+          },
+
+          /**
+           * `sortValue` as in [sortValues](https://github.com/d3/d3-shape#pie_sortValues). It is null by default so as to render arcs in the provided order (same order as bound data)
+           */
+          sortValues: {
+            type: Function,
+            value: null
+          }
+        };
+      }
+
+      static get observers() {
+      	return  [
+		      'observeConfig(value, "value", "shaper","refresh")',
+		      'observeConfig(padAngle, "padAngle", "shaper","refresh")',
+		      'observeConfig(sort, "sort", "shaper","refresh")',
+		      'observeConfig(sortValues, "sortValues", "shaper", "refresh")'
+		    ];
+      }
+    }
+
+    customElements.define(D3ShapePie.is, D3ShapePie);
+
+    if (!window.MultiChart) {
+      window.MultiChart = {};
+    }
+
+    window.MultiChart.D3ShapePie = D3ShapePie;
+
+  })();
+  </script>
+</dom-module>

@@ -1,0 +1,88 @@
+<link rel="import" href="../../polymer/polymer.html">
+<link rel="import" href="../helper/config-helper-mixin.html">
+<link rel="import" href="../helper/logger-mixin.html">
+<dom-module id="d3-transition">
+  <script>
+  (function() {
+
+    /**
+     * ## D3Transition
+     *
+     * `<d3-transition>` a wrapper around d3.transition
+     *
+     * @memberof MultiChart
+     * @customElement
+     * @polymer
+     * @demo
+     * @appliesMixin MultiChart.mixin.ConfigHelper
+     **/
+    class D3Transition extends 
+      MultiChart.mixin.ConfigHelper(
+    	 MultiChart.mixin.Logger(
+         Polymer.Element)) {
+
+      static get is() { return 'd3-transition'; }
+
+      static get properties() {
+        return {
+          /* 
+           * `transition` a transition composer as per https://github.com/d3/d3-transition
+           */
+          transition: {
+            type: Function,
+            notify: true,
+            value: function() {
+              // const transition = d3.transition();
+               return (transition) => {
+              		this.applyConfig(transition, ['duration', 'delay', 'ease']);
+              		return transition;
+              	};
+            }
+          },
+
+          /* 
+           * [`duration`](https://github.com/d3/d3-transition#transition_duration) the duration of the transition in ms
+           */
+          duration: {
+            type: Function
+          },
+
+          /* 
+           * [`delay`] (https://github.com/d3/d3-transition#transition_delay) the delay for the transition
+           */
+          delay: {
+            type: Function
+          },
+
+          /* 
+           * `ease` : (https://github.com/d3/d3-transition#transition_ease) Specifies the transition easing function for all selected elements.
+           */
+          ease: {
+            type: Function
+          }
+        };
+      }
+
+      static get observers() {
+      	return [
+	      'observeConfig(duration, "duration", "transition", "refresh")',
+  	    'observeConfig(delay, "delay", "transition", "refresh")',
+    	  'observeConfig(ease, "ease", "transition", "refresh")'
+      	];
+      }
+    }
+
+    customElements.define(D3Transition.is, D3Transition);
+
+    if (!window.MultiChart) {
+      window.MultiChart = {};
+    }
+
+    /* 
+     * @namespace MultiChart
+     */
+    window.MultiChart.D3Transition = D3Transition;
+
+  })();
+  </script>
+</dom-module>

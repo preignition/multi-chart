@@ -1,0 +1,113 @@
+<link rel="import" href="../../polymer/polymer.html">
+<link rel="import" href="../../iron-resizable-behavior/iron-resizable-behavior.html">
+<link rel="import" href="../../iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../helper/dispatch-svg-mixin.html">
+<link rel="import" href="../helper/registerable-mixin.html">
+<link rel="import" href="../helper/polymer-extends-mixin.html">
+<link rel="import" href="../helper/svg-helper-mixin.html">
+<link rel="import" href="multi-register-mixin.html">
+<dom-module id="multi-container-g">
+  <template>
+    <style>
+    #observedNode {
+      display: none;
+    }
+
+    </style>
+    <div id="observedNode">
+      <slot></slot>
+    </div>
+    <svg id="svg">
+      <g slot-svg="slot-chart" id="slot-g"></g>
+    </svg>
+  </template>
+  <script>
+  (function() {
+    /**
+     * # MultiContainerG
+     * 
+     * `<multi-container-g>` is a proxy for svg g element. 
+     * It will be inserted within `multi-container-svg#slot-chart` and can contain other svg content like geo layer. 
+     *
+     *
+     * ### Events
+     * Fired when `multi-container-g` is attached .
+     *
+     * @event multi-container-added
+     * @param {string} the namee of the curret group.
+     *
+     * Fired when `multi-container-g` is removed .
+     *
+     * @event multi-container-removed
+     * @param {string} the namee of the curret group.
+     *
+     *
+     * @memberof MultiChart
+     * @appliesMixin  MultiChart.mixin.MultiRegister    
+     * @appliesMixin  MultiChart.mixin.Registerable    
+     * @appliesMixin  MultiChart.mixin.DispatchSVG    
+     * @appliesMixin  MultiChart.mixin.SVGHelper    
+     * @appliesMixin  MultiChart.mixin.Resizable    
+     * @appliesMixin  MultiChart.mixin.PolymerExtends    
+     * @customElement
+     * @polymer
+     **/
+    class MultiContainerG
+    extends Polymer.mixinBehaviors([Polymer.IronResizableBehavior],
+      MultiChart.mixin.SVGHelper(
+        MultiChart.mixin.DispatchSVG(
+          MultiChart.mixin.Resizable(
+            MultiChart.mixin.MultiRegister(
+              MultiChart.mixin.Registerable(
+                MultiChart.mixin.PolymerExtends(
+                  Polymer.Element))))))) {
+
+      static get is() { return 'multi-container-g'; }
+
+      static get properties() {
+        return {
+
+          /**
+           * `groupName` the name of the group (used when to registering this element under a multi-verse)
+           */
+          groupName: {
+            type: String
+          }
+        };
+      }
+    
+      connectedCallback() {
+        super.connectedCallback();
+        Polymer.RenderStatus.afterNextRender(this, () => {
+          this.fire('multi-container-added', this.groupName);
+        });
+      }
+
+      /* 
+       * `dataChanges` relay dataChanged to registeredItems
+       */
+      dataChanged() {
+        this.callRegistered('dataChanged', ...arguments);
+      }
+
+      onResize() {
+        super.onResize();
+        // if(this.svgHost) {
+        //   this._setHeight(this.svgHost.height);
+        //   this._setWidth(this.svgHost.width);
+        // }
+        this.callRegistered('onResize'); 
+      }
+    }
+
+    customElements.define(MultiContainerG.is, MultiContainerG);
+
+    if (!window.MultiChart) {
+      window.MultiChart = {};
+    }
+
+    window.MultiChart.MultiContainerG = MultiContainerG;
+
+  })();
+  </script>
+</dom-module>

@@ -1,0 +1,105 @@
+<link rel="import" href="../../polymer/polymer.html">
+<link rel="import" href="../helper/multi-accessor.html">
+<link rel="import" href="d3-shape.html">
+<dom-module id="d3-shape-stack">
+	<template>
+    <multi-accessor accessor="{{value}}" path="[[valuePath]]" sub-path></multi-accessor>
+  </template>
+  <script>
+  (function() {
+
+    /**
+     * ## D3ShapeStack
+     *
+     * `<d3-shape-stack>` path generator for [d3-stack](https://github.com/d3/d3-shape#stack),
+     *
+     * @memberof MultiChart
+     * @customElement
+     * @polymer
+     * @demo /demo/#multi-bar-demo
+     **/
+    class D3ShapeStack extends
+    MultiChart.mixin.D3ShapeCoordinate(
+      MultiChart.D3Shape) {
+
+      static get is() { return 'd3-shape-stack'; }
+
+      static get properties() {
+        return {
+
+          /**
+           * `shaper` the [stack](https://github.com/d3/d3-shape#satck) shaper function 
+           */
+          shaper: {
+            type: Function,
+            notify: true,
+            value: function() {
+              var shaper = d3.stack();
+              this.applyConfig(shaper, ['value', 'keys', 'order', 'offset']);
+              return shaper;
+            }
+          },
+          /* 
+           * [`keys`](https://github.com/d3/d3-shape#stack_keys)  - the keys accessors for the stack
+           */
+          keys: {
+            type: Array
+
+          },
+          /* 
+           * `valuePath` is specified, will generate an `value` accessor. 
+           * For instance `valuePath` = 'value' fill create a value accessor function `(d,key) => d.value[key]`
+           */
+          valuePath: {
+            type: String
+          },
+
+          /* 
+           * [`value`](https://github.com/d3/d3-shape#stack_value)  
+           */
+          value: {
+            type: Function
+          },
+
+          /* 
+           * [`order`](https://github.com/d3/d3-shape#stack_order)  The order function for the stack. 
+           * See stack [orders](https://github.com/d3/d3-shape#stack-orders) for the built-in orders.
+           */
+          order: {
+            type: Function
+          },
+
+          /* 
+           * [`offset`](https://github.com/d3/d3-shape#stack_offset)  
+           */
+          offset: {
+            type: Function
+          }
+        };
+      }
+
+      static get observers() {
+        return [
+          'observeConfig(keys.splices, "keys", "shaper", "refresh")',
+          'observeConfig(keys, "keys", "shaper", "refresh")',
+          'observeConfig(value, "value", "shaper", "refresh")',
+          'observeConfig(order, "order", "shaper", "refresh")',
+          'observeConfig(offset, "offset", "shaper", "refresh")'
+        ];
+      }
+    }
+
+    customElements.define(D3ShapeStack.is, D3ShapeStack);
+
+    if (!window.MultiChart) {
+      window.MultiChart = {};
+    }
+
+    /* 
+     * @namespace MultiChart
+     */
+    window.MultiChart.D3ShapeStack = D3ShapeStack;
+
+  })();
+  </script>
+</dom-module>

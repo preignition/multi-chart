@@ -1,0 +1,193 @@
+<link rel="import" href="../../polymer/polymer.html">
+<link rel="import" href="../d3-shape/d3-shape-stack.html">
+<link rel="import" href="multi-drawable.html">
+<link rel="import" href="multi-drawable-serie-mixin.html">
+<dom-module id="multi-drawable-bar">
+  <template>
+    <d3-shape-stack 
+      shaper="{{shaper}}" 
+      keys="[[keys]]" 
+      order="[[order]]" 
+      offset="[[offset]]" 
+      value="[[value]]" 
+      value-path="[[valuePath]]"></d3-shape-stack>
+    <svg>
+      <g id="drawable" slot-svg="slot-chart" class="drawable bar"></g>
+    </svg>
+  </template>
+  <script>
+  (function() {
+
+    /**
+     * ## MultiDrawableBar
+     *
+     * `<multi-drawable-bar>` draws bar as in https://github.com/d3/d3-shape#bar
+     *
+     * @memberof MultiChart
+     * @customElement
+     * @polymer
+     * @appliesMixin MultiChart.mixin.MultiDrawableSerie
+     * @appliesMixin MultiChart.mixin.D3ShapeCoordinate
+     * @demo /demo/#multi-bar-demo
+     **/
+    class MultiDrawableBar extends 
+      MultiChart.mixin.MultiDrawableSerie(
+        MultiChart.mixin.D3ShapeCoordinate(
+          MultiChart.MultiDrawable)) {
+
+      static get is() { return 'multi-drawable-bar'; }
+
+      static get properties() {
+        return {
+
+          /* 
+           * `stacked` if true, draw a stack chart, otherwise, default bar chart
+           */
+           stacked : {
+             type:  Boolean,
+             observer: 'redraw'
+            },
+
+          /* 
+           * [`keys`](https://github.com/d3/d3-shape#bar_keys)  - the keys accessors for the bar
+           */
+          keys: {
+            type: Array
+
+          },
+          /* 
+           * `valuePath` is specified, will generate an `value` accessor. 
+           * For instance `valuePath` = 'value' fill create a value accessor function `(d,key) => d.value[key]`
+           */
+          valuePath: {
+            type: String
+          },
+
+          /* 
+           * [`value`](https://github.com/d3/d3-shape#bar_value)  
+           */
+          value: {
+            type: Function
+          },
+
+          /* 
+           * [`order`](https://github.com/d3/d3-shape#bar_order)  The order function for the bar. 
+           * See bar [orders](https://github.com/d3/d3-shape#bar-orders) for the built-in orders.
+           */
+          order: {
+            type: Function
+          },
+
+          /* 
+           * [`offset`](https://github.com/d3/d3-shape#bar_offset)  
+           */
+          offset: {
+            type: Function
+          },
+
+          /* 
+           * `groupName` used for resetting value domain. 
+           */
+          groupName : {
+            type: String, 
+            value: 'default' 
+          }
+        };
+      }
+
+      get shapeClass() {
+        return 'bar';
+      }
+
+
+      get shapeName() {
+        return 'g';
+      }
+
+      /* 
+       * `shape` @override draw-mixin
+       */
+      shape(data) {
+        if(this.shaper) {
+
+          // const d = this.shaper(data).map((data, i) => data.map(([y0, y1]) => [y0, y1, ]));
+          let tmpMax = -Infinity;
+          const d = this.shaper(data).map((data, i) => { 
+            const ret = data.map(([y0, y1], ii) => {
+              if((y1 - y0)  > tmpMax) {
+                tmpMax = (y1-y0);
+              }
+              return [y0, y1, i, data[ii].data.__key__];
+            });
+            ret.index = data.index; 
+            ret.key = data.key; 
+            return ret;
+          });
+          const max = this.stacked ?  
+            d3.max(d[this.keys.length - 1], d => d[1]) 
+            : tmpMax;         
+
+          this.fire('multi-set-value-domain', {
+            groupName: this.groupName,
+            domain: [0, max]
+          });
+          return d;
+        }
+        throw('[multi-chart] shaper for bar is not set.' );
+      }
+
+      drawSerieElement(chart, data) {
+        
+        chart
+           .attr('fill', d => this.colorScale(d.key))
+          .attr('class', `${this.shapeClass} selectable`)
+          .attr('key', d => d.key);
+
+        chart = this.drawSerieGroup(data, 'rect', this.shapeClass, chart, this.transition);
+
+        if(this.stacked) {
+          chart = chart
+            .attr('y', d => this.yScale(d[1]))
+            .attr('height', d => this.yScale(d[0]) - this.yScale(d[1]));
+
+          if(chart instanceof d3.transition) {
+            chart = chart.transition();
+          }
+          
+          return chart
+            .attr('x', (d,i) =>  this.xScale(d[3] || i))
+            .attr('width', this.xScale.bandwidth())
+            .attr('index', (d,i) => i);
+        }
+        
+        const n = data.length;
+        chart = chart
+          .attr('x', (d, i) =>  this.xScale(d[3] || i) + this.xScale.bandwidth() / n * d[2])
+          .attr('width', this.xScale.bandwidth() / n);
+        
+        if(chart instanceof d3.transition) {
+            chart = chart.transition();
+          }  
+        
+        return chart
+          .attr('y', d => this.yScale(d[1] - d[0]))
+          .attr('height', d => this.yScale(0) - this.yScale(d[1] - d[0]))
+          .attr('index', (d,i) => i);
+
+      }
+    }
+
+    customElements.define(MultiDrawableBar.is, MultiDrawableBar);
+
+    if (!window.MultiChart) {
+      window.MultiChart = {};
+    }
+
+    /* 
+     * @namespace MultiChart
+     */
+    window.MultiChart.MultiDrawableBar = MultiDrawableBar;
+
+  })();
+  </script>
+</dom-module>

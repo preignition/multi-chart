@@ -1,0 +1,91 @@
+<script>
+(function() {
+
+  /**
+   * ##  D3ScaleProperty
+   * 
+   * Properties for d3-scale 
+   * 
+   * @memberof MultiChart.mixin
+   * @polymer
+   * @mixinFunction
+   */
+  const D3ScaleProperty = superClass => {
+
+    return class extends superClass {
+
+      static get properties() {
+        return {
+        
+          scaleType: {
+            type: String,
+            value: 'scaleLinear',
+            _multiFactory: true
+          },
+
+          elastic: {
+            type: Boolean,
+            reflectToAttribute: true,
+            value: false,
+            _multiFactory: true
+          },
+
+          /* 
+           * `domain` domain for this scale. It will be recomputed when data changes
+           */
+          domain: {
+            type: Array,
+            notify: true,
+            _multiFactory: true
+          },
+
+          accessor: {
+            type: Function,
+            notify: true
+          },
+
+          range: {
+            type: Array,
+            _multiFactory: true
+          },
+
+          padding: {
+            type: Number,
+            _multiFactory: true
+          },
+
+          /**
+           * `domainMin` if set, will be used as the min value for calculating the domain - otherwise, it will be inferred from provided data (`d3.extent(data, accessor)`)
+           */
+          domainMin: {
+            type: Number,
+            _multiFactory: true
+          },
+
+          /**
+           * `domainMax` if set, will be used as the max value for calculating the domain - otherwise, it will be inferred from provided data (`d3.extent(data, accessor)`)
+           */
+          domainMax: {
+            type: Number,
+            _multiFactory: true
+          },
+        };
+      }
+    };
+  };
+
+  if (!window.MultiChart) {
+    window.MultiChart = {};
+  }
+
+  /* 
+   * @namespace MultiChart.mixin
+   */
+  window.MultiChart.mixin = window.MultiChart.mixin || {};
+  /*
+   * @mixinFunction
+   */
+  window.MultiChart.mixin.D3ScaleProperty = D3ScaleProperty;
+
+})();
+</script>

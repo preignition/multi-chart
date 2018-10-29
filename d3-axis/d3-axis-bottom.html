@@ -1,0 +1,51 @@
+<link rel="import" href="../../polymer/polymer.html">
+<link rel="import" href="d3-axis.html">
+
+<dom-module id="d3-axis-bottom">
+	<script>
+		(function() {
+
+		/**
+		 * ## D3BottomAxis
+		 *
+		 * `<d3-axis-bottom>` a drawable bottom axis
+		 *
+		 * @memberof MultiChart
+		 * @customElement
+     * @polymer
+		 **/
+		class D3BottomAxis extends MultiChart.D3Axis {
+
+			static get is() { return 'd3-axis-bottom'; }
+
+			static get isX(){return true;}
+    	static get isY(){return false;}
+    	static get position(){return 'bottom';}
+
+      computeAxis(scale) {
+        return d3.axisBottom().scale(scale);
+      }
+
+      onResize(){
+      	super.onResize();
+      	this._x = 0;
+      	this._y = this.height;
+      	this.range = [0, this.width];
+      	this.xText = this.width;
+      }
+		}
+
+		customElements.define(D3BottomAxis.is, D3BottomAxis);
+
+		 
+		if (!window.MultiChart) {
+		  window.MultiChart = {};
+		}
+	/* 
+   * @namespace MultiChart
+   */
+    window.MultiChart.D3BottomAxis = D3BottomAxis;
+
+		})();
+	</script>
+</dom-module>

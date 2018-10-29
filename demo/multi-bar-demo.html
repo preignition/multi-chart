@@ -1,0 +1,99 @@
+<dom-module id="multi-bar-demo">
+  <template>
+    <style include="vaadin-component-demo-shared-styles">
+      :host {
+      display: block;
+    }
+    #control {
+      color: red;
+    }
+    </style>
+    <h3>Bar Chart Demo</h3>
+    <p>recreation of https://bl.ocks.org/mbostock/3887051</p>
+    <vaadin-demo-snippet id='multi-bar-serie-demo-binding'>
+      <template preserve-content>
+        <dom-bind id="app">
+          <template>
+            <style>:host {display: flex;} #chart {flex: 2;}#control {flex: 1;  padding: 15px;}</style>
+            <multi-container-axis 
+                id="chart"  
+                margin="[[margin]]"
+                bottom-axis
+                left-axis
+                bottom-scale-type="scaleBand"
+                bottom-padding="[[padding]]"
+                left-ticks='[5,"s"]'
+                data="[[data]]"
+                ordinal-domain-mapper="[[statesMapper]]"
+                scales="{{scales}}" >
+              <dom-repeat items="{{keys}}">
+                <template>
+                  <multi-serie key="[[item]]" label="[[item]]"></multi-serie>
+                </template>
+              </dom-repeat>
+              <multi-drawable-bar 
+                  keys="[[keys]]"
+                  color-scale="[[colorScale]]"
+                  x-scale="[[scales.bottom]]" 
+                  y-scale="[[scales.left]]"
+                  stacked="[[stacked]]"
+                 ></multi-drawable-bar>
+              <multi-legend scale="[[colorScale]]" labels="[[keys]]" position="top-right"></multi-legend>
+            </multi-container-axis>
+            <div id="control">
+              <paper-checkbox checked="{{stacked}}">stacked</paper-checkbox>
+              <paper-input raised value="{{padding}}" type="number" placeholder="padding" min="0" max="0.9" step="0.1" label="bottom axis padding" ></paper-input>
+              <paper-input raised value="{{margin.right}}" type="number" placeholder="right margin" min="0" max="200" step="5" label="right margin" ></paper-input>
+            </div>
+          </template>
+        </dom-bind>
+      </template>
+    </vaadin-demo-snippet>
+    <script>
+    window.addDemoReadyListener('#multi-bar-serie-demo-binding', function(document) {
+
+      app = document.querySelector('#app');
+      chart = app.$.chart;
+
+      d3.csv('census.csv')
+      .then(data => {
+
+        console.info('DATA', data, app.keys);
+
+        app.keys = data.columns.slice(1);
+        const states = data.map(function(d) { return d.State; })
+        app.statesMapper = (d,i) => states[i];
+        app.padding = 0.1;
+        app.margin = {
+              top: 20,
+              right: 130,
+              bottom: 20,
+              left: 30
+            };
+
+        app.colorScale = d3.scaleOrdinal().range(["#98abc5", "#8a89a6", "#7b6888", "#6b486b", "#a05d56", "#d0743c", "#ff8c00"]);
+        app.data = data;
+
+    });
+
+    });
+    </script>
+  </template>
+  <script>
+  (function() {
+
+    class BarDemo extends DemoReadyEventEmitter(MultiChart.Demo(Polymer.Element)) {
+      static get is() {
+        return 'multi-bar-demo';
+      }
+    }
+    customElements.define(BarDemo.is, BarDemo);
+
+    if (!window.MultiChart) {
+      window.MultiChart = {};
+    }
+    window.MultiChart.BarDemo = BarDemo;
+
+  })();
+  </script>
+</dom-module>

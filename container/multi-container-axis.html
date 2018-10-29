@@ -1,0 +1,224 @@
+<link rel="import" href="../../polymer/polymer.html">
+<link rel="import" href="../d3-axis/multi-axis-property-mixin.html">
+<link rel="import" href="../d3-axis/d3-axis-top.html">
+<link rel="import" href="../d3-axis/d3-axis-right.html">
+<link rel="import" href="../d3-axis/d3-axis-left.html">
+<link rel="import" href="../d3-axis/d3-axis-bottom.html">
+<link rel="import" href="../d3-scale/multi-scale.html">
+<link rel="import" href="../d3-zoom/zoomable-properties-mixin.html">
+<link rel="import" href="../container/multi-container-svg.html">
+<link rel="import" href="multi-container-axis-properties-mixin.html">
+<dom-module id="multi-container-axis">
+  <template>
+    <multi-container-svg 
+      data="[[data]]" 
+      margin="[[margin]]"
+      enable-zoom="[[enableZoom]]"
+      extent="[[extent]]"
+      scale-extent="[[scaleExtent]]"
+      ordinal-domain-mapper="[[ordinalDomainMapper]]"
+      serie-value-domain="{{serieValueDomain}}"
+      serie-ordinal-domain="{{serieOrdinalDomain}}">
+      <multi-scale 
+          scale="{{scales.bottom}}"
+          domain="{{domains.bottom}}"
+          accessor="{{accessors.bottom}}"
+          range="[[ranges.bottom]]"
+          scale-type="[[bottomScaleType]]"
+          elastic="[[bottomElastic]]"
+          accessor-path="[[bottomAccessorPath]]"
+          padding="[[bottomPadding]]"
+          domain-min="[[bottomDomainMin]]"
+          domain-max="[[bottomDomainMax]]"
+        ></multi-scale>
+        <multi-scale 
+          scale="{{scales.left}}"
+          domain="{{domains.left}}"
+          accessor="{{accessors.left}}"
+          range="[[ranges.left]]"
+          scale-type="[[leftScaleType]]"
+          elastic="[[leftElastic]]"
+          accessor-path="[[leftAccessorPath]]"
+          padding="[[leftPadding]]"
+          domain-min="[[leftDomainMin]]"
+          domain-max="[[leftDomainMax]]"
+        ></multi-scale>
+      <template is="dom-if" if="[[topAxis]]" restamp>
+         <multi-scale 
+          scale="{{scales.top}}"
+          domain="{{domains.top}}"
+          accessor="{{accessors.top}}"
+          range="[[ranges.top]]"
+          scale-type="[[topScaleType]]"
+          elastic="[[topElastic]]"
+          accessor-path="[[topAccessorPath]]"
+          padding="[[topPadding]]"
+          domain-min="[[topDomainMin]]"
+          domain-max="[[topDomainMax]]"
+        ></multi-scale>
+        <d3-axis-top 
+          scale="[[scales.top]]"
+          range="{{ranges.top}}"
+          text="[[topText]]"
+          x-text="[[topXText]]"
+          y-text="[[topYText]]"
+          dx="[[topDx]]"
+          dy="[[topDy]]"
+          text-angle="[[topTextAngle]]"
+          ticks="[[topTicks]]"
+          tick-format="[[topTickFormat]]"
+          ></d3-axis-top>
+      </template>
+      <template is="dom-if" if="[[rightAxis]]" restamp>
+        <multi-scale 
+          scale="{{scales.right}}"
+          domain="{{domains.right}}"
+          accessor="{{accessors.right}}"
+          range="[[ranges.right]]"
+          scale-type="[[rightScaleType]]"
+          elastic="[[rightElastic]]"
+          accessor-path="[[rightAccessorPath]]"
+          padding="[[rightPadding]]"
+          domain-min="[[rightDomainMin]]"
+          domain-max="[[rightDomainMax]]"
+        ></multi-scale>
+        <d3-axis-right 
+          scale="[[scales.right]]"
+          range="{{ranges.right}}"
+          x-text="[[rightXText]]"
+          y-text="[[rightYText]]"
+          dx="[[rightDx]]"
+          dy="[[rightDy]]"
+          text-angle="[[rightTextAngle]]"
+          ticks="[[rightTicks]]"
+          tick-format="[[rightTickFormat]]"
+          ></d3-axis-right>
+      </template>
+      <template is="dom-if" if="[[bottomAxis]]" restamp>
+        <d3-axis-bottom 
+          scale="[[scales.bottom]]"
+          range="{{ranges.bottom}}"
+          text="[[bottomText]]"
+          x-text="[[bottomXText]]"
+          y-text="[[bottomYText]]"
+          dx="[[bottomDx]]"
+          dy="[[bottomDy]]"
+          text-angle="[[bottomTextAngle]]"
+          ticks="[[bottomTicks]]"
+          tick-format="[[bottomTickFormat]]"
+      ></d3-axis-bottom>
+      </template>
+      <template is="dom-if" if="[[leftAxis]]">
+        <d3-axis-left 
+          scale="[[scales.left]]"
+          range="{{ranges.left}}"
+          text="[[leftText]]"
+          x-text="[[leftXText]]"
+          y-text="[[leftYText]]"
+          dx="[[leftDx]]"
+          dy="[[leftDy]]"
+          text-angle="[[leftTextAngle]]"
+          ticks="[[leftTicks]]"
+          tick-format="[[leftTickFormat]]"
+      ></d3-axis-left>
+      </template>
+      <slot name="header" slot="header"></slot>
+      <slot></slot>
+      <slot name="footer" slot="footer"></slot>
+    </multi-container-svg>
+  </template>
+  <script>
+  (function() {
+
+    /**
+     * ## MultiChartContainerAxis
+     *
+     * `<multi-container-axis>` a container for coordinate data
+     *
+     * @memberof MultiChart
+     * @customElement
+     * @polymer
+     * @appliesMixin MultiChart.mixin.AxisProperty('bottom')
+     * @appliesMixin MultiChart.mixin.AxisProperty('top')
+     * @appliesMixin MultiChart.mixin.AxisProperty('left')
+     * @appliesMixin MultiChart.mixin.ZoomableProperties
+     * @appliesMixin MultiChart.mixin.ContainerAxisProperties
+     * @demo /demo/#multi-axis-demo
+     * @demo /demo/#multi-bar-demo
+     * @demo /demo/#multi-line-demo
+     **/
+    class MultiChartContainerAxis extends 
+    MultiChart.mixin.ZoomableProperties(
+      MultiChart.mixin.ContainerAxisProperties(
+        MultiChart.mixin.AxisProperty(
+          MultiChart.mixin.AxisProperty(
+            MultiChart.mixin.AxisProperty(
+              MultiChart.mixin.AxisProperty(
+                Polymer.Element, 'bottom'), 'top'), 'left'), 'right')))  {
+
+      static get is() { return 'multi-container-axis'; }
+
+      static get properties() {
+        return {
+
+        };
+      }
+
+      static get observers() {
+        return [
+          '_observeSerieDomain(serieDomainMapping, serieOrdinalDomain, serieValueDomain)'
+        ];
+      }
+
+      ready() {
+        super.ready();
+        Polymer.RenderStatus.afterNextRender(this, () => {
+          this.addEventListener('multi-set-value-domain', this._onSetValueDomain);
+        });
+      }
+
+      /* 
+       * `_onSetValueDomain` some charts will reset domain according to reshaped values (e.g. stack chart)
+       * This provides a way to listing to those changes. 
+       */
+      _onSetValueDomain(e) {
+        e.stopPropagation();
+        const d = e.detail;
+        this.serieValueDomain = Object.assign({}, this.serieValueDomain || {}, {[`${d.groupName || 'default'}`]: d.domain});
+      }
+
+      _observeSerieDomain(mapping) {
+        if(mapping) {
+          Object.keys(mapping).forEach(k => {
+            if(['left', 'bottom', 'right', 'top'].indexOf(k) < 0) {
+              throw `[multi-chart] serieDomainMapping has an invalid key (${k}). Expected: one of this.domain ? this.domain[0] : 0,`;
+            }
+            const domain = this.get(mapping[k]);
+            if(domain)  {
+              if(this[`${k}DomainMin`] || this[`${k}DomainMin`] === 0 ) {
+                domain[0] = this[`${k}DomainMin`];
+              }
+              if(this[`${k}DomainMax`] || this[`${k}DomainMax`] === 0 ) {
+                domain[1] = this[`${k}DomainMax`];
+              }
+              this.set(`domains.${k}`, domain);
+            }
+          });
+        }
+      }
+    }
+
+    customElements.define(MultiChartContainerAxis.is, MultiChartContainerAxis);
+
+    if (!window.MultiChart) {
+      window.MultiChart = {};
+    }
+
+    /* 
+     * @namespace MultiChart
+     */
+    window.MultiChart.MultiChartContainerAxis = MultiChartContainerAxis;
+
+  })();
+  </script>
+</dom-module>

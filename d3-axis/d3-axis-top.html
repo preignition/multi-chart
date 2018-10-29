@@ -1,0 +1,51 @@
+<link rel="import" href="../../polymer/polymer.html">
+<link rel="import" href="d3-axis.html">
+
+<dom-module id="d3-axis-top">
+	<script>
+		(function() {
+
+		/**
+		 * ## D3TopAxis
+		 *
+		 * `<d3-axis-top>` a drawable top axis
+		 *
+		 * @memberof MultiChart
+		 * @customElement
+     * @polymer
+		 **/
+		class D3TopAxis extends MultiChart.D3Axis {
+
+			static get is() { return 'd3-axis-top'; }
+
+			static get isX(){return true;}
+    	static get isY(){return false;}
+    	static get position(){return 'top';}
+
+      computeAxis(scale) {
+        return d3.axisTop().scale(scale);
+      }
+
+      onResize(){
+      	super.onResize();
+      	this._x = 0;
+      	this._y = 0;
+      	this.range = [0, this.width];
+      	this.xText = this.width;
+      }
+		}
+
+		customElements.define(D3TopAxis.is, D3TopAxis);
+
+		if (!window.MultiChart) {
+		  window.MultiChart = {};
+		}
+
+   /* 
+    * @namespace MultiChart
+    */
+    window.MultiChart.D3TopAxis = D3TopAxis;
+
+		})();
+	</script>
+</dom-module>

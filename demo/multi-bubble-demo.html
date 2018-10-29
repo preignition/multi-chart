@@ -1,0 +1,97 @@
+<dom-module id="multi-bubble-demo">
+  <template>
+    <style include="vaadin-component-demo-shared-styles">
+      :host {
+      display: block;
+    }
+    #control {
+      color: red;
+    }
+    </style>
+    <h3>bubble Chart Demo</h3>
+    <vaadin-demo-snippet id='multi-bubble-serie-demo-binding'>
+      <template preserve-content>
+        <dom-bind id="app">
+          <template>
+            <style>:host {display: flex;} #chart {flex: 2;}#control {flex: 1;  padding: 15px;}</style>
+            <multi-container-axis 
+                id="chart"  
+                top-axis="[[topAxis]]"
+                left-axis="[[leftAxis]]"
+                bottom-axis="[[bottomAxis]]"
+                right-axis="[[rightAxis]]"
+                bottom-scale-type="scalePoint"
+                left-domain-max="[[domainMax]]"
+                data="[[data]]"
+                domains="{{domains}}"
+                scales="{{scales}}"
+                left-tick-format="[[leftTickFormat]]">
+              <dom-repeat items="{{keys}}">
+                <template>
+                 <!-- we need a accessor for y-scale -->
+                 <multi-accessor accessor="{{item.accessor}}" path="+value.[[item.key]]"></multi-accessor>
+                 <multi-serie key="[[item.key]]" label="[[item.label]]" accessor="{{item.accessor}}"></multi-serie>
+                </template>
+              </dom-repeat>
+              <multi-scale scale-type="scaleSqrt" domain="[[domains.left]]"  range="[3,15]" scale="{{zScale}}"></multi-scale>
+              <multi-drawable-bubble 
+                  color-scale="[[colorScale]]"
+                  x-scale="[[scales.bottom]]" 
+                  y-scale="[[scales.left]]"
+                  z-scale="[[zScale]]" 
+                 ></multi-drawable-bubble>
+            </multi-container-axis>
+            <div id="control">
+              <paper-input raised value="{{domainMax}}" type="number" placeholder="set max value" min="10" max="100" label="left axis max" ></paper-input>
+              <paper-button raised on-tap="toggle">toggle data</paper-button>
+            </div>
+          </template>
+        </dom-bind>
+      </template>
+    </vaadin-demo-snippet>
+    <script>
+    window.addDemoReadyListener('#multi-bubble-serie-demo-binding', function(document) {
+
+      app = document.querySelector('#app');
+      chart = app.$.chart;
+      app.keys = [{key: 'ananas'}, {key: 'banana'}, {key: 'apple'}, {key: 'orange'}];
+      const d1 = MultiChart.BubbleDemo.multipleRnd(app.keys.map(k => k.key), 50);
+      const d = MultiChart.BubbleDemo.multipleRnd(app.keys.map(k => k.key), 50);
+
+      let isD1 = false;
+
+      app.colorScale = d3.scaleOrdinal().range(d3.schemeCategory10);
+      chart.transition = function(transition) {
+        return transition.duration(800);
+      };
+      app.domainMax = 50;
+      app.bottomAxis = true;
+      app.leftAxis = true;
+      app.data = d1;
+
+      app.toggle = function() {
+        isD1 = !isD1;
+        app.data = isD1 ? d : d1;
+      };
+
+    });
+    </script>
+  </template>
+  <script>
+  (function() {
+
+    class BubbleDemo extends DemoReadyEventEmitter(MultiChart.Demo(Polymer.Element)) {
+      static get is() {
+        return 'multi-bubble-demo';
+      }
+    }
+    customElements.define(BubbleDemo.is, BubbleDemo);
+
+    if (!window.MultiChart) {
+      window.MultiChart = {};
+    }
+    window.MultiChart.BubbleDemo = BubbleDemo;
+
+  })();
+  </script>
+</dom-module>

@@ -1,0 +1,92 @@
+<link rel="import" href="../helper/registerable-mixin.html">
+<script>
+(function() {
+
+  /**
+   * ##  DispatchSVG
+   * 
+   * dispatch template elements marked as slot-svg="svgID" to svgHost
+   * 
+   * @memberof MultiChart.mixin
+   * @polymer
+   * @mixinFunction
+   */
+  const DispatchSVG = Polymer.dedupingMixin(superClass => {
+
+    return class extends superClass {
+
+      static get properties() {
+        return {
+
+          /* 
+           * `svgHost`  the host to which [slog-svg] nodes must be stamped
+           */
+          svgHost: {
+            type: Object,
+            observer: 'observeSvgHost'
+          },
+
+          _hostedNodes: {
+            type: Object,
+            value: () => { return {}; }
+          }
+
+        };
+      }
+
+      observeSvgHost(host, old) {
+        if (host && this.shadowRoot) {
+          this.shadowRoot.querySelectorAll('[slot-svg]').forEach(node => {
+            const target = node.getAttribute('slot-svg');
+            if (host.$[target]) {
+              this._hostedNodes[target] = node;
+              return host.$[target].appendChild(node);
+            }
+            this._warn(`cannot dispatch node ${target}`);
+          });
+        }
+        if (host === null && old) {
+          Object.keys(this._hostedNodes).forEach(k => {
+            this.shadowRoot.appendChild(this._hostedNodes[k]);
+            delete this._hostedNodes[k];
+          });
+        }
+      }
+
+      // Note(cg): after Register is called by `multi-register-mixin` (multi-container-svg) once 
+      afterRegister(host) {
+        this.svgHost = host;
+      }
+
+      afterUnregister() {
+        this.svgHost = null;
+      }
+
+      /* 
+       * `postRemove` is called by `registerable-mixin` on disconnectedCallback. 
+       * It unregisters this element from svgHost. 
+       */
+      postRemove() {
+        if (this.svgHost && this.svgHost.unregister) {
+          this.svgHost.unregister(this);
+        }
+        super.postRemove();
+      }
+
+    };
+  });
+
+  if (!window.MultiChart) {
+    window.MultiChart = {};
+  }
+  /* 
+   * @namespace MultiChart.mixin
+   */
+  window.MultiChart.mixin = window.MultiChart.mixin || {};
+  /*
+   * @mixinFunction
+   */
+  window.MultiChart.mixin.DispatchSVG = DispatchSVG;
+
+})();
+</script>

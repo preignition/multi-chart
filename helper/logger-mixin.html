@@ -1,0 +1,75 @@
+<script>
+(function(){
+	
+	/**
+	 * ##  Logger
+	 * 
+	 * logger for MultiChart
+	 * 
+	 * @memberof MultiChart.mixin
+   * @polymer
+   * @mixinFunction
+   */
+	const Logger = superClass => {
+	  
+	  return class extends superClass {
+
+	    static get properties() {
+	      return {
+	        /* 
+	         * `verbose`  If true, error messages will automatically be logged to the console.
+	         */
+	        verbose: {
+	          type: Boolean
+	        },
+
+	        /* 
+	         * `logPrefix`  
+	         */
+	        logPrefix: {
+	        	type: String, 
+	        	value: '[multi-chart]'
+	        }
+	      };
+	    }
+
+	    get _verbose() {
+	    	return this.verbose || Polymer.verbose;
+	    }
+
+	    _log() {
+	    	if(this._verbose) {
+	    		Polymer.Base._log(this.logPrefix, ...arguments);
+	    	}
+	    }
+
+	    _warn() {
+	    	if(this._verbose) {
+	    		Polymer.Base._warn(this.logPrefix, ...arguments);
+	    	}
+	    }
+
+	    _error(...args) {
+	    	if(this._verbose) {
+	    		Polymer.Base._error(this.logPrefix, ...arguments);
+	    	}
+	    }
+	    
+	  };
+	};
+
+	if (!window.MultiChart) {
+	 window.MultiChart = {};
+	}
+
+	/* 
+	 * @namespace MultiChart.mixin
+	 */
+	window.MultiChart.mixin = window.MultiChart.mixin || {};
+	/* 
+	 * @mixinFunction
+	 */
+  window.MultiChart.mixin.Logger = Logger;
+
+	})();	
+</script>

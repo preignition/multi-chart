@@ -1,0 +1,198 @@
+<link rel="import" href="../../polymer/polymer.html">
+<link rel="import" href="../../iron-resizable-behavior/iron-resizable-behavior.html">
+<link rel="import" href="../../iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../../vaadin-themable-mixin/vaadin-themable-mixin.html">
+<link rel="import" href="../helper/polymer-extends-mixin.html">
+<link rel="import" href="../helper/svg-helper-mixin.html">
+<link rel="import" href="../helper/logger-mixin.html">
+<link rel="import" href="../d3-zoom/zoomable-mixin.html">
+<link rel="import" href="multi-register-mixin.html">
+<dom-module id="multi-container-svg">
+  <template>
+    <!-- <style include="multi-container"></style> -->
+    <style>
+    :host {
+      display: block;
+      flex:1;
+    }
+
+    ::slotted([slot=header]) ,
+    ::slotted([slot=footer]) {
+      margin: 0;
+    }
+
+    #observedNode {
+      display: none;
+    }
+
+    #svg {
+      /* need width here, otherwise the size of this svg is not properly calculated on resize*/
+      width: 100%;
+      height: 100%;
+      @apply --multi-container-svg;
+    }
+  
+    #background {
+      fill: var(--multi-chart-background-color, var(--light-theme-background-color));
+      @apply --multi-chart-background;
+    }
+
+    #slot-chart-content {
+      @apply --multi-chart-content;
+    }
+  
+    .drawable {
+      fill: none;
+    }
+
+    </style>
+    <slot name="header"></slot>
+    <div id="observedNode">
+      <slot></slot>
+    </div>
+    <svg id="svg">
+      <g transform$="[[translate(margin.left, margin.top)]]">
+        <g id="slot-background"></g>
+        <g id="slot-chart-content">
+          <g id="slot-zoom">
+            <g id="slot-chart" class="chart">
+            </g>
+            <g id="slot-brush"></g>
+          </g>
+          <g id="slot-axis"></g>
+        </g>
+      </g>
+      <g id="slot-legend"></g>
+    </svg>
+    <slot name="footer"></slot>
+  </template>
+  <script>
+  (function() {
+    /**
+     * # MultiContainerSVG
+     * 
+     * `<multi-chart-base>` is a base element for buiding charts 
+     *
+     *
+     * ### Events
+     * Fired when `multi-container-svg` is attached .
+     *
+     * @event multi-container-added
+     * @param {string} the namee of the curret group.
+     *
+     * Fired when `multi-container-svg` is removed .
+     *
+     * @event multi-container-removed
+     * @param {string} the namee of the curret group.
+     *
+     *
+     * @memberof MultiChart
+     * @appliesMixin  MultiChart.mixin.MultiRegister    
+     * @appliesMixin  MultiChart.mixin.SVGHelper    
+     * @appliesMixin  MultiChart.mixin.PolymerExtends    
+     * @appliesMixin  MultiChart.mixin.Zoomable
+     * @customElement
+     * @polymer
+     **/
+    class MultiContainerSVG
+    extends Polymer.mixinBehaviors([Polymer.IronResizableBehavior],
+      Vaadin.ThemableMixin(
+        MultiChart.mixin.Logger(
+          MultiChart.mixin.SVGHelper(
+            MultiChart.mixin.MultiRegister(
+              MultiChart.mixin.Zoomable(
+                MultiChart.mixin.PolymerExtends(
+                  Polymer.Element))))))) {
+
+      static get is() { return 'multi-container-svg'; }
+
+      static get properties() {
+        return {
+
+          /* 
+           * `margin` applied to svg container (not css margin, wich can also be applied as per normal css rules)
+           */
+          margin: {
+            type: Object,
+            value: {
+              top: 10,
+              right: 5,
+              bottom: 10,
+              left: 5
+            }
+          },
+
+          /* 
+           * `width`  of the chart area. Equals actual width of component - margins
+           */
+          width: {
+            type: Number,
+            readOnly: true
+          },
+
+          /* 
+           * `height`  of the chart area. Equals actual height of component - margins
+           */
+          height: {
+            type: Number,
+            readOnly: true
+          },
+
+          /**
+           * `groupName` the name of the group (used when to registering this element under a multi-verse)
+           */
+          groupName: {
+            type: String
+          }
+        };
+      }
+      
+      static get observers() {
+        return  [
+          '_observeMargin(margin.*)'
+        ];
+      }
+
+      connectedCallback() {
+        super.connectedCallback();
+        // Note(cg): we fire a special event so that multi-verse are aware of chart container being added
+        // TODO(cg): replace multi-attached -> multi-container-added
+        Polymer.RenderStatus.afterNextRender(this, () => {
+          this.fire('multi-container-added', this.groupName);
+          this.addEventListener('iron-resize', this.onResize);
+          this.notifyResize();
+        });
+      }
+
+      _observeMargin() {
+        this.notifyResize();
+      }
+
+
+      disconnectedCallback() {
+        super.disconnectedCallback();
+        // TODO(cg): replace multi-removed -> multi-container-remover
+        // XXX(cg): this event will never be caught! unregister from host instead like for drawablse
+        this.fire('multi-container-removed', this.groupName);
+      }
+
+      onResize() {
+        // Note(cg): as we cannot user offsetWidth and offsetHeight for svg, we take the value of $0.$.svg.height.baseVal.
+        this._setWidth(Math.floor(this.$.svg.width.baseVal.value - this.margin.left - this.margin.right));
+        this._setHeight(Math.floor(this.$.svg.height.baseVal.value - this.margin.bottom - this.margin.top));
+        super.onResize();
+      }
+
+    }
+
+    customElements.define(MultiContainerSVG.is, MultiContainerSVG);
+
+    if (!window.MultiChart) {
+      window.MultiChart = {};
+    }
+
+    window.MultiChart.MultiContainerSVG = MultiContainerSVG;
+
+  })();
+  </script>
+</dom-module>

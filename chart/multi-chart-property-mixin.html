@@ -1,0 +1,52 @@
+<script>
+(function(){
+	
+	/**
+	 * ##  MultiChartProperty
+	 * 
+	 * Small mixing holding 
+	 * 
+	 * @memberof MultiChart.mixin
+   * @polymer
+   * @mixinFunction
+   */
+	const MultiChartProperty = superClass => {
+	  
+	  return class extends superClass {
+
+	    static get properties() {
+	      return {
+	         
+	         /* 
+           * `data` to display the chart
+           */
+          data: {
+            type: Array
+          },
+
+          /* 
+           * `transition` to apply while drawing
+           */
+          transition: {
+            type: Function
+          },
+	      };
+	    }
+	  };
+	};
+
+	if (!window.MultiChart) {
+	 window.MultiChart = {};
+	}
+
+	/* 
+	 * @namespace MultiChart.mixin
+	 */
+	window.MultiChart.mixin = window.MultiChart.mixin || {};
+	/* 
+	 * @mixinFunction
+	 */
+  window.MultiChart.mixin.MultiChartProperty = MultiChartProperty;
+
+	})();	
+</script>

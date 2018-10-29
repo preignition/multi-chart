@@ -1,0 +1,62 @@
+<link rel="import" href="../../polymer/polymer.html">
+<link rel="import" href="../helper/config-helper-mixin.html">
+<link rel="import" href="../helper/logger-mixin.html">
+<link rel="import" href="../helper/polymer-extends-mixin.html">
+<dom-module id="d3-shape">
+  <script>
+  (function() {
+
+    /**
+     * ## D3Shape
+     *
+     * `<d3-shape>` a base class for creating d3-shape (https://github.com/d3/d3-shape)
+     *
+     * @memberof MultiChart
+     * @customElement
+     * @polymer
+     * @appliesMixin  MultiChart.mixin.PolymerExtends  
+     * @appliesMixin  MultiChart.mixin.ConfigHelper  
+     * @appliesMixin  MultiChart.mixin.Logger
+     **/
+    class D3Shape extends 
+     MultiChart.mixin.ConfigHelper(
+      MultiChart.mixin.Logger(
+        MultiChart.mixin.PolymerExtends(
+    			Polymer.Element))) {
+
+      static get is() { return 'd3-shape'; }
+
+      static get properties() {
+        return {
+
+          /* 
+           * `shaper` the generator function - will be overriden in more specific subClass (e.g. pie, bar)
+           */
+          shaper: {
+            type: Function,
+            notify: true, 
+            value: function() {
+              //identity function by default
+              return function(x) {
+                return x;
+              };
+            }
+          }
+        };
+      }
+    }
+
+    customElements.define(D3Shape.is, D3Shape);
+
+    if (!window.MultiChart) {
+      window.MultiChart = {};
+    }
+   
+   /* 
+    * @namespace MultiChart
+    */
+    window.MultiChart.D3Shape = D3Shape;
+
+  })();
+  </script>
+</dom-module>

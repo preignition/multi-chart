@@ -1,0 +1,84 @@
+<script>
+(function() {
+
+  /**
+   * ##  Registerable
+   * 
+   * Allow component to be registerable by containters that will listen to `multi-register` event
+   * 
+   * ### Events
+   * Fired when the component is attached so that container can register it
+   *
+   * @event multi-register
+   * @param {string} the namee of the curret group.
+   *
+   * @memberof MultiChart.mixin   
+   * @polymer
+   * @mixinFunction
+   */
+  const Registerable = superClass => {
+
+    return class extends superClass {
+
+
+      static get properties() {
+        return {
+          /**
+           * `groupName` the name of the group (used when to registering this element under a multi-verse)
+           */
+          groupName: {
+            type: String
+          },
+
+          /* 
+           * `registerEventName`  the name of the event to be used for registering
+           */
+          registerEventName: {
+            type: String, 
+            value: 'multi-register'
+          },
+
+          /* 
+           * `registerOrder` - registerable elements are sorted on the basis of this property. 
+           */
+          registerOrder: {
+            type: Number,
+            readOnly: true,
+            value: 0
+          }
+        };
+      }
+
+      connectedCallback() {
+        super.connectedCallback();
+        this.fire(this.registerEventName, this.groupName);
+      }
+
+      disconnectedCallback() {
+        this.postRemove();
+        super.disconnectedCallback();
+      }
+
+      postRemove() {
+
+      }
+
+
+    };
+  };
+
+  if (!window.MultiChart) {
+    window.MultiChart = {};
+  }
+
+  /* 
+   * @namespace MultiChart.mixin
+   */
+  window.MultiChart.mixin = window.MultiChart.mixin || {};
+  /* 
+   * @mixinFunction
+   */
+  window.MultiChart.mixin.Registerable = Registerable;
+
+})();
+</script>
