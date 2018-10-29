@@ -16,7 +16,7 @@
     "charts",
     "polymer",
     "analytics",
-    "mapping",
+    "Polymer",
     "dataviz"
   ],
   "dependencies": {
@@ -41,5 +41,8 @@
   "resolutions": {
     "polymer": "^2.0.0",
     "paper-input": "^2.0.0"
+  },
+  "scripts": {
+     "postpublish": "git push && git push --tags"
   }
 }

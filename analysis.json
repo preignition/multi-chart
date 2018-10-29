@@ -5759,7 +5759,7 @@
           "staticMethods": [],
           "demos": [
             {
-              "url": "/demo/#multi-pie-demo",
+              "url": "index.html#multi-pie-demo",
               "description": ""
             }
           ],
@@ -9296,7 +9296,7 @@
           "staticMethods": [],
           "demos": [
             {
-              "url": "/demo/#multi-pie-demo",
+              "url": "index.html#multi-pie-demo",
               "description": ""
             }
           ],
@@ -11011,7 +11011,7 @@
           "staticMethods": [],
           "demos": [
             {
-              "url": "/demo/#multi-pie-demo",
+              "url": "index.html#multi-pie-demo",
               "description": ""
             }
           ],
@@ -24773,15 +24773,15 @@
           "staticMethods": [],
           "demos": [
             {
-              "url": "/demo/#multi-axis-demo",
+              "url": "index.html#multi-axis-demo",
               "description": ""
             },
             {
-              "url": "/demo/#multi-bar-demo",
+              "url": "index.html#multi-bar-demo",
               "description": ""
             },
             {
-              "url": "/demo/#multi-line-demo",
+              "url": "index.html#multi-line-demo",
               "description": ""
             }
           ],
@@ -25517,7 +25517,7 @@
           "staticMethods": [],
           "demos": [
             {
-              "url": "/demo/#multi-line-demo",
+              "url": "index.html#multi-line-demo",
               "description": ""
             }
           ],
@@ -25896,7 +25896,7 @@
           "staticMethods": [],
           "demos": [
             {
-              "url": "/demo/#multi-line-demo",
+              "url": "index.html#multi-line-demo",
               "description": ""
             }
           ],
@@ -26690,7 +26690,7 @@
           "staticMethods": [],
           "demos": [
             {
-              "url": "/demo/#multi-line-demo",
+              "url": "index.html#multi-line-demo",
               "description": ""
             }
           ],
@@ -28002,7 +28002,7 @@
           "staticMethods": [],
           "demos": [
             {
-              "url": "/demo/#multi-bar-demo",
+              "url": "index.html#multi-bar-demo",
               "description": ""
             }
           ],
@@ -34244,7 +34244,7 @@
           "staticMethods": [],
           "demos": [
             {
-              "url": "/demo/#multi-bar-demo",
+              "url": "index.html#multi-bar-demo",
               "description": ""
             }
           ],
@@ -34749,7 +34749,7 @@
           "staticMethods": [],
           "demos": [
             {
-              "url": "/demo/#multi-bar-demo",
+              "url": "index.html#multi-bar-demo",
               "description": ""
             }
           ],

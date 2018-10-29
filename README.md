@@ -37,7 +37,7 @@ While building vizualisation for the web, it is difficult to find the right bala
 </div>
 
 ## Dependencies
-For using \<multi-chart\>, please make sure that the following packages a available on the client: 
+For using \<multi-chart\>, please make sure that the following packages are available on the client: 
 - [d3.js v5](https://d3js.org/) 
 - [d3-svg-legend](http://d3-legend.susielu.com/)
 - [d3-tip](https://github.com/Caged/d3-tip)
