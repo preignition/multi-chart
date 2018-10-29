@@ -1,7 +1,7 @@
 {
   "name": "multi-chart",
   "version": "2.0.0",
-  "description": "polymer building blocks elements for building charts and visualization (based on d3.js v4).",
+  "description": "polymer building blocks elements for building charts and visualization (based on d3.js v5).",
   "license": "MIT",
   "authors": [
     "christophe.geiser <christophe.geiser@e-smile.org>"
@@ -22,7 +22,7 @@
     "iron-resizable-behavior": "PolymerElements/iron-resizable-behavior#^2.0.0",
     "iron-selector": "PolymerElements/iron-selector#^2.0.0",
     "vaadin-themable-mixin": "^1.2.1",
-    "d3-bundle-element": "^1.8.0"
+    "d3-bundle-element": "^2.0.0"
   },
   "devDependencies": {
     "iron-demo-helpers": "PolymerElements/iron-demo-helpers#^2.0.0",

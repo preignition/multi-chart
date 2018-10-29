@@ -32,9 +32,9 @@ This version users iron-component-page 3.0.1. Ping use `polymer analysis > analy
 ## TODO : 
 - [x] transition
 - [x] new library for multi-geo 
-- [ ] use template-for for modular style management 
+- [x] use template-for for modular style management 
 - [ ] better explanation/documentation
-- [ ] migrate multi-verse charts to multi-chart
+- [x] migrate multi-verse charts to multi-chart
 - [ ] geo hexbin for geo draft
 - [x] multi-zoom
 - [x] line -> check with better bottom-domain
