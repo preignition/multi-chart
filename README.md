@@ -13,7 +13,8 @@ Wwhile building vizualisation for the web, it is difficult to find the right bal
 \<multi-chart\>, plays well with [\<multi-geo\>](https://github.com/PolymerEl/multi-geo) (similar library for geo charts like choropleth) and [\<multi-verse\>](https://github.com/PolymerEl/multi-verse), a graphical interactive multi-dimensional analysis tool. Together, they offer a markup based alternative to tools like [dc.js](https://dc-js.github.io/dc.js/)
 
 ## Examples
-Demo are available [here](https://webcomponents.org/element/polymerEl/multi-chart)
+
+[Demo](https://webcomponents.org/element/polymerEl/multi-chart/demo/index.html) are [and API documentation available here](https://webcomponents.org/element/polymerEl/multi-chart).
 
 ### Pie 
 <div>
