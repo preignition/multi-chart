@@ -1,4 +1,4 @@
-[![Published on webcomponents.org](https://img.shields.io/badge/webcomponents.org-published-blue.svg)](https://webcomponents.org/element/multi-chart)
+[![Published on webcomponents.org](https://img.shields.io/badge/webcomponents.org-published-blue.svg)](https://webcomponents.org/element/polymerEl/multi-chart)
 
 # \<multi-chart\>
 Build composable, markup-based, extensible visualizations for the web. 
@@ -14,7 +14,7 @@ While building vizualisation for the web, it is difficult to find the right bala
 
 ## Examples
 
-[Demo](https://webcomponents.org/element/multi-chart/demo/index.html) are [and API documentation available here](https://webcomponents.org/element/multi-chart).
+[Demo](https://webcomponents.org/element/polymerEl/multi-chart/demo/index.html) are [and API documentation available here](https://webcomponents.org/element/polymerEl/multi-chart).
 
 ### Pie 
 <div>
