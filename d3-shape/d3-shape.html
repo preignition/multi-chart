@@ -1,7 +1,6 @@
 <link rel="import" href="../../polymer/polymer.html">
 <link rel="import" href="../helper/config-helper-mixin.html">
-<link rel="import" href="../helper/logger-mixin.html">
-<link rel="import" href="../helper/polymer-extends-mixin.html">
+<link rel="import" href="../multi-chart-base.html">
 <dom-module id="d3-shape">
   <script>
   (function() {
@@ -14,15 +13,11 @@
      * @memberof MultiChart
      * @customElement
      * @polymer
-     * @appliesMixin  MultiChart.mixin.PolymerExtends  
      * @appliesMixin  MultiChart.mixin.ConfigHelper  
-     * @appliesMixin  MultiChart.mixin.Logger
      **/
     class D3Shape extends 
      MultiChart.mixin.ConfigHelper(
-      MultiChart.mixin.Logger(
-        MultiChart.mixin.PolymerExtends(
-    			Polymer.Element))) {
+        MultiChart.MultiChartBase) {
 
       static get is() { return 'd3-shape'; }
 

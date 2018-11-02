@@ -17,7 +17,7 @@
      * @memberof MultiChart
      * @customElement
      * @polymer
-     * @appliesMixin MultiChart.mixin.Registerable
+     * @appliesMixin MultiChart.mixin.MultiRegisterable
      * @appliesMixin MultiChart.mixin.ConfigHelper
      * @appliesMixin MultiChart.mixin.D3ScaleProperty
      * @appliesMixin MultiChart.mixin.Logger
@@ -25,7 +25,7 @@
     class MultiScale extends
     MultiChart.mixin.ConfigHelper(
       MultiChart.mixin.D3ScaleProperty(
-        MultiChart.mixin.Registerable(
+        MultiChart.mixin.MultiRegisterable(
           MultiChart.mixin.Logger(
             Polymer.Element)))) {
 

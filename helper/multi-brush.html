@@ -1,6 +1,6 @@
 <link rel="import" href="../../polymer/polymer.html">
 <link rel="import" href="dispatch-svg-mixin.html">
-<link rel="import" href="registerable-mixin.html">
+<link rel="import" href="multi-registerable-mixin.html">
 <link rel="import" href="resizable-mixin.html">
 <dom-module id="multi-brush-style" theme-for="multi-container-svg">
   <template>
@@ -43,7 +43,7 @@
      **/
     class MultiBrush extends 
       MultiChart.mixin.DispatchSVG(
-        MultiChart.mixin.Registerable(
+        MultiChart.mixin.MultiRegisterable(
       		MultiChart.mixin.Resizable(
           	Polymer.Element))) {
 
@@ -79,7 +79,7 @@
 
           /**
            * `brushType` the type of selection,  either `brush`, `brushX`, `brushY`.
-           * When set to `brushX` (resp. `brusY`) the `xScale` (resp. `yScale`) scale must be set. for bidirectional brush (`brush`), both scales must be given.
+           * When set to `brushX` (resp. `brushY`) the `xScale` (resp. `yScale`) scale must be set. for bidirectional brush (`brush`), both scales must be given.
            */
           brushType: {
             type: String,
@@ -114,14 +114,15 @@
            */
           brush: {
             type: Function,
-            computed: '_computeBrush(selectionType, extent)'
+            computed: '_computeBrush(brushType, extent)'
           },
 
           /**
            * `extent` extent of the brush
            */
           extent: {
-            type: Array
+            type: Array,
+            readOnly: true
           },
 
           /**
@@ -170,6 +171,21 @@
         };
       }
 
+      static get observers() {
+        return [
+          '_observeSelectedItems(selectedItems, selectedItems.*)'
+        ];
+      }
+
+      _observeSelectedItems() {
+        this.debounce('multi-brush-select-debounce', () =>{
+          this.fire('multi-select', {
+            isRange: this.isRange,
+            selection: this.selectedItems
+          });
+        }, 30);
+      }
+
       onResize() {
       	super.onResize();
         this._computeExtent();
@@ -201,10 +217,10 @@
       }
 
       _computeExtent() {
-        return [
+        this._setExtent([
           [0, 0],
           [this.width, this.height]
-        ];
+        ]);
       }
 
       _computeBrush(brushType, extent) {
@@ -240,7 +256,7 @@
           return this.clearSelection();
         }
 
-        const scale = this.effectiveScale;
+        let scale = this.effectiveScale;
         // var isRange = false;
 
         const xScale = this.xScale;
@@ -270,11 +286,9 @@
       }
 
       onMultiBrushStart() {
-        if (this.isBrush) {
           this._refreshContiunousScale(this.xScale);
-          this.effectiveScale = this._getEffectiveScale();
+          // this.effectiveScale = this._getEffectiveScale();
           this._setIsSelecting(true);
-        }
       }
 
       onMultiBrushEnd() {
@@ -303,22 +317,13 @@
         }
       }
 
-      _getEffectiveScale() {
-
-        var xScale, yScale;
-
-        if (this.brush !== 'brushX') {
-          yScale = this.__yContinuous || this.yScale;
-        }
-        if (this.brush !== 'brushY') {
-          xScale = this.__xContinuous || this.xScale;
-        }
-
+      get effectiveScale() {
         return {
-          x: xScale,
-          y: yScale
+          x: (this.brushType === 'brushY' ) ? null : this.__xContinuous || this.xScale,
+          y: (this.brushType === 'brushX' ) ? null : this.__yContinuous || this.yScale,
         };
       }
+      
     }
 
     customElements.define(MultiBrush.is, MultiBrush);

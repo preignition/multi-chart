@@ -1,0 +1,41 @@
+<script>
+(function(){
+	
+	/**
+	 * ##  Accessor
+	 * 
+	 * Helper for util accessors 
+	 * 
+	 * @memberof MultiChart.mixin
+   * @polymer
+   * @mixinFunction
+   */
+	const Accessor = superClass => {
+	  
+	  return class extends superClass {
+      /* 
+       * helper functions  
+       */
+       identity(d) {return d;}
+       indexAccessor(d, i) {return i;}
+       keyAccessor(d, i) {return d.key;}
+       valueAccessor(d, i) {return d.value;}
+       dataAccessor(d, i) {return d.data;}
+	  };
+	};
+
+	if (!window.MultiChart) {
+	 window.MultiChart = {};
+	}
+
+	/* 
+	 * @namespace MultiChart.mixin
+	 */
+	window.MultiChart.mixin = window.MultiChart.mixin || {};
+	/* 
+	 * @mixinFunction
+	 */
+  window.MultiChart.mixin.Accessor = Accessor;
+
+	})();	
+</script>

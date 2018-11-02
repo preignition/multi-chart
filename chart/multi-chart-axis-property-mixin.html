@@ -2,39 +2,28 @@
 (function() {
 
   /**
-   * ##  ContainerAxisProperties
+   * ##  ChartAxisProperty
    * 
-   * Properties for container axis.
+   * Properties for container axis chart (same as ContainerAxisProperty, but without default values).
    * 
    * @memberof MultiChart.mixin
    * @polymer
    * @mixinFunction
    */
-  const ContainerAxisProperties = superClass => {
+  const ChartAxisProperty = superClass => {
 
     return class extends superClass {
 
       static get properties() {
         return {
-          /* 
-           * `data` to display the chart
-           */
-          data: {
-            type: Array
-          },
-
+       
           /* 
            * `margin` applied to svg container (not css margin, wich can also be applied as per normal css rules)
            * By default margins are slightly bigger than for simple `multi-container-svg`
            */
           margin: {
-            type: Object,
-            value: {
-              top: 20,
-              right: 20,
-              bottom: 20,
-              left: 20
-            }
+            type: Object
+          
           },
 
           /* 
@@ -43,10 +32,8 @@
            */
           scales: {
             type: Object,
-            notify: true,
-            value: function() {
-              return {};
-            }
+            notify: true
+          
           },
 
           /* 
@@ -54,10 +41,8 @@
            */
           domains: {
             type: Object,
-            notify: true,
-            value: function() {
-              return {};
-            }
+            notify: true
+          
           },
 
           /* 
@@ -65,20 +50,16 @@
            */
           ranges: {
             type: Object,
-            notify: true,
-            value: function() {
-              return {};
-            }
+            notify: true
+           
           },
           /* 
            * `accessors` key-value accessor functions for active axis.
            */
           accessors: {
             type: Object,
-            notify: true,
-            value: function() {
-              return {};
-            }
+            notify: true
+          
           },
 
           /* 
@@ -115,17 +96,14 @@
 
           leftTextAngle: {
             type: Number,
-            value: -90
           },
 
           leftYText: {
             type: Number,
-            value: 6
           },
 
           leftDy: {
-            type: String,
-            value: '0.6em'
+            type: String
           },
 
           /* 
@@ -150,17 +128,13 @@
            * the default mapping will use value domain for left axis and ordinal domain for bottom axis
            */
           serieDomainMapping: {
-            type: Object,
-            value: {
-              'bottom': 'serieOrdinalDomain.default',
-              'left': 'serieValueDomain.default'
-            }
+            type: Object
           },
 
           /* 
-           * `ordinalDomainMapper` a mapper for serie ordinal valued. 
+           * `ordinalDomainAccessor` a mapper for serie ordinal valued. 
            */
-          ordinalDomainMapper: {
+          ordinalDomainAccessor: {
             type: Function
           },
 
@@ -185,7 +159,7 @@
   /* 
    * @mixinFunction
    */
-  window.MultiChart.mixin.ContainerAxisProperties = ContainerAxisProperties;
+  window.MultiChart.mixin.ChartAxisProperty = ChartAxisProperty;
 
 })();
 </script>

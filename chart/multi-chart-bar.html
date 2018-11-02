@@ -1,12 +1,15 @@
 <link rel="import" href="../../polymer/polymer.html">
 <link rel="import" href="../container/multi-container-axis.html">
 <link rel="import" href="../drawable/multi-drawable-line.html">
+<link rel="import" href="../d3-shape/property/d3-shape-stack-mixin.html">
 <link rel="import" href="multi-chart-property-mixin.html">
+<link rel="import" href="multi-chart-axis-property-mixin.html">
 
 <dom-module id="multi-chart-bar">
 	<template>
 		<multi-container-axis 
 			id="chart"
+			data-stack
 
 			top-axis="[[topAxis]]"
 			left-axis="[[leftAxis]]"
@@ -24,7 +27,7 @@
  			serie-value-domain="{{serieValueDomain}}"
       serie-ordinal-domain="{{serieOrdinalDomain}}"
       serie-domain-mapping="[[serieDomainMapping]]"
-      ordinal-domain-mapper="[[ordinalDomainMapper]]"
+      ordinal-domain-accessor="[[ordinalDomainAccessor]]"
       
       bottom-scale-type="[[bottomScaleType]]"
       bottom-elastic="[[bottomElastic]]"
@@ -88,6 +91,10 @@
 		>
     <multi-drawable-bar 
      	keys="[[keys]]"
+     	value="[[value]]"
+     	value-path="[[valuePath]]"
+     	offset="[[offset]]"
+     	order="[[order]]"
      	color-scale="[[colorScale]]"
       x-scale="[[scales.bottom]]" 
       y-scale="[[scales.left]]" 
@@ -103,7 +110,7 @@
 		(function() {
 
 		/**
-		 * ## MultiChartLine
+		 * ## MultiChartBar
 		 *
 		 * `<multi-chart-bar>` an element for displaying data as a bar or stack chart. 
 		 * 
@@ -132,18 +139,21 @@
      * @appliesMixin MultiChart.mixin.AxisProperty('bottom')
      * @appliesMixin MultiChart.mixin.AxisProperty('top')
      * @appliesMixin MultiChart.mixin.AxisProperty('left')
-     * @appliesMixin MultiChart.mixin.ZoomableProperties
-     * @appliesMixin MultiChart.mixin.ContainerAxisProperties
+     * @appliesMixin MultiChart.mixin.ZoomableProperty
+     * @appliesMixin MultiChart.mixin.ChartAxisProperty
+     * @appliesMixin MultiChart.mixin.D3StackProperty
      * @demo index.html#multi-bar-demo
 		 **/
-		class MultiChartLine extends 
+		class MultiChartBar extends 
 			MultiChart.mixin.MultiChartProperty(
-				MultiChart.mixin.ZoomableProperties(
-		      MultiChart.mixin.AxisProperty(
-		        MultiChart.mixin.AxisProperty(
-		          MultiChart.mixin.AxisProperty(
-		            MultiChart.mixin.AxisProperty(
-		              Polymer.Element, 'bottom'), 'top'), 'left'), 'right'))) {
+				MultiChart.mixin.ChartAxisProperty(
+					MultiChart.mixin.D3StackProperty(
+						MultiChart.mixin.ZoomableProperty(
+				      MultiChart.mixin.AxisProperty(
+				        MultiChart.mixin.AxisProperty(
+				          MultiChart.mixin.AxisProperty(
+				            MultiChart.mixin.AxisProperty(
+				              Polymer.Element, 'bottom'), 'top'), 'left'), 'right'))))) {
 
 			static get is() { return 'multi-chart-bar'; }
 
@@ -157,14 +167,7 @@
              type:  Boolean,
              observer: 'redraw'
             },
-
-          /* 
-           * [`keys`](https://github.com/d3/d3-shape#bar_keys)  - the keys accessors for the bar
-           */
-          keys: {
-            type: Array
-          },
-
+        
 					/* 
 					 * `colorScale` colorScale to use for the chart (example d3.scaleOrdinal().range(d3.schemeCategory10);)
 					 */
@@ -227,7 +230,7 @@
       }
 		}
 
-		customElements.define(MultiChartLine.is, MultiChartLine);
+		customElements.define(MultiChartBar.is, MultiChartBar);
 
 		if (!window.MultiChart) {
 		  window.MultiChart = {};
@@ -236,7 +239,7 @@
    /* 
     * @namespace MultiChart
     */
-    window.MultiChart.MultiChartLine = MultiChartLine;
+    window.MultiChart.MultiChartBar = MultiChartBar;
 
 		})();
 	</script>

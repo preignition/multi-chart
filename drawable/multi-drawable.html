@@ -1,10 +1,12 @@
 <link rel="import" href="../../polymer/polymer.html">
 <link rel="import" href="../helper/svg-helper-mixin.html">
-<link rel="import" href="../helper/registerable-mixin.html">
+<link rel="import" href="../helper/multi-registerable-mixin.html">
 <link rel="import" href="../helper/dispatch-svg-mixin.html">
 <link rel="import" href="../helper/resizable-mixin.html">
-<link rel="import" href="../helper/logger-mixin.html">
+<link rel="import" href="../helper/accessor-mixin.html">
 <link rel="import" href="draw-mixin.html">
+<link rel="import" href="color-scale-mixin.html">
+<link rel="import" href="../multi-chart-base.html">
 
 <dom-module id="multi-drawable">
   <script>
@@ -19,20 +21,22 @@
      * @customElement
      * @polymer
      * @appliesMixin MultiChart.mixin.SVGHelper
-     * @appliesMixin MultiChart.mixin.Registerable
+     * @appliesMixin MultiChart.mixin.MultiRegisterable
      * @appliesMixin MultiChart.mixin.DispatchSVG
      * @appliesMixin MultiChart.mixin.Resizable
+     * @appliesMixin MultiChart.mixin.ColorScale
      * @appliesMixin MultiChart.mixin.Draw
-     * @appliesMixin MultiChart.mixin.Logger
+     * @appliesMixin MultiChart.mixin.Accessor
      **/
     class MultiDrawable extends(
       MultiChart.mixin.SVGHelper(
         MultiChart.mixin.DispatchSVG(
+          MultiChart.mixin.Accessor(
             MultiChart.mixin.Draw(
-              MultiChart.mixin.Registerable( 
-                MultiChart.mixin.Resizable(
-                  MultiChart.mixin.Logger(
-                    Polymer.Element))))))) {
+              MultiChart.mixin.ColorScale(
+                MultiChart.mixin.MultiRegisterable( 
+                  MultiChart.mixin.Resizable(
+                    MultiChart.MultiChartBase)))))))) {
 
       static get is() { return 'multi-drawable'; }
 
@@ -54,16 +58,6 @@
       get targetElement() {
         return this.$.drawable;
       }
-
-      /* 
-       * helper functions  
-       */
-       identity(d) {return d;}
-       indexAccessor(d, i) {return i;}
-       keyAccessor(d, i) {return d.key;}
-       valueAccessor(d, i) {return d.value;}
-       dataAccessor(d, i) {return d.data;}
-
     }
 
     customElements.define(MultiDrawable.is, MultiDrawable);

@@ -1,0 +1,44 @@
+<script>
+(function(){
+	
+	/**
+	 * ##  ColorScale
+	 * 
+	 * small mixin to ensure charts have a default colorScale
+	 * 
+	 * @memberof MultiChart.mixin
+   * @polymer
+   * @mixinFunction
+   */
+	const ColorScale = superClass => {
+	  
+	  return class extends superClass {
+
+	    static get properties() {
+	      return {
+	        colorScale: {
+	          type: Function,
+	          value: function() {
+	          	return d3.scaleOrdinal().range(d3.schemeCategory10);
+	          }
+	        }
+	      };
+	    }
+	  };
+	};
+
+	if (!window.MultiChart) {
+	 window.MultiChart = {};
+	}
+
+	/* 
+	 * @namespace MultiChart.mixin
+	 */
+	window.MultiChart.mixin = window.MultiChart.mixin || {};
+	/* 
+	 * @mixinFunction
+	 */
+  window.MultiChart.mixin.ColorScale = ColorScale;
+
+	})();	
+</script>	

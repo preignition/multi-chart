@@ -2,7 +2,7 @@
 (function() {
 
   /**
-   * ##  ZoomableProperties
+   * ##  ZoomableProperty
    * 
    * Mixin managing [d3-zoom]() API properies 
    * 
@@ -10,7 +10,7 @@
    * @polymer
    * @mixinFunction
    */
-  const ZoomableProperties = superClass => {
+  const ZoomableProperty = superClass => {
 
     return class extends superClass {
 
@@ -52,7 +52,7 @@
   /* 
    * @mixinFunction
    */
-  window.MultiChart.mixin.ZoomableProperties = ZoomableProperties;
+  window.MultiChart.mixin.ZoomableProperty = ZoomableProperty;
 
 })();
 </script>

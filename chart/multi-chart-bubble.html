@@ -3,6 +3,7 @@
 <link rel="import" href="../drawable/multi-drawable-line.html">
 <link rel="import" href="../d3-scale/multi-scale.html">
 <link rel="import" href="multi-chart-property-mixin.html">
+<link rel="import" href="multi-chart-axis-property-mixin.html">
 
 <dom-module id="multi-chart-bubble">
 	<template>
@@ -25,7 +26,7 @@
  			serie-value-domain="{{serieValueDomain}}"
       serie-ordinal-domain="{{serieOrdinalDomain}}"
       serie-domain-mapping="[[serieDomainMapping]]"
-      ordinal-domain-mapper="[[ordinalDomainMapper]]"
+      ordinal-domain-accessor="[[ordinalDomainAccessor]]"
       
       bottom-scale-type="[[bottomScaleType]]"
       bottom-elastic="[[bottomElastic]]"
@@ -113,7 +114,7 @@
 		(function() {
 
 		/**
-		 * ## MultiChartLine
+		 * ## MultiChartBubble
 		 *
 		 * `<multi-chart-bubble>` an element for displaying data as a line chart. 
 		 * 
@@ -141,18 +142,19 @@
      * @appliesMixin MultiChart.mixin.AxisProperty('bottom')
      * @appliesMixin MultiChart.mixin.AxisProperty('top')
      * @appliesMixin MultiChart.mixin.AxisProperty('left')
-     * @appliesMixin MultiChart.mixin.ZoomableProperties
-     * @appliesMixin MultiChart.mixin.ContainerAxisProperties
+     * @appliesMixin MultiChart.mixin.ZoomableProperty
+     * @appliesMixin MultiChart.mixin.ContainerAxisProperty
      * @demo index.html#multi-bubble-demo
 		 **/
-		class MultiChartLine extends 
+		class MultiChartBubble extends 
 			MultiChart.mixin.MultiChartProperty(
-				MultiChart.mixin.ZoomableProperties(
-		      MultiChart.mixin.AxisProperty(
-		        MultiChart.mixin.AxisProperty(
-		          MultiChart.mixin.AxisProperty(
-		            MultiChart.mixin.AxisProperty(
-		              Polymer.Element, 'bottom'), 'top'), 'left'), 'right'))) {
+				MultiChart.mixin.ChartAxisProperty(
+					MultiChart.mixin.ZoomableProperty(
+			      MultiChart.mixin.AxisProperty(
+			        MultiChart.mixin.AxisProperty(
+			          MultiChart.mixin.AxisProperty(
+			            MultiChart.mixin.AxisProperty(
+			              Polymer.Element, 'bottom'), 'top'), 'left'), 'right')))) {
 
 			static get is() { return 'multi-chart-bubble'; }
 
@@ -282,7 +284,7 @@
       }
 		}
 
-		customElements.define(MultiChartLine.is, MultiChartLine);
+		customElements.define(MultiChartBubble.is, MultiChartBubble);
 
 		if (!window.MultiChart) {
 		  window.MultiChart = {};
@@ -291,7 +293,7 @@
    /* 
     * @namespace MultiChart
     */
-    window.MultiChart.MultiChartLine = MultiChartLine;
+    window.MultiChart.MultiChartBubble = MultiChartBubble;
 
 		})();
 	</script>

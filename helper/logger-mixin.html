@@ -16,22 +16,20 @@
 
 	    static get properties() {
 	      return {
+	        
 	        /* 
 	         * `verbose`  If true, error messages will automatically be logged to the console.
 	         */
 	        verbose: {
 	          type: Boolean
-	        },
-
-	        /* 
-	         * `logPrefix`  
-	         */
-	        logPrefix: {
-	        	type: String, 
-	        	value: '[multi-chart]'
 	        }
+
 	      };
 	    }
+
+	    get logPrefix() {
+				return '[multi-chart]';
+			}
 
 	    get _verbose() {
 	    	return this.verbose || Polymer.verbose;

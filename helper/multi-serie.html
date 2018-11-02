@@ -1,5 +1,14 @@
 <link rel="import" href="../../polymer/polymer.html">
+<link rel="import" href="multi-accessor.html">
 <dom-module id="multi-serie">
+  <template>
+    <template is="dom-if" if="[[path]]">
+      <multi-accessor path="[[path]]" accessor="{{accessor}}" sub-path="[[subPath]]"></multi-accessor>
+    </template>
+    <template is="dom-if" if="[[keyPath]]">
+      <multi-accessor path="[[keyPath]]" accessor="{{keyAccessor}}" ></multi-accessor>
+    </template>
+  </template>
   <script>
   (function() {
 
@@ -13,9 +22,9 @@
 		 * @customElement
      * @polymer
      * @demo
-     * @appliesMixin MultiChart.mixin.Registerable
+     * @appliesMixin MultiChart.mixin.MultiRegisterable
 		 **/
-    class MultiSerie extends MultiChart.mixin.Registerable(Polymer.Element) {
+    class MultiSerie extends MultiChart.mixin.MultiRegisterable(Polymer.Element) {
 
       static get is() { return 'multi-serie'; }
 
@@ -28,6 +37,7 @@
             type: String
           },
 
+
           /* 
            * `label` a label describing the serie
            */
@@ -35,19 +45,46 @@
             type: String
           },
 
+          /**
+           * `path` the path from which the value accessor function is built
+           * For instance `+value.count` will create `d => {return +d.value.count}` function.
+           */
+          path: {
+            type: String
+          },
+
+          subPath: {
+            type: Boolean
+          },
+
           /* 
            * `accessor` the accessor function for transforming data. 
-           * Data will be reshaped as  `[{key: key, label: label, value: data.map(d=>accessor(d))}]
            */
           accessor: {
             type: Function,
           },
 
-          /* 
-           * `registerEventName`  the name of the event to be used for registering
-           * @override `registerable-mixin`
+          /**
+           * `keyPath` the path from which the key accessor function is built
+           * For instance `key` will create `d => {return d.key}` function.
            */
-          registerEventName: {
+          keyPath: {
+            type: String
+          },
+
+          /* 
+           * `keyAccessor` the accessor function for accessiong key. 
+           * Data will be reshaped as  `[{key: key, label: label, value: data.map(d=>accessor(d))}]
+           */
+          keyAccessor: {
+            type: Function,
+          },
+
+          /* 
+           * `fireEventName`  the name of the event to be used for registering
+           * @override `multi-registerable-mixin`
+           */
+          fireEventName: {
             type: String,
             value: 'multi-serie-register'
           }

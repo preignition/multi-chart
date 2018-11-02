@@ -2,6 +2,7 @@
 <link rel="import" href="../container/multi-container-axis.html">
 <link rel="import" href="../drawable/multi-drawable-line.html">
 <link rel="import" href="multi-chart-property-mixin.html">
+<link rel="import" href="multi-chart-axis-property-mixin.html">
 
 <dom-module id="multi-chart-line">
 	<template>
@@ -24,7 +25,7 @@
  			serie-value-domain="{{serieValueDomain}}"
       serie-ordinal-domain="{{serieOrdinalDomain}}"
       serie-domain-mapping="[[serieDomainMapping]]"
-      ordinal-domain-mapper="[[ordinalDomainMapper]]"
+      ordinal-domain-accessor="[[ordinalDomainAccessor]]"
       
       bottom-scale-type="[[bottomScaleType]]"
       bottom-elastic="[[bottomElastic]]"
@@ -91,6 +92,7 @@
       x-scale="[[scales.bottom]]" 
       y-scale="[[scales.left]]" 
     ></multi-drawable-line>
+
 		<slot name="header" slot="header"></slot>
 		<slot></slot>			
 	  <slot name="footer" slot="footer"></slot>
@@ -131,18 +133,20 @@
      * @appliesMixin MultiChart.mixin.AxisProperty('bottom')
      * @appliesMixin MultiChart.mixin.AxisProperty('top')
      * @appliesMixin MultiChart.mixin.AxisProperty('left')
-     * @appliesMixin MultiChart.mixin.ZoomableProperties
-     * @appliesMixin MultiChart.mixin.ContainerAxisProperties
+     * @appliesMixin MultiChart.mixin.ZoomableProperty
+     * @appliesMixin MultiChart.mixin.ChartAxisProperty
+     * @appliesMixin MultiChart.mixin.MultiChartProperties
      * @demo index.html#multi-line-demo
 		 **/
 		class MultiChartLine extends 
 			MultiChart.mixin.MultiChartProperty(
-				MultiChart.mixin.ZoomableProperties(
-		      MultiChart.mixin.AxisProperty(
-		        MultiChart.mixin.AxisProperty(
-		          MultiChart.mixin.AxisProperty(
-		            MultiChart.mixin.AxisProperty(
-		              Polymer.Element, 'bottom'), 'top'), 'left'), 'right'))) {
+				MultiChart.mixin.ChartAxisProperty(
+					MultiChart.mixin.ZoomableProperty(
+			      MultiChart.mixin.AxisProperty(
+			        MultiChart.mixin.AxisProperty(
+			          MultiChart.mixin.AxisProperty(
+			            MultiChart.mixin.AxisProperty(
+			              Polymer.Element, 'bottom'), 'top'), 'left'), 'right')))) {
 
 			static get is() { return 'multi-chart-line'; }
 
@@ -156,22 +160,7 @@
 					 	type: Function
 					 },
 
-					 /* 
-           * `topAxis` true to display top axis
-           */
-          topAxis: {
-            type: Boolean,
-            value: false
-          },
-          
-          /* 
-           * `rightAxis` true to display right axis
-           */
-          rightAxis: {
-            type: Boolean,
-            value: false
-          },
-          
+         
           /* 
            * `bottomAxis` true to display bottom axis
            */

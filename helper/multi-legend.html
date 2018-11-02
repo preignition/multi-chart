@@ -4,7 +4,7 @@
 <link rel="import" href="config-helper-mixin.html">
 <link rel="import" href="svg-helper-mixin.html">
 <link rel="import" href="track-hover-mixin.html">
-<link rel="import" href="registerable-mixin.html">
+<link rel="import" href="multi-registerable-mixin.html">
 <dom-module id="multi-legend-style" theme-for="multi-container-svg">
   <template>
     <style>
@@ -62,7 +62,7 @@
      * @customElement
      * @polymer
      * @appliesMixin MultiChart.mixin.SVGHelper
-     * @appliesMixin MultiChart.mixin.Registerable
+     * @appliesMixin MultiChart.mixin.MultiRegisterable
      * @appliesMixin MultiChart.mixin.DispatchSVG
      * @appliesMixin MultiChart.mixin.Resizable
      * @appliesMixin MultiChart.mixin.TrackHover
@@ -74,7 +74,7 @@
       MultiChart.mixin.SVGHelper(
         MultiChart.mixin.DispatchSVG(
           MultiChart.mixin.TrackHover(
-            MultiChart.mixin.Registerable(
+            MultiChart.mixin.MultiRegisterable(
               MultiChart.mixin.Resizable(
                 Polymer.Element)))))) {
 

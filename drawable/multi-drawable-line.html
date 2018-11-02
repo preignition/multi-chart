@@ -32,7 +32,9 @@
      * @appliesMixin MultiChart.mixin.MultiDrawableSerie
      * @demo index.html#multi-line-demo
      **/
-    class MultiDrawableLine extends  MultiChart.mixin.MultiDrawableSerie(MultiChart.MultiDrawable) {
+    class MultiDrawableLine extends  
+      MultiChart.mixin.MultiDrawableSerie(
+        MultiChart.MultiDrawable) {
 
       static get is() { return 'multi-drawable-line'; }
 

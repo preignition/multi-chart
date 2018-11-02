@@ -17,6 +17,7 @@
             <style>:host {display: flex;} #chart {flex: 2;}#control {flex: 1;  padding: 15px;}</style>
             <multi-container-axis 
                 id="chart"  
+                data-stack
                 margin="[[margin]]"
                 bottom-axis
                 left-axis
@@ -28,7 +29,7 @@
                 scales="{{scales}}" >
               <dom-repeat items="{{keys}}">
                 <template>
-                  <multi-serie key="[[item]]" label="[[item]]"></multi-serie>
+                  <multi-serie key="[[item]]" key-path="State" label="[[item]]"></multi-serie>
                 </template>
               </dom-repeat>
               <multi-drawable-bar 

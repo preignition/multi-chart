@@ -1,0 +1,243 @@
+<script>
+(function() {
+
+  /**
+   * ##  MultiData
+   * 
+   * Mixin for reacting to dataChange. User by multi-container-g and multi-container-svg
+   * 
+   * @memberof MultiChart.mixin
+   * @polymer
+   * @mixinFunction
+   */
+  const MultiData = superClass => {
+
+    return class extends superClass {
+
+      static get properties() {
+        return {
+          /* 
+           * `data` to display the chart
+           */
+          data: {
+            type: Array
+          },
+
+          /* 
+           * `transition` to apply while drawing
+           */
+          transition: {
+            type: Function
+          },
+
+          /* 
+           * `_multiData` reshaped data to use internally within MultiChart. 
+           * 
+           */
+          _multiData: {
+            type: Array
+          },
+
+          /* 
+           * `series` the list of data serie registered for this container. 
+           * We can eiher pass a serie array like [{key: 'apple', label:'apple'}, accessor: d => +d.value.apple}, {key: 'orange', label:'orange'}, accessor: d => +d.value.orange}], 
+           *  or use `<multi-serie>` component to register series via markup
+           *
+           */
+          series: {
+            type: Array,
+            notify: true,
+            value: function() {
+              return [];
+            }
+          },
+
+          /* 
+           * `serieValueDomain` value domain for each serie groupName. 
+           * if no groupName is given a default `default` name is given. Hence this field results to serieValueDomain = {default: [min, max]}
+           */
+          serieValueDomain: {
+            type: Object,
+            notify: true
+          },
+
+          /* 
+           * `serieOrdinalDomain` ordinal domain for series
+           */
+          serieOrdinalDomain: {
+            type: Object,
+            notify: true
+          },
+
+          /* 
+           * `ordinalDomainAccessor` a mapper for serie ordinal valued. By default, identity function.
+           */
+          ordinalDomainAccessor: {
+            type: Function,
+            value: function() {
+              return this.keyAccessor;
+            }
+          },
+
+          /* 
+           * `dataStack` when true, will flatten data so taht it is in the right format to be parsed by d3.stack()
+           * this is mainly the case for bar/stack chart
+           */
+           dataStack : {
+             type:  Boolean
+            }
+
+        };
+      }
+
+      static get observers() {
+        return [
+          '_observeDataGenerators(data, data.splices, series.splices)',
+          '_callDataChanged(_multiData)'
+        ];
+      }
+
+      ready() {
+        super.ready();
+        this.addEventListener('multi-serie-register', this._onMultiSerieRegister);
+        setTimeout(() => { this.addEventListener('multi-refresh', this._onRefresh); }, 500);
+      }
+
+      unregister(registered) {
+        this.splice('series', this._registeredItems.indexOf(registered), 1);
+        super.unregister(registered);
+      }
+
+      _onRefresh(e) {
+        e.stopPropagation();
+        this._callDataChanged();
+      }
+
+      /* 
+       * `shallNotify` should return true to actually render the component
+       */
+      shallNotify(data) {
+        return !!data;
+      }
+
+      /* 
+       * `dataChanged` might be called by parents to reset the entied chart. 
+       * For instance, this is called by multi-verse, once a new filter is applied 
+       * and data to display have changed.
+       */
+      dataChanged() {
+        this._observeDataGenerators();
+      }
+
+      _callDataChanged(splices) {
+        if (this.shallNotify(this._multiData)) {
+          this.callRegistered('dataChanged', this._multiData, this.transition);
+        }
+      }
+
+      _observeDataGenerators() {
+        this.debounce('multi-register-data-generator-debounce', () => {
+          if (Array.isArray(this.data) && this.data.length) {
+            if (this.series && this.series.length) {
+              /* Note(cg): we transform serie data differently for charts that expect stacked data or not.
+               */
+
+              let hasAccessors = true;
+              const ordinalDomain = {};
+              const ordinalAccessors = {};
+              const groupNames = ['default'];
+              this.series.forEach(serie => {
+                  if(!serie.accessor) {hasAccessors = false;}
+
+                  const groupName = serie.groupName || 'default';
+                  if(groupNames.indexOf(groupName) < 0 ) {
+                    groupNames.push(groupName);
+                  }
+
+                  if (!ordinalAccessors[groupName] && serie.keyAccessor) {
+                    ordinalAccessors[groupName] = serie.keyAccessor; 
+                  } 
+              });
+
+              if(this.dataStack) {
+                const ordinalDomain = {};
+                this.series.forEach(serie => {
+                  const groupName = serie.groupName || 'default';
+                  if (!ordinalDomain[groupName]) { 
+                      ordinalDomain[groupName] = this.getOrdinalDomain(this.data, ordinalAccessors[groupName] || this.ordinalDomainAccessor, serie.accessor);
+                    }
+                });
+                this.serieOrdinalDomain = ordinalDomain;
+                this._multiData = this.data;
+              } else {
+                const valueDomain = {};
+                const _multiData = this.series.map(serie => {
+                  const groupName = serie.groupName || 'default';
+                  const keyAccessor = ordinalAccessors[groupName] || this.ordinalDomainAccessor;
+                  const data = this.data.map((d, i) => {
+                    return {
+                      key: keyAccessor(d,i), 
+                      value: serie.accessor(d,i)
+                    };
+                  });
+                  if (!valueDomain[groupName]) { valueDomain[groupName] = [Infinity, -Infinity]; }
+                  const extent = d3.extent(data, d => d.value);
+                  if (extent[0] < valueDomain[groupName][0]) { valueDomain[groupName][0] = extent[0]; }
+                  if (extent[1] > valueDomain[groupName][1]) { valueDomain[groupName][1] = extent[1]; }
+                  return { key: serie.key, label: serie.label || serie.key, groupName: groupName, data: data };
+                });
+                if(valueDomain[0] === Infinity || valueDomain[1] === -Infinity) {
+                  throw 'problem while computing value domain';
+                }
+                groupNames.forEach(name =>{
+                  ordinalDomain[name] = this.getOrdinalDomain(this.data, ordinalAccessors[name] || this.ordinalDomainAccessor);
+                });
+
+                this.serieOrdinalDomain = ordinalDomain;
+                this.serieValueDomain = valueDomain;
+                // Note(cg): we set multidata after domains are computed
+                this._multiData = _multiData;
+              }
+              return;
+            }
+            this._multiData = this.data;
+          } else {
+            this._multiData = this.data;
+          }
+
+        }, 30);
+      }
+
+      getOrdinalDomain(data, keyAccessor, valueAccessor) {
+        if (keyAccessor) {
+          const map = [];
+          data.forEach((d, i) => {
+            d.__key__ = keyAccessor(d, i);
+            if(valueAccessor) {
+              d.__value__ = valueAccessor(d,i);
+            }
+            map.push(d.__key__);
+          });
+          return map;
+        }
+        return d3.range(data.length);
+      }
+
+    };
+  };
+
+  if (!window.MultiChart) {
+    window.MultiChart = {};
+  }
+
+  /* 
+   * @namespace MultiChart.mixin
+   */
+  window.MultiChart.mixin = window.MultiChart.mixin || {};
+  /* 
+   * @mixinFunction
+   */
+  window.MultiChart.mixin.MultiData = MultiData;
+
+})();
+</script>

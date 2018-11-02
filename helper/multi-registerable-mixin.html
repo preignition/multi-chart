@@ -31,9 +31,10 @@
           },
 
           /* 
-           * `registerEventName`  the name of the event to be used for registering
+           * `fireEventName`  the name of the event to be fired when connected. a contained with multi-register-mixin applied 
+           * will listed to this event to register the component.
            */
-          registerEventName: {
+          fireEventName: {
             type: String, 
             value: 'multi-register'
           },
@@ -51,7 +52,7 @@
 
       connectedCallback() {
         super.connectedCallback();
-        this.fire(this.registerEventName, this.groupName);
+        this.fire(this.fireEventName, this.groupName);
       }
 
       disconnectedCallback() {
@@ -78,7 +79,7 @@
   /* 
    * @mixinFunction
    */
-  window.MultiChart.mixin.Registerable = Registerable;
+  window.MultiChart.mixin.MultiRegisterable = Registerable;
 
 })();
 </script>

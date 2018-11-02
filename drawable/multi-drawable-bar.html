@@ -1,5 +1,6 @@
 <link rel="import" href="../../polymer/polymer.html">
 <link rel="import" href="../d3-shape/d3-shape-stack.html">
+<link rel="import" href="../d3-shape/property/d3-shape-stack-mixin.html">
 <link rel="import" href="multi-drawable.html">
 <link rel="import" href="multi-drawable-serie-mixin.html">
 <dom-module id="multi-drawable-bar">
@@ -28,12 +29,14 @@
      * @polymer
      * @appliesMixin MultiChart.mixin.MultiDrawableSerie
      * @appliesMixin MultiChart.mixin.D3ShapeCoordinate
+     * @appliesMixin MultiChart.mixin.D3StackProperty
      * @demo index.html#multi-bar-demo
      **/
     class MultiDrawableBar extends 
       MultiChart.mixin.MultiDrawableSerie(
-        MultiChart.mixin.D3ShapeCoordinate(
-          MultiChart.MultiDrawable)) {
+        MultiChart.mixin.D3StackProperty(
+          MultiChart.mixin.D3ShapeCoordinate(
+            MultiChart.MultiDrawable))) {
 
       static get is() { return 'multi-drawable-bar'; }
 
@@ -49,49 +52,20 @@
             },
 
           /* 
-           * [`keys`](https://github.com/d3/d3-shape#bar_keys)  - the keys accessors for the bar
-           */
-          keys: {
-            type: Array
-
-          },
-          /* 
-           * `valuePath` is specified, will generate an `value` accessor. 
-           * For instance `valuePath` = 'value' fill create a value accessor function `(d,key) => d.value[key]`
-           */
-          valuePath: {
-            type: String
-          },
-
-          /* 
-           * [`value`](https://github.com/d3/d3-shape#bar_value)  
-           */
-          value: {
-            type: Function
-          },
-
-          /* 
-           * [`order`](https://github.com/d3/d3-shape#bar_order)  The order function for the bar. 
-           * See bar [orders](https://github.com/d3/d3-shape#bar-orders) for the built-in orders.
-           */
-          order: {
-            type: Function
-          },
-
-          /* 
-           * [`offset`](https://github.com/d3/d3-shape#bar_offset)  
-           */
-          offset: {
-            type: Function
-          },
-
-          /* 
            * `groupName` used for resetting value domain. 
            */
           groupName : {
             type: String, 
             value: 'default' 
-          }
+          },
+           
+          // xAccessor: {
+            // type: Function,
+            // value: function() {
+              // return this.indexAccessor;
+              // return this.keyAccessor;
+            // }
+          // },
         };
       }
 

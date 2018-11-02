@@ -1,0 +1,38 @@
+<link rel="import" href="../../polymer/polymer.html">
+<link rel="import" href="d3-fetch.html">
+<dom-module id="d3-json">
+  <script>
+  (function() {
+
+    /**
+     * ## D3Json
+     *
+     * `<d3-json>` fetch json data
+     *
+     * @memberof MultiChart
+     * @customElement
+     * @polymer
+     * @demo
+     **/
+    class D3Json extends MultiChart.D3Fetch {
+
+      static get is() { return 'd3-json'; }
+
+      get fetcher() { return 'json'; }
+
+    }
+
+    customElements.define(D3Json.is, D3Json);
+
+    if (!window.MultiChart) {
+      window.MultiChart = {};
+    }
+
+    /* 
+     * @namespace MultiChart
+     */
+    window.MultiChart.D3Json = D3Json;
+
+  })();
+  </script>
+</dom-module>

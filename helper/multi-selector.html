@@ -1,7 +1,7 @@
 <link rel="import" href="../../polymer/polymer.html">
 <link rel="import" href="../../iron-selector/iron-multi-selectable.html">
 <link rel="import" href="dispatch-svg-mixin.html">
-<link rel="import" href="registerable-mixin.html">
+<link rel="import" href="multi-registerable-mixin.html">
 <link rel="import" href="track-hover-mixin.html">
 
 <dom-module id="multi-selector-style" theme-for="multi-container-svg">
@@ -40,14 +40,14 @@
      * @customElement
      * @polymer
      * @appliesMixin MultiChart.mixin.DispatchSVG
-     * @appliesMixin MultiChart.mixin.Registerable
+     * @appliesMixin MultiChart.mixin.MultiRegisterable
      * @appliesMixin MultiChart.mixin.TrackHover
      * @demo
      **/
     class MultiSelector extends
     Polymer.mixinBehaviors([Polymer.IronMultiSelectableBehavior],
       MultiChart.mixin.DispatchSVG(
-        MultiChart.mixin.Registerable(
+        MultiChart.mixin.MultiRegisterable(
         	MultiChart.mixin.TrackHover(
           	Polymer.Element)))) {
 
@@ -148,6 +148,11 @@
         if (this.svgHost) {
           d3.select(this.svgHost).attr('has-selection', this._hasSelection ? true : null);
         }
+        // Note(cg): use multi select event to potentially inform multi-verse elementes that we have a selection
+        this.fire('multi-select', {
+          isRange: false,
+          selection: this.multi ? this.selectedValues.slice() : this.selected
+        });
       }
 
     }

@@ -1,0 +1,126 @@
+<script>
+(function() {
+
+  /**
+   * ## MultiRegister
+   * 
+   * The responsibility of this mixin is to observe nodes added to `#obseveNodes`. 
+   * It adds elements fireing a`multi-register to `_registeredItems` and elements 
+   * fireing `multi-serie-register` to `series`.
+   * 
+   *
+   * @memberof MultiChart.mixin
+   * @polymer
+   * @mixinFunction
+   */
+  const MultiRegister = Polymer.dedupingMixin(superClass => {
+
+    /*
+     * @polymer
+     * @mixinClass
+     */
+    class Register extends superClass {
+
+      static get properties() {
+        return {
+          /* 
+           * `_registeredItems`  the list of registered items (registerable items)
+           */
+          _registeredItems: {
+            type: Array,
+            value: function() {
+              return [];
+            }
+          },
+         
+          /* 
+           * `registerEvent` the event used to register  
+           */
+          registerEvent: {
+            type: String,
+            value: 'multi-register'
+          }
+
+        };
+      }
+
+      ready() {
+        super.ready();
+        this._warn('ready', this, this.registerEvent);
+        this.addEventListener(this.registerEvent, this._onMultiRegister);
+      }
+
+      _registerItem(name, item) {
+        if (!this[name].includes(item)) {
+          this.push(name, item);
+          if (item.afterRegister) {
+            item.afterRegister(this);
+          }
+        }
+      }
+
+      _onMultiRegister(e, d) {
+        // Note(cg): only react if groupName is not set or is the same.
+        if (!d || d === this.groupName) {
+          // Note(cg): make sure we are not self-registering 
+          // (this can be the case for elements that are registerable and also register like multi-container-g).
+          const realTarget = e.composedPath()[0];
+          if(realTarget !== this) {
+            e.stopPropagation();
+            this._registerItem('_registeredItems', realTarget);
+            // Note(cg): if data is set before items are registered, they are not drawn.
+            this.debounce('multi-register-mixin-register', () => {this.fire('multi-refresh');  },  40);
+            // this.debounce('multi-register-register', this._callDataChanged, 40);
+          }
+        }
+      }
+
+      onResize() {
+        // Note(cg): a container is responsible for notifying resize events to the registered elements.
+        this.callRegistered('onResize'); 
+      }
+
+      unregister(registered) {
+        this.splice('_registeredItems', this._registeredItems.indexOf(registered), 1);
+        if (registered.afterUnregister) {
+          registered.afterUnregister(this);
+        }
+        this.debounce('multi-register-mixin-unregister', () => {this.fire('multi-refresh'); },  40);
+      }
+
+      callRegistered(methodName) {
+        // we replace `methodName`` with `this host` as the first argument 
+        [].splice.call(arguments, 0, 1);
+        const args = arguments;
+        this._registeredItems
+          .filter(el => {
+            return el[methodName];
+          })
+          // Note(cg): we make sure that some registered elements (for instance `multi-selector`) are called later.
+          .sort((a, b) => {
+            return a.registerOrder - b.registerOrder;
+          })
+          .forEach(el => {
+            el[methodName].apply(el, args);
+          });
+      }
+    }
+
+    return Register;
+  });
+
+  if (!window.MultiChart) {
+    window.MultiChart = {};
+  }
+
+  /* 
+   * @namespace MultiChart.mixin
+   */
+  window.MultiChart.mixin = window.MultiChart.mixin || {};
+  /*
+   * @mixinClass
+   */
+  window.MultiChart.mixin.MultiRegister = MultiRegister;
+
+})();
+</script>

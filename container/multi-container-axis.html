@@ -5,18 +5,19 @@
 <link rel="import" href="../d3-axis/d3-axis-left.html">
 <link rel="import" href="../d3-axis/d3-axis-bottom.html">
 <link rel="import" href="../d3-scale/multi-scale.html">
-<link rel="import" href="../d3-zoom/zoomable-properties-mixin.html">
+<link rel="import" href="../d3-zoom/zoomable-property-mixin.html">
 <link rel="import" href="../container/multi-container-svg.html">
-<link rel="import" href="multi-container-axis-properties-mixin.html">
+<link rel="import" href="multi-container-axis-property-mixin.html">
 <dom-module id="multi-container-axis">
   <template>
     <multi-container-svg 
-      data="[[data]]" 
+      data="[[data]]"
+      data-stack="[[dataStack]]" 
       margin="[[margin]]"
       enable-zoom="[[enableZoom]]"
       extent="[[extent]]"
       scale-extent="[[scaleExtent]]"
-      ordinal-domain-mapper="[[ordinalDomainMapper]]"
+      ordinal-domain-accessor="[[ordinalDomainAccessor]]"
       serie-value-domain="{{serieValueDomain}}"
       serie-ordinal-domain="{{serieOrdinalDomain}}">
       <multi-scale 
@@ -141,15 +142,15 @@
      * @appliesMixin MultiChart.mixin.AxisProperty('bottom')
      * @appliesMixin MultiChart.mixin.AxisProperty('top')
      * @appliesMixin MultiChart.mixin.AxisProperty('left')
-     * @appliesMixin MultiChart.mixin.ZoomableProperties
-     * @appliesMixin MultiChart.mixin.ContainerAxisProperties
+     * @appliesMixin MultiChart.mixin.ZoomableProperty
+     * @appliesMixin MultiChart.mixin.ContainerAxisProperty
      * @demo index.html#multi-axis-demo
      * @demo index.html#multi-bar-demo
      * @demo index.html#multi-line-demo
      **/
     class MultiChartContainerAxis extends 
-    MultiChart.mixin.ZoomableProperties(
-      MultiChart.mixin.ContainerAxisProperties(
+    MultiChart.mixin.ZoomableProperty(
+      MultiChart.mixin.ContainerAxisProperty(
         MultiChart.mixin.AxisProperty(
           MultiChart.mixin.AxisProperty(
             MultiChart.mixin.AxisProperty(

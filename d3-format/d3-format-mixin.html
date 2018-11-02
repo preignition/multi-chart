@@ -1,0 +1,90 @@
+<script>
+(function(){
+	
+	/**
+	 * ##  D3Format
+	 * 
+	 * a mixin implementing d3.format an d3.timFormat. 
+	 * 
+	 * @memberof MultiChart.mixin
+   * @polymer
+   * @mixinFunction
+   */
+	const D3Format = superClass => {
+	  
+	  return class extends superClass {
+
+	    static get properties() {
+	      return {
+ /* 
+           * `formated` the formated value
+           */
+          formated: {
+            type: String,
+            notify: true,
+            computed: '_computeFormated(value,_format)'
+          },
+
+          /* 
+           * `_format` the format function
+           */
+          format: {
+            type: Function,
+            notify: true, 
+            computed: '_computeFormat(specifyer, isTime)'
+          },	      
+
+          /* 
+           * `value` the value to be formated
+           */
+          value: {
+            type: String
+          },
+
+          /* 
+           * `isTime` true to indicate the use of d3.timeFormat (instead of d3.format)
+           */
+          isTimeFormat: {
+            type: Boolean
+          },
+
+          /**
+           * `specifyer` for the format function
+           */
+          specifyer: {
+            type: String,
+            value: '.1f'
+          }
+	      };
+	    }
+	    
+      _computeFormat(specifyer, isTime) {
+        if (specifyer) {
+          return isTime ? d3.timeFormat(specifyer) : d3.format(specifyer);
+        }
+      }
+      _computeFormated(value, format) {
+        if (value || value === '' || value === 0) {
+          return format(value);
+        }
+        return '';
+      }
+
+	  };
+	};
+
+	if (!window.MultiChart) {
+	 window.MultiChart = {};
+	}
+
+	/* 
+	 * @namespace MultiChart.mixin
+	 */
+	window.MultiChart.mixin = window.MultiChart.mixin || {};
+	/* 
+	 * @mixinFunction
+	 */
+  window.MultiChart.mixin.D3Format = D3Format;
+
+	})();	
+</script>

@@ -118,7 +118,7 @@
           this._countError++;
           if (this._countError < 4) {
             this._isDrawing = false;
-            setTimeout(() => { this.render(); }, 50);
+            // setTimeout(() => { this.render(); }, 50);
           }
         }
         this.postDraw(chart);
@@ -154,6 +154,7 @@
        */
       postDraw() {
         // this._setEventListeners();
+        this._countError = 1;
         this._isDrawing = false;
       }
 

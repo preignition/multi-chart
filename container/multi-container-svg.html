@@ -2,17 +2,19 @@
 <link rel="import" href="../../iron-resizable-behavior/iron-resizable-behavior.html">
 <link rel="import" href="../../iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../../vaadin-themable-mixin/vaadin-themable-mixin.html">
-<link rel="import" href="../helper/polymer-extends-mixin.html">
 <link rel="import" href="../helper/svg-helper-mixin.html">
-<link rel="import" href="../helper/logger-mixin.html">
+<link rel="import" href="../helper/accessor-mixin.html">
+<link rel="import" href="../helper/multi-register-mixin.html">
+<link rel="import" href="../helper/multi-data-mixin.html">
 <link rel="import" href="../d3-zoom/zoomable-mixin.html">
-<link rel="import" href="multi-register-mixin.html">
+<link rel="import" href="../multi-chart-base.html">
 <dom-module id="multi-container-svg">
   <template>
     <!-- <style include="multi-container"></style> -->
     <style>
     :host {
       display: block;
+      @apply --layout-center-center;
       flex:1;
     }
 
@@ -77,8 +79,8 @@
      * ### Events
      * Fired when `multi-container-svg` is attached .
      *
-     * @event multi-container-added
-     * @param {string} the namee of the curret group.
+     * @event multi-verse-added
+     * @param {string} the name of the curret group.
      *
      * Fired when `multi-container-svg` is removed .
      *
@@ -87,9 +89,11 @@
      *
      *
      * @memberof MultiChart
+     * @appliesMixin  Vaadin.ThemableMixin    
      * @appliesMixin  MultiChart.mixin.MultiRegister    
-     * @appliesMixin  MultiChart.mixin.SVGHelper    
-     * @appliesMixin  MultiChart.mixin.PolymerExtends    
+     * @appliesMixin  MultiChart.mixin.SVGHelper   
+     * @appliesMixin MultiChart.mixin.Accessor
+     * @appliesMixin  MultiChart.mixin.MultiData     
      * @appliesMixin  MultiChart.mixin.Zoomable
      * @customElement
      * @polymer
@@ -97,12 +101,12 @@
     class MultiContainerSVG
     extends Polymer.mixinBehaviors([Polymer.IronResizableBehavior],
       Vaadin.ThemableMixin(
-        MultiChart.mixin.Logger(
-          MultiChart.mixin.SVGHelper(
-            MultiChart.mixin.MultiRegister(
-              MultiChart.mixin.Zoomable(
-                MultiChart.mixin.PolymerExtends(
-                  Polymer.Element))))))) {
+        MultiChart.mixin.SVGHelper(
+          MultiChart.mixin.Accessor(
+            MultiChart.mixin.MultiData(
+              MultiChart.mixin.MultiRegister(
+                MultiChart.mixin.Zoomable(
+                  MultiChart.MultiChartBase))))))) {
 
       static get is() { return 'multi-container-svg'; }
 
@@ -143,7 +147,10 @@
            */
           groupName: {
             type: String
-          }
+          },
+
+
+
         };
       }
       
@@ -156,9 +163,9 @@
       connectedCallback() {
         super.connectedCallback();
         // Note(cg): we fire a special event so that multi-verse are aware of chart container being added
-        // TODO(cg): replace multi-attached -> multi-container-added
+        // TODO(cg): replace multi-attached -> multi-verse-added
         Polymer.RenderStatus.afterNextRender(this, () => {
-          this.fire('multi-container-added', this.groupName);
+          this.fire('multi-verse-added', this.groupName);
           this.addEventListener('iron-resize', this.onResize);
           this.notifyResize();
         });
@@ -171,9 +178,9 @@
 
       disconnectedCallback() {
         super.disconnectedCallback();
-        // TODO(cg): replace multi-removed -> multi-container-remover
+        // TODO(cg): replace multi-removed -> multi-verse-remover
         // XXX(cg): this event will never be caught! unregister from host instead like for drawablse
-        this.fire('multi-container-removed', this.groupName);
+        this.fire('multi-verse-removed', this.groupName);
       }
 
       onResize() {
@@ -181,6 +188,12 @@
         this._setWidth(Math.floor(this.$.svg.width.baseVal.value - this.margin.left - this.margin.right));
         this._setHeight(Math.floor(this.$.svg.height.baseVal.value - this.margin.bottom - this.margin.top));
         super.onResize();
+      }
+
+
+      _onMultiSerieRegister(e) {
+        e.stopPropagation();
+        this._registerItem('series', e.composedPath()[0]);
       }
 
     }

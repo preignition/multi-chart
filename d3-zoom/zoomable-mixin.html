@@ -1,5 +1,5 @@
 <link rel="import" href="../helper/config-helper-mixin.html">
-<link rel="import" href="zoomable-properties-mixin.html">
+<link rel="import" href="zoomable-property-mixin.html">
 <script>
 (function() {
 
@@ -16,7 +16,7 @@
 	
 		return class extends 
 			MultiChart.mixin.ConfigHelper(
-				MultiChart.mixin.ZoomableProperties(
+				MultiChart.mixin.ZoomableProperty(
 					superClass)) {
 
       static get properties() {

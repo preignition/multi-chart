@@ -36,8 +36,7 @@
           },
 
           subPath: {
-            type: Boolean,
-            value: false
+            type: Boolean
           }
         };
       }
@@ -50,7 +49,7 @@
       	if(path) {
 	        var isAdd = path.substring(0, 1) === '+';
           path = isAdd ? path.substring(1) : path;
-          path = path.split('.').join("']['")
+          path = path.split('.').join("']['");
 	        var fn;
 	        if (subPath) {
 	          // fn = new Function('d', 'k', isAdd ? ('return +d.' + path.substring(1)) + '[k]' : ('return d.' + path + '[k]'));

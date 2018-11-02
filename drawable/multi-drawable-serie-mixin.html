@@ -23,17 +23,24 @@
             type: Function
           },
 
+          /* 
+           * `xAccessor` for serie data. 
+           * As data has been reshaped in `multi-data-mixin` as {key: key, value: value}, 
+           * `_xAccessor` sould be d => d.key
+           */
           xAccessor: {
             type: Function,
             value: function() {
-              return this.indexAccessor;
+              // return this.indexAccessor;
+              return this.keyAccessor;
             }
           },
 
           yAccessor: {
             type: Function,
             value: function() {
-              return this.identity;
+              // return this.identity;
+              return this.valueAccessor;
             }
           }
         };
