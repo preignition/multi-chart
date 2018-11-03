@@ -100,7 +100,7 @@
       ready() {
         super.ready();
         this.addEventListener('multi-serie-register', this._onMultiSerieRegister);
-        setTimeout(() => { this.addEventListener('multi-refresh', this._onRefresh); }, 500);
+        setTimeout(() => { this.addEventListener('multi-refresh', this._onRefresh); }, 200);
       }
 
       unregister(registered) {
@@ -200,7 +200,13 @@
               }
               return;
             }
+            const hasMultiData = this._multiData;
             this._multiData = this.data;
+            
+            // Note(cg): as we are not mutating _multiData, still need to redraw.
+            if(hasMultiData) {
+                this._callDataChanged(this._multiData);
+            }
           } else {
             this._multiData = this.data;
           }

@@ -114,10 +114,17 @@
         
         chart
            .attr('fill', d => this.colorScale(d.key))
-          .attr('class', `${this.shapeClass} selectable`)
+          .attr('class', `${this.shapeClass} ${this.selectSerie ? 'selectable' : ''}`)
+          // .attr('class', `${this.shapeClass} selectable`)
           .attr('key', d => d.key);
 
+
         chart = this.drawSerieGroup(data, 'rect', this.shapeClass, chart, this.transition);
+
+        // Note(cg): we add selectable to shape only if we selectSerie is not true.
+        if(!this.selectSerie && chart.classed) {
+          chart.classed('selectable', true);
+        }
 
         if(this.stacked) {
           chart = chart
@@ -131,13 +138,15 @@
           return chart
             .attr('x', (d,i) =>  this.xScale(d[3] || i))
             .attr('width', this.xScale.bandwidth())
-            .attr('index', (d,i) => i);
+            .attr('key', d=> d[3]);
+            // .attr('index', (d,i) => i);
         }
         
         const n = data.length;
         chart = chart
           .attr('x', (d, i) =>  this.xScale(d[3] || i) + this.xScale.bandwidth() / n * d[2])
-          .attr('width', this.xScale.bandwidth() / n);
+          .attr('width', this.xScale.bandwidth() / n)
+          .attr('key', d=> d[3]);
         
         if(chart instanceof d3.transition) {
             chart = chart.transition();

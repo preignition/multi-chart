@@ -1,6 +1,7 @@
 <link rel="import" href="../../polymer/polymer.html">
 <link rel="import" href="../container/multi-container-axis.html">
 <link rel="import" href="../drawable/multi-drawable-line.html">
+<link rel="import" href="../drawable/color-scale-mixin.html">
 <link rel="import" href="../d3-shape/property/d3-shape-stack-mixin.html">
 <link rel="import" href="multi-chart-property-mixin.html">
 <link rel="import" href="multi-chart-axis-property-mixin.html">
@@ -141,6 +142,7 @@
      * @appliesMixin MultiChart.mixin.AxisProperty('left')
      * @appliesMixin MultiChart.mixin.ZoomableProperty
      * @appliesMixin MultiChart.mixin.ChartAxisProperty
+     * @appliesMixin MultiChart.mixin.ColorScale
      * @appliesMixin MultiChart.mixin.D3StackProperty
      * @demo index.html#multi-bar-demo
 		 **/
@@ -148,12 +150,13 @@
 			MultiChart.mixin.MultiChartProperty(
 				MultiChart.mixin.ChartAxisProperty(
 					MultiChart.mixin.D3StackProperty(
-						MultiChart.mixin.ZoomableProperty(
-				      MultiChart.mixin.AxisProperty(
-				        MultiChart.mixin.AxisProperty(
-				          MultiChart.mixin.AxisProperty(
-				            MultiChart.mixin.AxisProperty(
-				              Polymer.Element, 'bottom'), 'top'), 'left'), 'right'))))) {
+						MultiChart.mixin.ColorScale(
+							MultiChart.mixin.ZoomableProperty(
+					      MultiChart.mixin.AxisProperty(
+					        MultiChart.mixin.AxisProperty(
+					          MultiChart.mixin.AxisProperty(
+					            MultiChart.mixin.AxisProperty(
+					              Polymer.Element, 'bottom'), 'top'), 'left'), 'right')))))) {
 
 			static get is() { return 'multi-chart-bar'; }
 
@@ -168,13 +171,6 @@
              observer: 'redraw'
             },
         
-					/* 
-					 * `colorScale` colorScale to use for the chart (example d3.scaleOrdinal().range(d3.schemeCategory10);)
-					 */
-					 colorScale: {
-					 	type: Function
-					 },
-
 					 /* 
            * `topAxis` true to display top axis
            */

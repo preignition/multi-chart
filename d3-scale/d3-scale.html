@@ -71,7 +71,7 @@
           'observeConfig(padding, "padding", "scale", "refresh")',
           'observeConfig(_effectiveDomain, "domain", "scale", "refresh")',
           'observeConfig(range.*, "range", "scale", "refresh")',
-          'observeConfig(domain.*, "domain", "scale")',
+          'observeConfig(domain.*, "domain", "scale", "refresh")',
           '_observeDomainMinMax(domainMin, domainMax)'
         ];
       }
@@ -91,7 +91,7 @@
 
       _observeDomainMinMax(min, max) {
         if (this._family === 'ordinal') {
-          throw '[multi-chart] setting domain min or max is not valid for ordinal scale.'
+          throw '[multi-chart] setting domain min or max is not valid for ordinal scale.';
         }
         if ((min || min === 0) || (max || max === 0)) {
           this._computeDomain(true);

@@ -1,8 +1,10 @@
 <link rel="import" href="../../polymer/polymer.html">
 <link rel="import" href="../drawable/multi-drawable-pie.html">
+<link rel="import" href="../drawable/color-scale-mixin.html">
 <link rel="import" href="../helper/multi-accessor.html">
 <link rel="import" href="../container/multi-container-svg.html">
 <link rel="import" href="multi-chart-property-mixin.html">
+<link rel="import" href="../d3-shape/property/d3-shape-pie-mixin.html">
 
 <dom-module id="multi-chart-pie">
   <template>
@@ -11,12 +13,15 @@
       display: block;
     }
     </style>
-    <multi-accessor accessor="{{accessor}}" path="[[valuePath]]" ></multi-accessor>
-    <multi-container-svg data="[[data]]">
+   
+    <multi-container-svg 
+      data="[[data]]"
+      id="chart">
       <slot name="header" slot="header"></slot>
       <multi-drawable-pie 
         transition="[[transition]]"
-        value="[[valueAccessor]]" 
+        value="[[value]]" 
+        value-path="[[valuePath]]" 
         pad-angle="[[padAngle]]" 
         sort="[[sort]]" 
         sort-values="[[sortValues]]" 
@@ -24,7 +29,6 @@
         outer-radius="[[outerRadius]]" 
         corner-radius="[[cornerRadius]]" 
         pie-width="[[pieWidth]]" 
-        accessor="[[accessor]]"
         color-scale="[[colorScale]]"></multi-drawable-pie>
       <slot></slot>
       <slot name="footer" slot="footer"></slot>
@@ -50,7 +54,7 @@
      *     <!-- add a legend -->
      *     <multi-legend scale="[[colorScale]]" position="top-right"></multi-legend>
      *     <!-- make it selectable -->
-     *     <multi-selector selected="{{selected}}" track-hover></multi-selector>
+     *     <multi-select selected="{{selected}}" track-hover></multi-select>
      *     <h2 slot="header">[[title]]</h2>
      *     <code slot="footer">selected: [[selected]]</code>
      *   </multi-chart-pie>
@@ -60,9 +64,15 @@
      * @group App Elements
      * @element multi-chart-pie
      * appliesMixin MultiChart.mixin.MultiChartProperty
+     * @appliesMixin MultiChart.mixin.D3PieProperty
+     * @appliesMixin MultiChart.mixin.ColorScale
      * @demo index.html#multi-pie-demo
      **/
-    class MultiChartPie extends MultiChart.mixin.MultiChartProperty(Polymer.Element) {
+    class MultiChartPie extends 
+      MultiChart.mixin.MultiChartProperty(
+        MultiChart.mixin.D3PieProperty(
+          MultiChart.mixin.ColorScale(
+            Polymer.Element))) {
 
       static get is() { return 'multi-chart-pie'; }
 
@@ -99,24 +109,6 @@
           cornerRadius: {
             type: Number,
             value: 0
-          },
-
-          /**
-           * `sort` as in [sort](https://github.com/d3/d3-shape#pie_sort). It is null by default so as to render arcs in the provided order (same order as bound data)
-           */
-          sort: {
-            type: Function
-          },
-
-          /**
-           * `sortValue` as in [sortValues](https://github.com/d3/d3-shape#pie_sortValues). It is null by default so as to render arcs in the provided order (same order as bound data)
-           */
-          sortValues: {
-            type: Function
-          },
-
-          accessor: {
-            type: Function
           }
 
         };

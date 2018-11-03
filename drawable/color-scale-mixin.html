@@ -16,8 +16,13 @@
 
 	    static get properties() {
 	      return {
+
+	      	/* 
+					 * `colorScale` colorScale to use for the chart (example d3.scaleOrdinal().range(d3.schemeCategory10);)
+					 */
 	        colorScale: {
 	          type: Function,
+	          notify: true,
 	          value: function() {
 	          	return d3.scaleOrdinal().range(d3.schemeCategory10);
 	          }

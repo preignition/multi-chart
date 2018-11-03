@@ -42,7 +42,16 @@
               // return this.identity;
               return this.valueAccessor;
             }
+          },
+
+          /* 
+           * `selectSerie` if true, will set the `selectable` attribute at serie level. Default (falsy) will 
+           * add `selectable` attribute to each individual shape (rect in car chart, circle in bubble chart)
+           */
+          selectSerie: {
+            type: Boolean
           }
+
         };
       }
 

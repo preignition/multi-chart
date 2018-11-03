@@ -1,14 +1,17 @@
 <link rel="import" href="../../polymer/polymer.html">
 <link rel="import" href="../d3-shape/d3-shape-pie.html">
+<link rel="import" href="../d3-shape/property/d3-shape-stack-mixin.html">
+<link rel="import" href="../helper/multi-accessor.html">
 <link rel="import" href="multi-drawable.html">
 <dom-module id="multi-drawable-pie">
   <template>
+     <multi-accessor accessor="{{value}}" path="[[valuePath]]" ></multi-accessor>
     <d3-shape-pie 
-    	shaper="{{shaper}}" 
-    	value="[[accessor]]" 
-    	pad-angle="[[padAngle]]" 
-    	sort="[[sort]]" 
-    	sort-values="[[sortValues]]"></d3-shape-pie>
+      shaper="{{shaper}}" 
+      value="[[value]]" 
+      pad-angle="[[padAngle]]" 
+      sort="[[sort]]" 
+      sort-values="[[sortValues]]"></d3-shape-pie>
     <svg>
       <g id="drawable" slot-svg="slot-chart" class="drawable pie" transform$="[[translate(center.0, center.1)]]" />
     </svg>
@@ -25,9 +28,12 @@
      * @element multi-drawable-chart
      * @customElement
      * @polymer
+     * @appliesMixin MultiChart.mixin.D3PieProperty
      * @demo index.html#multi-pie-demo
      **/
-    class MultiDrawablePie extends MultiChart.MultiDrawable {
+    class MultiDrawablePie extends 
+      MultiChart.mixin.D3PieProperty(
+        MultiChart.MultiDrawable) {
 
       static get is() { return 'multi-drawable-pie'; }
 
@@ -75,27 +81,6 @@
           arc: {
             type: Function,
             computed: '_computeArc(innerRadius, outerRadius, cornerRadius)'
-          },
-
-           /**
-           * `sort` as in [sort](https://github.com/d3/d3-shape#pie_sort). It is null by default so as to render arcs in the provided order (same order as bound data)
-           */
-          sort: {
-            type: Function
-          },
-
-          /**
-           * `sortValue` as in [sortValues](https://github.com/d3/d3-shape#pie_sortValues). It is null by default so as to render arcs in the provided order (same order as bound data)
-           */
-          sortValues: {
-            type: Function
-          },
-          
-          /* 
-           * `accessor` function to get value from dataset (e.g. `d => +d.value.count`)
-           */
-          accessor: {
-            type: Function
           }
 
         };
@@ -115,7 +100,7 @@
 
       _observePieWidth(width, radius) {
         if (width && radius) {
-          this.innerRadius = (width + '').endsWith('%') ? parseFloat(width) * radius : radius - parseFloat(width);
+          this.innerRadius = (width + '').endsWith('%') ?  radius * (1 - parseFloat(width)/100) : radius - parseFloat(width);
         }
       }
 

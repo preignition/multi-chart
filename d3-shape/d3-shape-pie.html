@@ -1,5 +1,6 @@
 <link rel="import" href="../../polymer/polymer.html">
 <link rel="import" href="../helper/multi-accessor.html">
+<link rel="import" href="property/d3-shape-pie-mixin.html">
 <link rel="import" href="d3-shape.html">
 <dom-module id="d3-shape-pie">
   <script>
@@ -13,9 +14,12 @@
      * @memberof MultiChart
      * @customElement
      * @polymer
+     * @appliesMixin MultiChart.mixin.D3PieProperty
      * @demo index.html#multi-pie-demo
      **/
-    class D3ShapePie extends MultiChart.D3Shape {
+    class D3ShapePie extends 
+      MultiChart.mixin.D3PieProperty(
+        MultiChart.D3Shape) {
 
       static get is() { return 'd3-shape-pie'; }
 
@@ -31,37 +35,8 @@
               this.applyConfig(pie, ['value', 'padAngle', 'sort', 'sortValues']);
               return pie;
             }
-          },
-
-          /**
-           * `value` as in [value](https://github.com/d3/d3-shape#pie_value) to be applied to the pie. If not set by host, can be computed by providing a valuePath. 
-           */
-          value: {
-            type: Function
-          },
-
-          /**
-           * `padAngle` as in [padAngle](https://github.com/d3/d3-shape#pie_padAngle) to be applied to the pie. 
-           */
-          padAngle: {
-            value: 0
-          },
-
-          /**
-           * `sort` as in [sort](https://github.com/d3/d3-shape#pie_sort). It is null by default so as to render arcs in the provided order (same order as bound data)
-           */
-          sort: {
-            type: Function,
-            value: null
-          },
-
-          /**
-           * `sortValue` as in [sortValues](https://github.com/d3/d3-shape#pie_sortValues). It is null by default so as to render arcs in the provided order (same order as bound data)
-           */
-          sortValues: {
-            type: Function,
-            value: null
           }
+
         };
       }
 

@@ -5,7 +5,6 @@
 <link rel="import" href="../helper/resizable-mixin.html">
 <link rel="import" href="../helper/accessor-mixin.html">
 <link rel="import" href="draw-mixin.html">
-<link rel="import" href="color-scale-mixin.html">
 <link rel="import" href="../multi-chart-base.html">
 
 <dom-module id="multi-drawable">
@@ -24,7 +23,6 @@
      * @appliesMixin MultiChart.mixin.MultiRegisterable
      * @appliesMixin MultiChart.mixin.DispatchSVG
      * @appliesMixin MultiChart.mixin.Resizable
-     * @appliesMixin MultiChart.mixin.ColorScale
      * @appliesMixin MultiChart.mixin.Draw
      * @appliesMixin MultiChart.mixin.Accessor
      **/
@@ -33,10 +31,9 @@
         MultiChart.mixin.DispatchSVG(
           MultiChart.mixin.Accessor(
             MultiChart.mixin.Draw(
-              MultiChart.mixin.ColorScale(
-                MultiChart.mixin.MultiRegisterable( 
-                  MultiChart.mixin.Resizable(
-                    MultiChart.MultiChartBase)))))))) {
+              MultiChart.mixin.MultiRegisterable( 
+                MultiChart.mixin.Resizable(
+                  MultiChart.MultiChartBase))))))) {
 
       static get is() { return 'multi-drawable'; }
 
@@ -47,7 +44,14 @@
            */
            key: {
             type: String
-           }
+           },
+
+          /* 
+           * `colorScale` colorScale to use for the chart (example d3.scaleOrdinal().range(d3.schemeCategory10);)
+           */
+          colorScale: {
+            type: Function
+          }
            
         };
       }

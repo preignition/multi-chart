@@ -96,7 +96,7 @@
           .filter(el => {
             return el[methodName];
           })
-          // Note(cg): we make sure that some registered elements (for instance `multi-selector`) are called later.
+          // Note(cg): we make sure that some registered elements (for instance `multi-select`) are called later.
           .sort((a, b) => {
             return a.registerOrder - b.registerOrder;
           })

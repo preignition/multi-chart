@@ -259,7 +259,11 @@
       debounceDraw() {
         this.debounce('multi-legend-debounce', () => {
           this.draw();
-        }, 50);
+        });
+      }
+
+      dataChanged() {
+        this.debounceDraw();
       }
 
       draw() {
@@ -267,7 +271,8 @@
           d3.select(this.$.legend).attr('opacity', 0);
         }
         d3.select(this.$.legend).call(this.legend);
-        setTimeout(() => { this.setPosition(); }, 10);
+        setTimeout(() => { 
+          this.setPosition(); }, 10);
       }
 
       _computeLegend(legendType) {

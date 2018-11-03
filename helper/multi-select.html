@@ -4,9 +4,13 @@
 <link rel="import" href="multi-registerable-mixin.html">
 <link rel="import" href="track-hover-mixin.html">
 
-<dom-module id="multi-selector-style" theme-for="multi-container-svg">
+<dom-module id="multi-select-style" theme-for="multi-container-svg">
   <template>
     <style>
+    
+    .selectable {
+     cursor: pointer;
+    }
     
     :host([has-selection]) .selectable {
       opacity: 0.6;
@@ -22,18 +26,19 @@
     :host([is-hovered]) [hovered] {
       opacity: 1;
     }    
+
     </style>
   </template>
 </dom-module>
 
-<dom-module id="multi-selector">
+<dom-module id="multi-select">
   <script>
   (function() {
 
     /**
-     * ## MultiSelector
+     * ## MultiSelect
      *
-     * `<multi-selector>` is an element for selecting ranges or chart shapes. 
+     * `<multi-select>` is an element for selecting ranges or chart shapes. 
      *  
      *
      * @memberof MultiChart
@@ -44,20 +49,20 @@
      * @appliesMixin MultiChart.mixin.TrackHover
      * @demo
      **/
-    class MultiSelector extends
+    class MultiSelect extends
     Polymer.mixinBehaviors([Polymer.IronMultiSelectableBehavior],
       MultiChart.mixin.DispatchSVG(
         MultiChart.mixin.MultiRegisterable(
         	MultiChart.mixin.TrackHover(
           	Polymer.Element)))) {
 
-      static get is() { return 'multi-selector'; }
+      static get is() { return 'multi-select'; }
 
       static get properties() {
         return {
           /* 
            * `registerOrder` - registerable elements are sorted on the basis of this property. 
-           * `multi-selector` need to be last in the list of registered items, so that we attach 
+           * `multi-select` need to be last in the list of registered items, so that we attach 
            * events after all shapes are drawn.
            */
           registerOrder: {
@@ -124,13 +129,21 @@
        	super.detatchListeners(sel);
       }
 
-      getKey(d) {
-        return d.data ? d.data.key : d.key ? d.key : d;
+      getKey(d,el) {
+        return d.data ? d.data.key : d.key || d.__key__ || el.getAttribute('key') || d;
       }
 
       onClick(d, i, el) {
         // handle selection 
-        this.select(this.getKey(d));
+        const key = this.getKey(d, el);
+        if(!key) {
+          this._error(`unable to fetch key`);
+        }
+        if(!this.multi && key === this.selected) {
+          this.select(null);
+        } else {
+          this.select(this.getKey(d, el));
+        }
         // let the world know we have a multi-tap event.
         this.fire('multi-tap', { data: d, index: i, element: el });
       }
@@ -158,7 +171,7 @@
     }
 
 
-    customElements.define(MultiSelector.is, MultiSelector);
+    customElements.define(MultiSelect.is, MultiSelect);
 
     if (!window.MultiChart) {
       window.MultiChart = {};
@@ -167,7 +180,7 @@
     /* 
      * @namespace MultiChart
      */
-    window.MultiChart.MultiSelector = MultiSelector;
+    window.MultiChart.MultiSelect = MultiSelect;
 
   })();
   </script>
