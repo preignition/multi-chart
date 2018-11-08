@@ -48,6 +48,8 @@
         super.ready();
         this._warn('ready', this, this.registerEvent);
         this.addEventListener(this.registerEvent, this._onMultiRegister);
+        // Note(cg): some charts (e.g. multi-graph) anounce that they are drawn  ).
+        this.addEventListener('multi-drawn', this.onDrawn);
       }
 
       _registerItem(name, item) {
@@ -73,6 +75,11 @@
             // this.debounce('multi-register-register', this._callDataChanged, 40);
           }
         }
+      }
+
+      onDrawn() {
+        // Note(cg): a container is responsible for notifying resize events to the registered elements.
+        this.callRegistered('onDrawn'); 
       }
 
       onResize() {

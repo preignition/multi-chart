@@ -101,6 +101,22 @@
         this.attachListeners();
       }
 
+      onDrawn() {
+        this.attachListeners();
+        this.reSelect();
+      }
+
+      reSelect() {
+        if(this.selectedItems.length) {
+          this.selectedItems.forEach(item => this.select(item));
+        } else if(this.selected) {
+          const s = this.selected;
+          this.select(null);
+          this.select(s);
+        }
+
+      }
+
       postRemove() {
         this.detatchListeners();
       }
@@ -130,7 +146,8 @@
       }
 
       getKey(d,el) {
-        return d.data ? d.data.key : d.key || d.__key__ || el.getAttribute('key') || d;
+        const keyHolder = this.attrForSelected;
+        return d.data ? d.data[keyHolder] : d[keyHolder] || d.__key__ || el.getAttribute(keyHolder) || d;
       }
 
       onClick(d, i, el) {

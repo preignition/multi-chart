@@ -1,6 +1,6 @@
 {
   "name": "multi-chart",
-  "version": "2.1.2",
+  "version": "2.1.3",
   "description": "polymer building blocks elements for building charts and visualization (based on d3.js v5).",
   "license": "MIT",
   "url" : "https://github.com/polymerEl/multi-chart",

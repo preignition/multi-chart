@@ -94,7 +94,6 @@
      * @appliesMixin  MultiChart.mixin.MultiRegister    
      * @appliesMixin  MultiChart.mixin.SVGHelper   
      * @appliesMixin MultiChart.mixin.Accessor
-     * @appliesMixin  MultiChart.mixin.MultiData     
      * @appliesMixin  MultiChart.mixin.Zoomable
      * @customElement
      * @polymer
@@ -104,10 +103,9 @@
       Vaadin.ThemableMixin(
         MultiChart.mixin.SVGHelper(
           MultiChart.mixin.Accessor(
-            MultiChart.mixin.MultiData(
               MultiChart.mixin.MultiRegister(
                 MultiChart.mixin.Zoomable(
-                  MultiChart.MultiChartBase))))))) {
+                  MultiChart.MultiChartBase)))))) {
 
       static get is() { return 'multi-container-svg'; }
 

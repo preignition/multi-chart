@@ -1,0 +1,42 @@
+<link rel="import" href="../../polymer/polymer.html">
+<link rel="import" href="multi-container-svg.html">
+
+<dom-module id="multi-data-container">
+	<script>
+		(function() {
+
+		/**
+		 * ## MultiDataContainer
+		 *
+		 * `<multi-data-container>` a container with data capablities
+
+		 *
+		 * @memberof MultiChart
+		 * @customElement
+     * @polymer
+     * @appliesMixin  MultiChart.mixin.MultiData   
+     * @demo
+		 **/
+		class MultiDataContainer extends 
+			 MultiChart.mixin.MultiData( 
+			 	MultiChart.MultiContainerSVG) {
+
+			static get is() { return 'multi-data-container'; }
+
+
+		}
+
+		customElements.define(MultiDataContainer.is, MultiDataContainer);
+
+		if (!window.MultiChart) {
+		  window.MultiChart = {};
+		}
+   
+   /* 
+    * @namespace MultiChart
+    */
+    window.MultiChart.MultiDataContainer = MultiDataContainer;
+
+		})();
+	</script>
+</dom-module>

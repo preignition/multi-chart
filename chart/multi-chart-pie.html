@@ -2,7 +2,7 @@
 <link rel="import" href="../drawable/multi-drawable-pie.html">
 <link rel="import" href="../drawable/color-scale-mixin.html">
 <link rel="import" href="../helper/multi-accessor.html">
-<link rel="import" href="../container/multi-container-svg.html">
+<link rel="import" href="../container/multi-data-container.html">
 <link rel="import" href="multi-chart-property-mixin.html">
 <link rel="import" href="../d3-shape/property/d3-shape-pie-mixin.html">
 
@@ -14,7 +14,7 @@
     }
     </style>
    
-    <multi-container-svg 
+    <multi-data-container 
       data="[[data]]"
       id="chart">
       <slot name="header" slot="header"></slot>
@@ -32,7 +32,7 @@
         color-scale="[[colorScale]]"></multi-drawable-pie>
       <slot></slot>
       <slot name="footer" slot="footer"></slot>
-    </multi-container-svg>
+    </multi-data-container>
   </template>
   <script>
   (function() {

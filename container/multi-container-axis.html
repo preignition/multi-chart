@@ -6,11 +6,11 @@
 <link rel="import" href="../d3-axis/d3-axis-bottom.html">
 <link rel="import" href="../d3-scale/multi-scale.html">
 <link rel="import" href="../d3-zoom/zoomable-property-mixin.html">
-<link rel="import" href="../container/multi-container-svg.html">
+<link rel="import" href="../container/multi-data-container.html">
 <link rel="import" href="multi-container-axis-property-mixin.html">
 <dom-module id="multi-container-axis">
   <template>
-    <multi-container-svg 
+    <multi-data-container 
       data="[[data]]"
       data-stack="[[dataStack]]" 
       margin="[[margin]]"
@@ -126,7 +126,7 @@
       <slot name="header" slot="header"></slot>
       <slot></slot>
       <slot name="footer" slot="footer"></slot>
-    </multi-container-svg>
+    </multi-data-container>
   </template>
   <script>
   (function() {

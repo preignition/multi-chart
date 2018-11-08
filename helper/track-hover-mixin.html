@@ -57,7 +57,7 @@
       }
      
       onMouseenter(d, i, el) {
-        this.hovered = this.getKey(d);
+        this.hovered = this.getKey(d, el);
         this.fire('multi-mouseenter', { data: d, index: i, element: el });
       }
 
@@ -75,10 +75,11 @@
        */
       _observerHovered(hovered) {
         if (this.svgHost) {
+          const me = this;
           d3.select(this.svgHost).attr('is-hovered', hovered ? true : null);
           d3.select(this.svgHost.shadowRoot).selectAll('.selectable, .cell')
-          .attr('hovered', d => {
-            return this.getKey(d) === hovered ? true : null;
+          .attr('hovered', function(d) {
+            return me.getKey(d, this) === hovered ? true : null;
           });
         }
       }
