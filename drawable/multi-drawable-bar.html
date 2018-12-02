@@ -113,7 +113,7 @@
       drawSerieElement(chart, data) {
         
         chart
-           .attr('fill', d => this.colorScale(d.key))
+          .attr('fill', d => this.colorScale(d.key))
           .attr('class', `${this.shapeClass} ${this.selectSerie ? 'selectable' : ''}`)
           // .attr('class', `${this.shapeClass} selectable`)
           .attr('key', d => d.key);
@@ -124,6 +124,14 @@
         // Note(cg): we add selectable to shape only if we selectSerie is not true.
         if(!this.selectSerie && chart.classed) {
           chart.classed('selectable', true);
+        }
+
+        let bandwidth = this.xScale.bandwidth;
+        let align = 0 ;
+        // we might have an x-scale that does not have a bandwidth, e.g. when we have date on x-axis and use a timeScale
+        if(!bandwidth) {
+          bandwidth = d3.scaleBand().domain(data[0].map((d,i) => this.xScale(d[3] || i))).range(this.xScale.range()).padding(0.2).bandwidth;
+          align = bandwidth() / 2;
         }
 
         if(this.stacked) {
@@ -137,15 +145,15 @@
           
           return chart
             .attr('x', (d,i) =>  this.xScale(d[3] || i))
-            .attr('width', this.xScale.bandwidth())
+            .attr('width', bandwidth())
             .attr('key', d=> d[3]);
             // .attr('index', (d,i) => i);
         }
         
         const n = data.length;
         chart = chart
-          .attr('x', (d, i) =>  this.xScale(d[3] || i) + this.xScale.bandwidth() / n * d[2])
-          .attr('width', this.xScale.bandwidth() / n)
+          .attr('x', (d, i) =>  this.xScale(d[3] || i) + bandwidth() / n * d[2] - align)
+          .attr('width', bandwidth() / n)
           .attr('key', d=> d[3]);
         
         if(chart instanceof d3.transition) {
