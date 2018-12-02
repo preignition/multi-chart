@@ -270,9 +270,11 @@
         if (!this._isDrawn) {
           d3.select(this.$.legend).attr('opacity', 0);
         }
-        d3.select(this.$.legend).call(this.legend);
         setTimeout(() => { 
-          this.setPosition(); }, 10);
+          // Note(cg): async as we need to make sure legend is drawn before we can calculate real size and adjust position.
+          d3.select(this.$.legend).call(this.legend);
+          setTimeout(() => { this.setPosition(); }, 20);
+         }, 10);
       }
 
       _computeLegend(legendType) {
@@ -326,6 +328,7 @@
           // console.info('SIZE: ', size,chartWidth, padding )
           this.x = chartSize.width - size.width - this.padding + this.rectOffset;
         }
+
 
         if (isBottom) {
           this.y = chartSize.height - size.height - this.padding + this.rectOffset;
