@@ -3,6 +3,23 @@
 <link rel="import" href="../d3-shape/property/d3-shape-stack-mixin.html">
 <link rel="import" href="multi-drawable.html">
 <link rel="import" href="multi-drawable-serie-mixin.html">
+
+<dom-module id="multi-drawable-bar-style" theme-for="multi-container-svg">
+  <template>
+    <style>
+      #drawable.bar {
+        @apply --drawable-bar;
+      }
+
+      #drawable.bar .shape {
+        fill: var(--drawable-bar-fill);
+        stroke: var(--drawable-bar-stroke);
+      }
+      
+    </style>
+  </template>
+</dom-module>
+
 <dom-module id="multi-drawable-bar">
   <template>
     <d3-shape-stack 
@@ -23,6 +40,16 @@
      * ## MultiDrawableBar
      *
      * `<multi-drawable-bar>` draws bar as in https://github.com/d3/d3-shape#bar
+     * 
+     * ### Styling
+     * 
+     * The following custom properties and mixins are available for styling:
+     * 
+     * Custom property | Description | Default
+     * ----------------|-------------|----------
+     * `--drawable-bar` | mixin applied to drawable | `{}`
+     * `--drawable-bar-fill` | fill color applied to bar | `none`
+     * `--drawable-bar-strole` | stroke color applied to bar | `none`
      *
      * @memberof MultiChart
      * @customElement
@@ -121,7 +148,7 @@
 
         chart = this.drawSerieGroup(data, 'rect', this.shapeClass, chart, this.transition);
 
-        // Note(cg): we add selectable to shape only if we selectSerie is not true.
+        // Note(cg): we add selectable to shape only if selectSerie is not true.
         if(!this.selectSerie && chart.classed) {
           chart.classed('selectable', true);
         }

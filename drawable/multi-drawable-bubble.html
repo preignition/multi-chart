@@ -1,6 +1,23 @@
 <link rel="import" href="../../polymer/polymer.html">
 <link rel="import" href="multi-drawable.html">
 <link rel="import" href="multi-drawable-serie-mixin.html">
+
+<dom-module id="multi-drawable-bubble-style" theme-for="multi-container-svg">
+  <template>
+    <style>
+      #drawable.bubble {
+        @apply --drawable-bubble;
+      }
+
+      #drawable.bubble .shape {
+        fill: var(--drawable-bubble-fill);
+        stroke: var(--drawable-bubble-stroke);
+      }
+      
+    </style>
+  </template>
+</dom-module>
+
 <dom-module id="multi-drawable-bubble">
   <template>
     <svg>
@@ -14,6 +31,16 @@
      * ## MultiDrawableBubble
      *
      * `<multi-drawable-bubble>` draw bubbles from serie data
+     *     
+     * ### Styling
+     * 
+     * The following custom properties and mixins are available for styling:
+     * 
+     * Custom property | Description | Default
+     * ----------------|-------------|----------
+     * `--drawable-bubble` | mixin applied to drawable | `{}`
+     * `--drawable-bubble-fill` | fill color applied to bubble | `none`
+     * `--drawable-bubble-strole` | stroke color applied to bubble | `none`
      *
      * @memberof MultiChart
      * @customElement

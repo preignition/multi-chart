@@ -2,6 +2,23 @@
 <link rel="import" href="../d3-shape/d3-shape-line.html">
 <link rel="import" href="multi-drawable.html">
 <link rel="import" href="multi-drawable-serie-mixin.html">
+
+<dom-module id="multi-drawable-line-style" theme-for="multi-container-svg">
+  <template>
+    <style>
+      #drawable.line {
+        @apply --drawable-line;
+      }
+
+      #drawable.line .shape {
+        fill: var(--drawable-line-fill);
+        stroke: var(--drawable-line-stroke);
+      }
+      
+    </style>
+  </template>
+</dom-module>
+
 <dom-module id="multi-drawable-line">
   <template>
   	<d3-shape-line 
@@ -26,6 +43,16 @@
      *
      * `<multi-drawable-line>` draws series of lines
      *
+     * ### Styling
+     * 
+     * The following custom properties and mixins are available for styling:
+     * 
+     * Custom property | Description | Default
+     * ----------------|-------------|----------
+     * `--drawable-line` | mixin applied to drawable | `{}`
+     * `--drawable-line-fill` | fill color applied to line | `none`
+     * `--drawable-line-strole` | stroke color applied to line | `none`
+     *     
      * @memberof MultiChart
      * @customElement
      * @polymer
