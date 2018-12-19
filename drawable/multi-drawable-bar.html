@@ -138,7 +138,7 @@
       }
 
       drawSerieElement(chart, data) {
-        
+
         chart
           .attr('fill', d => this.colorScale(d.key))
           .attr('class', `${this.shapeClass} ${this.selectSerie ? 'selectable' : ''}`)
@@ -185,7 +185,7 @@
         
         if(chart instanceof d3.transition) {
             chart = chart.transition();
-          }  
+        }  
         
         return chart
           .attr('y', d => this.yScale(d[1] - d[0]))

@@ -99,6 +99,9 @@
        * `draw` serie data, which are in the form of [{key, label, data: [dataValues]}]
        */
       draw(data) {
+        if(!this.width || !this.height) {
+          return;
+        }
 
         let chart = this.drawSerieGroup(data, this.shapeName, this.shapeClass, null, this.transition);
 

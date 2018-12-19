@@ -120,6 +120,9 @@
       }
 
       draw(data) {
+        if(!this.width || !this.height) {
+          return;
+        }
 
         let chart = d3.select(this.targetElement).selectAll(`${this.shapeName}.${this.shapeClass}`);
 

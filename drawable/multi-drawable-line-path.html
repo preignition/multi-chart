@@ -46,6 +46,9 @@
       }
 
       draw(data) {
+        if(!this.width || !this.height) {
+          return;
+        }
 
         let chart = d3.select(this.targetElement).datum(data);
 

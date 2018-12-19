@@ -183,10 +183,13 @@
       }
 
       onResize() {
-        // Note(cg): as we cannot user offsetWidth and offsetHeight for svg, we take the value of $0.$.svg.height.baseVal.
-        this._setWidth(Math.floor(this.$.svg.width.baseVal.value - this.margin.left - this.margin.right));
-        this._setHeight(Math.floor(this.$.svg.height.baseVal.value - this.margin.bottom - this.margin.top));
-        super.onResize();
+        // Note(cg): if width or height is 0 (as it is the case when char is hiddem -> do nothing).
+        if (this.$.svg.width.baseVal.value && this.$.svg.height.baseVal.value ) {
+          // Note(cg): as we cannot user offsetWidth and offsetHeight for svg, we take the value of $0.$.svg.height.baseVal.
+          this._setWidth(Math.floor(this.$.svg.width.baseVal.value - this.margin.left - this.margin.right));
+          this._setHeight(Math.floor(this.$.svg.height.baseVal.value - this.margin.bottom - this.margin.top));
+          super.onResize();
+        }
       }
 
 
