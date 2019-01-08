@@ -273,7 +273,7 @@
         setTimeout(() => { 
           // Note(cg): async as we need to make sure legend is drawn before we can calculate real size and adjust position.
           d3.select(this.$.legend).call(this.legend);
-          setTimeout(() => { this.setPosition(); }, 20);
+          setTimeout(() => { this.setPosition(); }, 150);
          }, 10);
       }
 
@@ -302,7 +302,9 @@
           ]);
 
           var me = this;
-          legend.on('cellclick', function(d) { me.fire('multi-cell-click', d); });
+          legend.on('cellclick', function(d) { 
+            me.dispatchEvent(new CustomEvent('multi-cell-click', {detail: d, bubbles: true, composed: true})); 
+          });
           legend.on('cellover', d => { this.hovered = d; });
           legend.on('cellout', d => { this.hovered = null; });
 
@@ -311,14 +313,16 @@
       }
 
       setPosition() {
-        if (!this.svgHost) {
+        
+        const size = this.$.legend.getBoundingClientRect();
+        if(!size.width || !size.height || !this.svgHost)  {
           return;
         }
+
         const position = this.position;
         const isRight = ~position.indexOf('right');
         const isBottom = ~position.indexOf('bottom');
 
-        const size = this.$.legend.getBoundingClientRect();
         const chartSize = this.$.legend.ownerSVGElement.getBoundingClientRect();
 
         this.y = this.rectOffset + this.padding;

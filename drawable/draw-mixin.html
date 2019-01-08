@@ -103,9 +103,9 @@
         this.setData(data);
 
         // Note(cg): if width or height is not set (because chart is hidden or in a hidden container, we skip it)
-        // if(!this.width || !this.height) {
-        //   return;
-        // }
+        if(!this.width || !this.height) {
+          return;
+        }
         this._isDrawing = true;
         if (transition) {
           this.transition = transition;

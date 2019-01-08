@@ -50,11 +50,11 @@
           if (target && target[name]) {
             target[name](value);
             if (eventName) {
-              this.fire('multi-' + eventName, {
+               this.dispatchEvent(new CustomEvent(`multi-${eventName}`, {detail: {
                 value: value,
                 name: name,
                 target: targetName
-              });
+               }, bubbles: true, composed: true})); 
             }
             // this._notifyChange(targetName, null, value);
           } else {
@@ -69,11 +69,11 @@
         if (target && target[name]) {
           target[name](value);
           if (eventName) {
-            this.fire('multi-' + eventName, {
-              value: value,
-              name: name,
-              target: targetName
-            });
+            this.dispatchEvent(new CustomEvent(`multi-${eventName}`, {detail: {
+                value: value,
+                name: name,
+                target: targetName
+               }, bubbles: true, composed: true})); 
           }
         }
       }

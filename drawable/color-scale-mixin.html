@@ -22,12 +22,23 @@
 					 */
 	        colorScale: {
 	          type: Function,
-	          notify: true,
-	          value: function() {
-	          	return d3.scaleOrdinal().range(d3.schemeCategory10);
-	          }
+	          notify: true
+	        },
+
+	        colorRange: {
+	        	type: Object, 
+	        	observer: '_observeColorRange',
+	        	value: function() {
+	        		return d3.schemeCategory10;
+	        	}
 	        }
 	      };
+	    }
+
+	    _observeColorRange(range) {
+	    	if(range && ! this.colorScale) {
+	    		this.colorScale = d3.scaleOrdinal().range(range);
+	    	}
 	    }
 	  };
 	};

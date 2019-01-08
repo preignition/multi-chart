@@ -5,7 +5,7 @@
 	/**
 	 * ##  PolymerExtends
 	 * 
-	 * allows to still use `this.fire` and `this.debounce` 
+	 * allows to still use `this.debounce` 
 	 * 
    * @polymer
    * @mixinFunction
@@ -15,9 +15,9 @@
 
 		const proto = superClass.prototype;
 
-		if(!proto.fire) {
-			proto.fire = Polymer.Base.fire;
-		}
+		// if(!proto.fire) {
+		// 	proto.fire = Polymer.Base.fire;
+		// }
 		
 		if(!proto.debounce) {
 			proto.debounce = Polymer.Base.debounce;

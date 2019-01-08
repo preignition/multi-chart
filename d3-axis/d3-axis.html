@@ -220,7 +220,7 @@
             ticks = [ticks];
           }
           axis.tickArguments(ticks);
-          this.fire('multi-refresh');
+          this.dispatchEvent(new CustomEvent('multi-refresh', {bubbles: true, composed: true})); 
           return axis;
         }
       }
@@ -231,7 +231,7 @@
             format = d3.format(format);
           }
           axis.tickFormat(format);
-          this.fire('multi-refresh');
+          this.dispatchEvent(new CustomEvent('multi-refresh', {bubbles: true, composed: true})); 
           return axis;
         }
       }

@@ -74,7 +74,7 @@
           this[`_set${name}`](function(d, i) {
             return scale(accessor(d, i));
           });
-          this.fire('multi-refresh');
+          this.dispatchEvent(new CustomEvent('multi-refresh', {bubbles: true, composed: true})); 
         }
       }
 

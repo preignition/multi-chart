@@ -85,7 +85,7 @@
       connectedCallback() {
         super.connectedCallback();
         Polymer.RenderStatus.afterNextRender(this, () => {
-          this.fire('multi-container-added', this.groupName);
+          this.dispatchEvent(new CustomEvent('multi-container-added', {detail: this.groupName, bubbles: true, composed: true})); 
         });
       }
 

@@ -52,7 +52,8 @@
 
       connectedCallback() {
         super.connectedCallback();
-        this.fire(this.fireEventName, this.groupName);
+        this.dispatchEvent(new CustomEvent(this.fireEventName, {detail: this.groupName, bubbles: true, composed: true})); 
+        // this.fire(this.fireEventName, this.groupName);
       }
 
       disconnectedCallback() {

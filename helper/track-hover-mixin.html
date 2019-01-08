@@ -58,12 +58,12 @@
      
       onMouseenter(d, i, el) {
         this.hovered = this.getKey(d, el);
-        this.fire('multi-mouseenter', { data: d, index: i, element: el });
+        this.dispatchEvent(new CustomEvent('multi-mouseenter', {detail: { data: d, index: i, element: el }, bubbles: true, composed: true})); 
       }
 
       onMouseleave(d, i, el) {
         this.hovered = null;
-        this.fire('multi-mouseleave', { data: d, index: i, element: el });
+        this.dispatchEvent(new CustomEvent('multi-mouseleave', {detail: { data: d, index: i, element: el }, bubbles: true, composed: true})); 
       }
 
       getKey(d) {

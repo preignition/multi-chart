@@ -61,9 +61,9 @@
         }
       }
 
-      _onMultiRegister(e, d) {
+      _onMultiRegister(e) {
         // Note(cg): only react if groupName is not set or is the same.
-        if (!d || d === this.groupName) {
+        if (!e.detail || e.detail === this.groupName) {
           // Note(cg): make sure we are not self-registering 
           // (this can be the case for elements that are registerable and also register like multi-container-g).
           const realTarget = e.composedPath()[0];
@@ -71,7 +71,9 @@
             e.stopPropagation();
             this._registerItem('_registeredItems', realTarget);
             // Note(cg): if data is set before items are registered, they are not drawn.
-            this.debounce('multi-register-mixin-register', () => {this.fire('multi-refresh');  },  40);
+            this.debounce('multi-register-mixin-register', () => {
+               this.dispatchEvent(new CustomEvent('multi-refresh', { bubbles: true, composed: true})); 
+            },  40);
             // this.debounce('multi-register-register', this._callDataChanged, 40);
           }
         }
@@ -92,7 +94,9 @@
         if (registered.afterUnregister) {
           registered.afterUnregister(this);
         }
-        this.debounce('multi-register-mixin-unregister', () => {this.fire('multi-refresh'); },  40);
+        this.debounce('multi-register-mixin-unregister', () => {
+          this.dispatchEvent(new CustomEvent('multi-refresh', { bubbles: true, composed: true}));  
+        },  40);
       }
 
       callRegistered(methodName) {

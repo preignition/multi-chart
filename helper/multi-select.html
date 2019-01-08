@@ -162,12 +162,12 @@
           this.select(this.getKey(d, el));
         }
         // let the world know we have a multi-tap event.
-        this.fire('multi-tap', { data: d, index: i, element: el });
+        this.dispatchEvent(new CustomEvent('multi-tap', {detail: { data: d, index: i, element: el }, bubbles: true, composed: true})); 
       }
 
 
       get _hasSelection() {
-      	return this.multi ? this.selectedValue && this.selectedValue.length : !!this.selected;
+      	return this.multi ? this.selectedValues && this.selectedValues.length : !!this.selected;
       }
       /* 
        * `_updateSelected` will set `has-selection` attribute to svgHost. 
@@ -179,10 +179,10 @@
           d3.select(this.svgHost).attr('has-selection', this._hasSelection ? true : null);
         }
         // Note(cg): use multi select event to potentially inform multi-verse elementes that we have a selection
-        this.fire('multi-select', {
+         this.dispatchEvent(new CustomEvent('multi-select', {detail: {
           isRange: false,
-          selection: this.multi ? this.selectedValues.slice() : this.selected
-        });
+          selection: this.multi ?  this.selectedValues.slice() : this.selected
+         }, bubbles: true, composed: true})); 
       }
 
     }

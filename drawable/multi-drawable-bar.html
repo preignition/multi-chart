@@ -128,10 +128,10 @@
             d3.max(d[this.keys.length - 1], d => d[1]) 
             : tmpMax;         
 
-          this.fire('multi-set-value-domain', {
+          this.dispatchEvent(new CustomEvent('multi-set-value-domain', {detail: {
             groupName: this.groupName,
             domain: [0, max]
-          });
+          },bubbles: true, composed: true})); 
           return d;
         }
         throw('[multi-chart] shaper for bar is not set.' );

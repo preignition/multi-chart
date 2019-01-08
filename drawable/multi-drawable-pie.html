@@ -108,7 +108,7 @@
         const arc = this.arc || d3.arc();
         arc.innerRadius(innerRadius).outerRadius(outerRadius).cornerRadius(cornerRadius);
         // Note(cg): drawable components redraw the chart on-multi-refresh.
-        this.fire('multi-refresh');
+        this.dispatchEvent(new CustomEvent('multi-refresh', {bubbles: true, composed: true})); 
         return arc;
       }
 

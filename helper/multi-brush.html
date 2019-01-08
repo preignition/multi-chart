@@ -179,10 +179,10 @@
 
       _observeSelectedItems() {
         this.debounce('multi-brush-select-debounce', () =>{
-          this.fire('multi-select', {
+           this.dispatchEvent(new CustomEvent('multi-select', {detail: {
             isRange: this.isRange,
             selection: this.selectedItems
-          });
+           }, bubbles: true, composed: true})); 
         }, 30);
       }
 
