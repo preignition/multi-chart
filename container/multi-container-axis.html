@@ -185,7 +185,7 @@
       _onSetValueDomain(e) {
         e.stopPropagation();
         const d = e.detail;
-        this.serieValueDomain = Object.assign({}, this.serieValueDomain || {}, {[`${d.groupName || 'default'}`]: d.domain});
+        this.serieValueDomain = Object.assign({}, this.serieValueDomain || {}, {[`${d.serieName || 'default'}`]: d.domain});
       }
 
       _observeSerieDomain(mapping) {

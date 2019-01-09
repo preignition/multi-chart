@@ -79,9 +79,9 @@
             },
 
           /* 
-           * `groupName` used for resetting value domain. 
+           * `serieName` used for resetting value domain. 
            */
-          groupName : {
+          serieName : {
             type: String, 
             value: 'default' 
           },
@@ -129,7 +129,7 @@
             : tmpMax;         
 
           this.dispatchEvent(new CustomEvent('multi-set-value-domain', {detail: {
-            groupName: this.groupName,
+            serieName: this.serieName,
             domain: [0, max]
           },bubbles: true, composed: true})); 
           return d;

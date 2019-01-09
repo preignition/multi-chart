@@ -165,7 +165,6 @@
         // TODO(cg): replace multi-attached -> multi-verse-added
         Polymer.RenderStatus.afterNextRender(this, () => {
           this.dispatchEvent(new CustomEvent('multi-verse-added', {detail: this.groupName, bubbles: true, composed: true})); 
-          // this.fire('multi-verse-added', this.groupName);
           this.addEventListener('iron-resize', this.onResize);
           this.notifyResize();
         });
@@ -181,7 +180,6 @@
         // TODO(cg): replace multi-removed -> multi-verse-remover
         // XXX(cg): this event will never be caught! unregister from host instead like for drawablse
         this.dispatchEvent(new CustomEvent('multi-verse-removed', {detail: this.groupName, bubbles: true, composed: true})); 
-        // this.fire('multi-verse-removed', this.groupName);
       }
 
       onResize() {
