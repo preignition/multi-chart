@@ -164,49 +164,6 @@
 
         };
       }
-
-      static get observers() {
-        return [
-          '_observeSerieDomain(serieDomainMapping, serieOrdinalDomain, serieValueDomain)'
-        ];
-      }
-
-      ready() {
-        super.ready();
-        Polymer.RenderStatus.afterNextRender(this, () => {
-          this.addEventListener('multi-set-value-domain', this._onSetValueDomain);
-        });
-      }
-
-      /* 
-       * `_onSetValueDomain` some charts will reset domain according to reshaped values (e.g. stack chart)
-       * This provides a way to listing to those changes. 
-       */
-      _onSetValueDomain(e) {
-        e.stopPropagation();
-        const d = e.detail;
-        this.serieValueDomain = Object.assign({}, this.serieValueDomain || {}, {[`${d.serieName || 'default'}`]: d.domain});
-      }
-
-      _observeSerieDomain(mapping) {
-        if(mapping) {
-          Object.keys(mapping).forEach(k => {
-            if(['left', 'bottom', 'right', 'top'].indexOf(k) < 0) {
-              throw `[multi-chart] serieDomainMapping has an invalid key (${k}). Expected: one of this.domain ? this.domain[0] : 0,`;
-            }
-            const domain = this.get(mapping[k]);
-            if(domain)  {
-              if(this[`${k}DomainMin`] || this[`${k}DomainMin`] === 0 ) {
-                domain[0] = this[`${k}DomainMin`];
-              }
-              if(this[`${k}DomainMax`] || this[`${k}DomainMax`] === 0 ) {
-                domain[1] = this[`${k}DomainMax`];
-              }
-              this.set(`domains.${k}`, domain);
-            }
-          });
-        }
-      }
     }
 
     customElements.define(MultiChartContainerAxis.is, MultiChartContainerAxis);

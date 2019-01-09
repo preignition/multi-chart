@@ -126,7 +126,7 @@
        * and data to display have changed.
        */
       dataChanged() {
-        this._observeDataGenerators();
+        this._processDataChanged();
       }
 
       _callDataChanged(splices) {
@@ -134,9 +134,12 @@
           this.callRegistered('dataChanged', this._multiData, this.transition);
         }
       }
-
       _observeDataGenerators() {
         this.debounce('multi-register-data-generator-debounce', () => {
+          this._processDataChanged();
+        }, 20);
+      }
+      _processDataChanged() {
           if (Array.isArray(this.data) && this.data.length) {
             if (this.series && this.series.length) {
               /* Note(cg): we transform serie data differently for charts that expect stacked data or not.
@@ -149,7 +152,7 @@
               this.series.forEach(serie => {
                   if(!serie.accessor) {hasAccessors = false;}
 
-                  const groupName = serie.groupName || 'default';
+                  const groupName = serie.serieName || 'default';
                   if(groupNames.indexOf(groupName) < 0 ) {
                     groupNames.push(groupName);
                   }
@@ -162,7 +165,7 @@
               if(this.dataStack) {
                 const ordinalDomain = {};
                 this.series.forEach(serie => {
-                  const groupName = serie.groupName || 'default';
+                  const groupName = serie.serieName || 'default';
                   if (!ordinalDomain[groupName]) { 
                       ordinalDomain[groupName] = this.getOrdinalDomain(this.data, ordinalAccessors[groupName] || this.ordinalDomainAccessor, serie.accessor);
                     }
@@ -172,7 +175,7 @@
               } else {
                 const valueDomain = {};
                 const _multiData = this.series.map(serie => {
-                  const groupName = serie.groupName || 'default';
+                  const groupName = serie.serieName || 'default';
                   const keyAccessor = ordinalAccessors[groupName] || this.ordinalDomainAccessor;
                   const data = this.data.map((d, i) => {
                     return {
@@ -211,7 +214,6 @@
             this._multiData = this.data;
           }
 
-        }, 30);
       }
 
       getOrdinalDomain(data, keyAccessor, valueAccessor) {

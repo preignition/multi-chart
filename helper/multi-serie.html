@@ -6,24 +6,24 @@
       <multi-accessor path="[[path]]" accessor="{{accessor}}" sub-path="[[subPath]]"></multi-accessor>
     </template>
     <template is="dom-if" if="[[keyPath]]">
-      <multi-accessor path="[[keyPath]]" accessor="{{keyAccessor}}" ></multi-accessor>
+      <multi-accessor path="[[keyPath]]" accessor="{{keyAccessor}}"></multi-accessor>
     </template>
   </template>
   <script>
   (function() {
 
     /**
-		 * ## MultiSerie
-		 *
-		 * `<multi-serie>` a helper to transform data so that it is easier to draw.
+     * ## MultiSerie
+     *
+     * `<multi-serie>` a helper to transform data so that it is easier to draw.
 
-		 *
-		 * @memberof MultiChart
-		 * @customElement
+     *
+     * @memberof MultiChart
+     * @customElement
      * @polymer
      * @demo
      * @appliesMixin MultiChart.mixin.MultiRegisterable
-		 **/
+     **/
     class MultiSerie extends MultiChart.mixin.MultiRegisterable(Polymer.Element) {
 
       static get is() { return 'multi-serie'; }
@@ -87,6 +87,13 @@
           fireEventName: {
             type: String,
             value: 'multi-serie-register'
+          },
+
+          /* 
+           * `serieName` name of the serie
+           */
+          serieName: {
+            type: String
           }
         };
       }
@@ -104,5 +111,6 @@
     window.MultiChart.MultiSerie = MultiSerie;
 
   })();
+
   </script>
 </dom-module>

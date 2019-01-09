@@ -3,8 +3,8 @@
 <link rel="import" href="../drawable/multi-drawable-line.html">
 <link rel="import" href="../drawable/color-scale-mixin.html">
 <link rel="import" href="../d3-shape/property/d3-shape-stack-mixin.html">
-<link rel="import" href="multi-chart-property-mixin.html">
-<link rel="import" href="multi-chart-axis-property-mixin.html">
+<link rel="import" href="mixin/multi-chart-property-mixin.html">
+<link rel="import" href="mixin/multi-chart-axis-property-mixin.html">
 
 <dom-module id="multi-chart-bar">
 	<template>
@@ -152,11 +152,11 @@
 					MultiChart.mixin.D3StackProperty(
 						MultiChart.mixin.ColorScale(
 							MultiChart.mixin.ZoomableProperty(
-					      MultiChart.mixin.AxisProperty(
-					        MultiChart.mixin.AxisProperty(
-					          MultiChart.mixin.AxisProperty(
-					            MultiChart.mixin.AxisProperty(
-					              Polymer.Element, 'bottom'), 'top'), 'left'), 'right')))))) {
+				      	MultiChart.mixin.AxisProperty(
+				        	MultiChart.mixin.AxisProperty(
+				          	MultiChart.mixin.AxisProperty(
+				            	MultiChart.mixin.AxisProperty(
+				              	Polymer.Element, 'bottom'), 'top'), 'left'), 'right')))))) {
 
 			static get is() { return 'multi-chart-bar'; }
 

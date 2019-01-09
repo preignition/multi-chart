@@ -166,10 +166,6 @@
             .attr('y', d => this.yScale(d[1]))
             .attr('height', d => this.yScale(d[0]) - this.yScale(d[1]));
 
-          if(chart instanceof d3.transition) {
-            chart = chart.transition();
-          }
-          
           return chart
             .attr('x', (d,i) =>  this.xScale(d[3] || i))
             .attr('width', bandwidth())
@@ -182,10 +178,6 @@
           .attr('x', (d, i) =>  this.xScale(d[3] || i) + bandwidth() / n * d[2] - align)
           .attr('width', bandwidth() / n)
           .attr('key', d=> d[3]);
-        
-        if(chart instanceof d3.transition) {
-            chart = chart.transition();
-        }  
         
         return chart
           .attr('y', d => this.yScale(d[1] - d[0]))

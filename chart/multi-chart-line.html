@@ -2,8 +2,8 @@
 <link rel="import" href="../container/multi-container-axis.html">
 <link rel="import" href="../drawable/multi-drawable-line.html">
 <link rel="import" href="../drawable/color-scale-mixin.html">
-<link rel="import" href="multi-chart-property-mixin.html">
-<link rel="import" href="multi-chart-axis-property-mixin.html">
+<link rel="import" href="mixin/multi-chart-property-mixin.html">
+<link rel="import" href="mixin/multi-chart-axis-property-mixin.html">
 
 <dom-module id="multi-chart-line">
 	<template>
@@ -145,11 +145,11 @@
 				MultiChart.mixin.ChartAxisProperty(
 					MultiChart.mixin.ZoomableProperty(
 						MultiChart.mixin.ColorScale(
-				      MultiChart.mixin.AxisProperty(
-				        MultiChart.mixin.AxisProperty(
-				          MultiChart.mixin.AxisProperty(
-				            MultiChart.mixin.AxisProperty(
-				              Polymer.Element, 'bottom'), 'top'), 'left'), 'right'))))) {
+					      MultiChart.mixin.AxisProperty(
+					        MultiChart.mixin.AxisProperty(
+					          MultiChart.mixin.AxisProperty(
+					            MultiChart.mixin.AxisProperty(
+					              Polymer.Element, 'bottom'), 'top'), 'left'), 'right'))))) {
 
 			static get is() { return 'multi-chart-line'; }
 

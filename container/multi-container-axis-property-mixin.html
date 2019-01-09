@@ -163,18 +163,29 @@
           },
 
           /* 
+           * `elastic` a mapping object for storing elastic axis. 
+           */
+           // elastic : {
+           //   type: Object,
+           //   notify: true,
+           //   value: function() {
+           //      return {};
+           //    }
+           //  },
+
+          /* 
            * `ordinalDomainAccessor` a mapper for serie ordinal valued. 
            */
           ordinalDomainAccessor: {
             type: Function
           },
-          
-        /* 
-         * `dataStack` when true, will flatten data so taht it is in the right format to be parsed by d3.stack()
-         * this is mainly the case for bar/stack chart
-         */
-         dataStack : {
-           type:  Boolean
+
+          /* 
+           * `dataStack` when true, will flatten data so taht it is in the right format to be parsed by d3.stack()
+           * this is mainly the case for bar/stack chart
+           */
+          dataStack: {
+            type: Boolean
           },
 
           topAccessorPath: String,
@@ -184,6 +195,55 @@
         };
       }
 
+      static get observers() {
+        return [
+          '_observeSerieDomain(serieDomainMapping, serieOrdinalDomain, serieValueDomain)'
+        ];
+      }
+
+      ready() {
+        super.ready();
+        Polymer.RenderStatus.afterNextRender(this, () => {
+          this.addEventListener('multi-set-value-domain', this._onSetValueDomain);
+        });
+      }
+
+      /* 
+       * `_onSetValueDomain` some charts will reset domain according to reshaped values (e.g. stack chart)
+       * This provides a way to listing to those changes. 
+       */
+      _onSetValueDomain(e) {
+        e.stopPropagation();
+        const d = e.detail;
+        this.serieValueDomain = Object.assign({}, this.serieValueDomain || {}, {
+          [`${d.serieName || 'default'}`]: d.domain });
+      }
+
+      _observeSerieDomain(mapping) {
+        // TODO(cg): check whether we have elastic axis.
+        if (mapping) {
+          Object.keys(mapping).forEach(k => {
+            if (['left', 'bottom', 'right', 'top'].indexOf(k) < 0) {
+              throw `[multi-chart] serieDomainMapping has an invalid key (${k}). Expected: one of this.domain ? this.domain[0] : 0,`;
+            }
+            const domain = this.get(mapping[k]);
+            if (domain) {
+              if (this[`${k}DomainMin`] || this[`${k}DomainMin`] === 0) {
+                domain[0] = this[`${k}DomainMin`];
+              }
+              if (this[`${k}DomainMax`] || this[`${k}DomainMax`] === 0) {
+                domain[1] = this[`${k}DomainMax`];
+              }
+              const elastic = this[`${k}Elastic`];
+              if(elastic || !this.domains[k]) {
+                this.set(`domains.${k}`, domain);
+              } else  {
+                this.notifyPath(`domains.${k}.0`, null);
+              }
+            }
+          });
+        }
+      }
     };
   };
 
@@ -201,4 +261,5 @@
   window.MultiChart.mixin.ContainerAxisProperty = ContainerAxisProperty;
 
 })();
+
 </script>

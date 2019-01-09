@@ -3,8 +3,8 @@
 <link rel="import" href="../drawable/multi-drawable-line.html">
 <link rel="import" href="../drawable/color-scale-mixin.html">
 <link rel="import" href="../d3-scale/multi-scale.html">
-<link rel="import" href="multi-chart-property-mixin.html">
-<link rel="import" href="multi-chart-axis-property-mixin.html">
+<link rel="import" href="mixin/multi-chart-property-mixin.html">
+<link rel="import" href="mixin/multi-chart-axis-property-mixin.html">
 
 <dom-module id="multi-chart-bubble">
 	<template>
@@ -102,7 +102,7 @@
     <multi-drawable-bubble 
      	color-scale="[[colorScale]]"
       x-scale="[[scales.bottom]]" 
-      y-scale="[[scales.left]]" 
+      y-scale="[[scales.left]]"
       z-scale="[[zScale]]" 
     ></multi-drawable-bubble>
 		<slot name="header" slot="header"></slot>
@@ -144,7 +144,6 @@
      * @appliesMixin MultiChart.mixin.AxisProperty('top')
      * @appliesMixin MultiChart.mixin.AxisProperty('left')
      * @appliesMixin MultiChart.mixin.ZoomableProperty
-     * @appliesMixin MultiChart.mixin.ContainerAxisProperty
      * @appliesMixin MultiChart.mixin.ColorScale
      * @demo index.html#multi-bubble-demo
 		 **/
