@@ -54,12 +54,12 @@
       }
 
       // Note(cg): after Register is called by `multi-register-mixin` (multi-container-svg) once 
-      afterRegister(host) {
-        this.svgHost = host;
+      afterRegister(host, containerName = 'svgHost') {
+        this[containerName] = host;
       }
 
-      afterUnregister() {
-        this.svgHost = null;
+      afterUnregister(host, containerName = 'svgHost') {
+        this[containerName] = null;
       }
 
       /* 

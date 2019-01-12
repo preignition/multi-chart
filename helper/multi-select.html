@@ -147,7 +147,7 @@
 
       getKey(d,el) {
         const keyHolder = this.attrForSelected;
-        return d.data ? d.data[keyHolder] : d[keyHolder] || d.__key__ || el.getAttribute(keyHolder) || d;
+        return d.data ? d.data[keyHolder] : d[keyHolder] || d.__key__ || el.getAttribute(keyHolder) || el.dataset[keyHolder] || d;
       }
 
       onClick(d, i, el) {
@@ -159,7 +159,7 @@
         if(!this.multi && key === this.selected) {
           this.select(null);
         } else {
-          this.select(this.getKey(d, el));
+          this.select(key);
         }
         // let the world know we have a multi-tap event.
         this.dispatchEvent(new CustomEvent('multi-tap', {detail: { data: d, index: i, element: el }, bubbles: true, composed: true})); 

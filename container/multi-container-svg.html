@@ -15,11 +15,11 @@
     :host {
       display: block;
       @apply --layout-center-center;
-      flex:1;
+      flex: 1;
       height: 100%;
     }
 
-    ::slotted([slot=header]) ,
+    ::slotted([slot=header]),
     ::slotted([slot=footer]) {
       margin: 0;
     }
@@ -34,7 +34,7 @@
       height: 100%;
       @apply --multi-container-svg;
     }
-  
+
     #background {
       fill: var(--multi-chart-background-color, var(--light-theme-background-color));
       @apply --multi-chart-background;
@@ -48,14 +48,20 @@
       fill: none;
     }
 
+    /*.highlight .highlighted {
+      fill: green;
+    }*/
     </style>
     <slot name="header"></slot>
     <div id="observedNode">
       <slot></slot>
     </div>
+    <slot name="svg"></slot>
+
     <svg id="svg">
       <g transform$="[[translate(margin.left, margin.top)]]">
-        <g id="slot-background"></g>
+        <g id="slot-background">
+        </g>
         <g id="slot-chart-content">
           <g id="slot-zoom">
             <g id="slot-chart" class="chart">
@@ -68,6 +74,42 @@
       <g id="slot-legend"></g>
     </svg>
     <slot name="footer"></slot>
+
+    <!-- we include patterns in the template so as to be able to use them in css (mask: url(#mask-stripe-thick)) -->
+    <svg style="width:3000px; height: 3000px; position:absolute; top:-100000px;">
+      <defs>
+        <pattern id="pattern-stripe" width="5" height="4" patternUnits="userSpaceOnUse" patternTransform="rotate(-45)">
+          <rect width="0.5" height="4" transform="translate(0,0)" fill="white"></rect>
+        </pattern>
+        <pattern id="pattern-stripe-thick" width="5" height="4" patternUnits="userSpaceOnUse" patternTransform="rotate(-45)">
+          <rect width="2.5" height="4" transform="translate(0,0)" fill="white"></rect>
+        </pattern>
+        <pattern id="pattern-stripe-hor" width="5" height="4" patternUnits="userSpaceOnUse">
+          <rect width="0.5" height="4" transform="translate(0,0)" fill="white"></rect>
+        </pattern>
+        <pattern id="pattern-stripe-inverse" width="5" height="4" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+          <rect width="0.5" height="4" transform="translate(0,0)" fill="white"></rect>
+        </pattern>
+        <pattern id="pattern-stripe-thick-inverse" width="5" height="4" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+          <rect width="2.5" height="4" transform="translate(0,0)" fill="white"></rect>
+        </pattern>
+        <mask id="mask-stripe">
+          <rect x="0" y="0" width="100%" height="100%" fill="url(#pattern-stripe)" />
+        </mask>
+        <mask id="mask-stripe-thick">
+          <rect x="0" y="0" width="100%" height="100%" fill="url(#pattern-stripe-thick)" />
+        </mask>
+        <mask id="mask-stripe-inverse">
+          <rect x="0" y="0" width="100%" height="100%" fill="url(#pattern-stripe-inverse)" />
+        </mask>
+        <mask id="mask-stripe-thick-inverse">
+          <rect x="0" y="0" width="100%" height="100%" fill="url(#pattern-stripe-thick-inverse)" />
+        </mask>
+        <mask id="mask-stripe-hor">
+          <rect x="0" y="0" width="100%" height="100%" fill="url(#pattern-stripe-hor)" />
+        </mask>
+      </defs>
+    </svg>
   </template>
   <script>
   (function() {
@@ -81,12 +123,12 @@
      * Fired when `multi-container-svg` is attached .
      *
      * @event multi-verse-added
-     * @param {string} the name of the curret group.
+     * @param {string} the name of the current group.
      *
      * Fired when `multi-container-svg` is removed .
      *
      * @event multi-container-removed
-     * @param {string} the namee of the curret group.
+     * @param {string} the name of the current group.
      *
      *
      * @memberof MultiChart
@@ -103,9 +145,9 @@
       Vaadin.ThemableMixin(
         MultiChart.mixin.SVGHelper(
           MultiChart.mixin.Accessor(
-              MultiChart.mixin.MultiRegister(
-                MultiChart.mixin.Zoomable(
-                  MultiChart.MultiChartBase)))))) {
+            MultiChart.mixin.MultiRegister(
+              MultiChart.mixin.Zoomable(
+                MultiChart.MultiChartBase)))))) {
 
       static get is() { return 'multi-container-svg'; }
 
@@ -152,9 +194,9 @@
 
         };
       }
-      
+
       static get observers() {
-        return  [
+        return [
           '_observeMargin(margin.*)'
         ];
       }
@@ -164,10 +206,52 @@
         // Note(cg): we fire a special event so that multi-verse are aware of chart container being added
         // TODO(cg): replace multi-attached -> multi-verse-added
         Polymer.RenderStatus.afterNextRender(this, () => {
-          this.dispatchEvent(new CustomEvent('multi-verse-added', {detail: this.groupName, bubbles: true, composed: true})); 
+          this.dispatchEvent(new CustomEvent('multi-verse-added', { detail: this.groupName, bubbles: true, composed: true }));
           this.addEventListener('iron-resize', this.onResize);
           this.notifyResize();
+          this.assignSlottedSVG();
         });
+      }
+
+      assignSlottedSVG() {
+        const nodes = [];
+        const treeWalker = (root) => {
+          return document.createTreeWalker(root, NodeFilter.SHOW_ELEMENT, { acceptNode: function(node) {return NodeFilter.FILTER_ACCEPT;}}, false);
+        };
+
+        const assignedNodes = (node) => {
+          let n = node;
+          while(n.assignedNodes && n.assignedNodes()[0] ) {
+            n = n.assignedNodes()[0];
+          }
+          return n;
+        };
+
+        const loop = (node) => {
+          const walker = treeWalker(node);
+          while (walker.nextNode()) {
+            const currentNode = walker.currentNode;
+            if (currentNode.getAttribute('slot-svg')) {
+              // Note(cg): we push slot-svg here.
+              nodes.push(currentNode);
+            }
+            // Note(cg): slotted assigned elements are not catched by try treewalker.
+            if(currentNode.localName === 'slot') {
+              loop(assignedNodes(currentNode));
+            }
+          }
+        };
+        loop(this);
+
+        nodes.forEach(node => {
+           const target = node.getAttribute('slot-svg');
+            if (this.$[target]) {
+              // this._hostedNodes[target] = node;
+              return this.$[target].appendChild(node);
+            }
+            this._warn(`cannot dispatch node ${target}`);
+        });
+        // console.info('NODES', nodes);
       }
 
       _observeMargin() {
@@ -179,12 +263,12 @@
         super.disconnectedCallback();
         // TODO(cg): replace multi-removed -> multi-verse-remover
         // XXX(cg): this event will never be caught! unregister from host instead like for drawablse
-        this.dispatchEvent(new CustomEvent('multi-verse-removed', {detail: this.groupName, bubbles: true, composed: true})); 
+        this.dispatchEvent(new CustomEvent('multi-verse-removed', { detail: this.groupName, bubbles: true, composed: true }));
       }
 
       onResize() {
         // Note(cg): if width or height is 0 (as it is the case when char is hiddem -> do nothing).
-        if (this.$.svg.width.baseVal.value && this.$.svg.height.baseVal.value ) {
+        if (this.$.svg.width.baseVal.value && this.$.svg.height.baseVal.value) {
           // Note(cg): as we cannot user offsetWidth and offsetHeight for svg, we take the value of $0.$.svg.height.baseVal.
           this._setWidth(Math.floor(this.$.svg.width.baseVal.value - this.margin.left - this.margin.right));
           this._setHeight(Math.floor(this.$.svg.height.baseVal.value - this.margin.bottom - this.margin.top));

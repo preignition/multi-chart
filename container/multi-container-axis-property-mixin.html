@@ -235,10 +235,12 @@
                 domain[1] = this[`${k}DomainMax`];
               }
               const elastic = this[`${k}Elastic`];
-              if(elastic || !this.domains[k]) {
+              // const elastic = true;
+              // Note(cg): we need to reset domain when it is the default domain ([0,1]).
+              if(elastic || !this.domains[k] || (this.domains[k][1] === 1 && this.domains[k][0] === 0))  {
                 this.set(`domains.${k}`, domain);
               } else  {
-                this.notifyPath(`domains.${k}.0`, null);
+                this.notifyPath(`domains.${k}.0`);
               }
             }
           });

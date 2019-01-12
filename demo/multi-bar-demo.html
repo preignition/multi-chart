@@ -20,6 +20,7 @@
                 data-stack
                 margin="[[margin]]"
                 bottom-axis
+                left-elastic="[[elastic]]"
                 left-axis
                 bottom-scale-type="scaleBand"
                 bottom-padding="[[padding]]"
@@ -44,6 +45,7 @@
             </multi-container-axis>
             <div id="control">
               <paper-checkbox checked="{{stacked}}">stacked</paper-checkbox>
+              <paper-checkbox checked="{{elastic}}">elastic axis</paper-checkbox>
               <paper-input raised value="{{padding}}" type="number" placeholder="padding" min="0" max="0.9" step="0.1" label="bottom axis padding" ></paper-input>
               <paper-input raised value="{{margin.right}}" type="number" placeholder="right margin" min="0" max="200" step="5" label="right margin" ></paper-input>
             </div>
@@ -66,6 +68,8 @@
         const states = data.map(function(d) { return d.State; })
         app.statesMapper = (d,i) => states[i];
         app.padding = 0.1;
+        app.stacked = true;
+
         app.margin = {
               top: 20,
               right: 130,

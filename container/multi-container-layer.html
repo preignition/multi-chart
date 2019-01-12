@@ -3,45 +3,46 @@
 <link rel="import" href="../../iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../helper/dispatch-svg-mixin.html">
 <link rel="import" href="../helper/multi-registerable-mixin.html">
+<link rel="import" href="../helper/multi-highlight-mixin.html">
 <link rel="import" href="../helper/svg-helper-mixin.html">
 <link rel="import" href="../helper/accessor-mixin.html">
 <link rel="import" href="../helper/multi-register-mixin.html">
 <link rel="import" href="../helper/multi-data-mixin.html">
 <link rel="import" href="../multi-chart-base.html">
-<dom-module id="multi-container-g">
+<dom-module id="multi-container-layer">
   <template>
     <style>
     #observedNode {
       display: none;
     }
-
     </style>
     <div id="observedNode">
       <slot></slot>
     </div>
     <svg id="svg">
-      <g slot-svg="slot-chart" id="slot-g"></g>
+      <g slot-svg="slot-chart" id="slot-layer" class$="[[layer]]"></g>
     </svg>
   </template>
   <script>
   (function() {
     /**
-     * # MultiContainerG
+     * # MultiContainerLayer
      * 
-     * `<multi-container-g>` is a proxy for svg g element. 
+     * `<multi-container-layer>` is a proxy for svg g element. 
      * It will be inserted within `multi-container-svg#slot-chart` and can contain other svg content like geo layer. 
      *
      *
      * ### Events
-     * Fired when `multi-container-g` is attached .
+     * Fired when `multi-container-layer` is attached .
      *
-     * @event multi-container-added
-     * @param {string} the namee of the curret group.
+     * @event multi-verse-added
+     * @param {string} the name of the curret group.
      *
-     * Fired when `multi-container-g` is removed .
+     * Fired when `multi-container-layer` is removed .
      *
-     * @event multi-container-removed
-     * @param {string} the namee of the curret group.
+     * @event multi-verse-removed
+     * @param {string} the name of the current group.
+     *
      *
      *
      * @memberof MultiChart
@@ -57,18 +58,19 @@
      * @customElement
      * @polymer
      **/
-    class MultiContainerG
-    extends Polymer.mixinBehaviors([Polymer.IronResizableBehavior],
-      MultiChart.mixin.SVGHelper(
-        MultiChart.mixin.DispatchSVG(
-          MultiChart.mixin.Resizable(
+    class MultiContainerLayer
+    // extends Polymer.mixinBehaviors([Polymer.IronResizableBehavior],
+    extends MultiChart.mixin.SVGHelper(
+      MultiChart.mixin.DispatchSVG(
+        MultiChart.mixin.Resizable(
+          MultiChart.mixin.MultiHighlight(
             MultiChart.mixin.Accessor(
               MultiChart.mixin.MultiData(
                 MultiChart.mixin.MultiRegister(
                   MultiChart.mixin.MultiRegisterable(
                     MultiChart.MultiChartBase)))))))) {
 
-      static get is() { return 'multi-container-g'; }
+      static get is() { return 'multi-container-layer'; }
 
       static get properties() {
         return {
@@ -78,6 +80,13 @@
            */
           groupName: {
             type: String
+          },
+
+          /* 
+           * `layer` the name of the layer - is set to g#svg-slot
+           */
+          layer: {
+            type: String,
           }
         };
       }
@@ -85,7 +94,7 @@
       connectedCallback() {
         super.connectedCallback();
         Polymer.RenderStatus.afterNextRender(this, () => {
-          this.dispatchEvent(new CustomEvent('multi-container-added', {detail: this.groupName, bubbles: true, composed: true})); 
+          this.dispatchEvent(new CustomEvent('multi-verse-added', { detail: this.groupName, bubbles: true, composed: true }));
         });
       }
 
@@ -102,17 +111,17 @@
         //   this._setHeight(this.svgHost.height);
         //   this._setWidth(this.svgHost.width);
         // }
-        this.callRegistered('onResize'); 
+        this.callRegistered('onResize');
       }
     }
 
-    customElements.define(MultiContainerG.is, MultiContainerG);
+    customElements.define(MultiContainerLayer.is, MultiContainerLayer);
 
     if (!window.MultiChart) {
       window.MultiChart = {};
     }
 
-    window.MultiChart.MultiContainerG = MultiContainerG;
+    window.MultiChart.MultiContainerLayer = MultiContainerLayer;
 
   })();
   </script>
