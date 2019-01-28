@@ -166,8 +166,8 @@
 
         if(this.stacked) {
           chart = chart
-            .attr('y', d => this.yScale(d[1]))
-            .attr('height', d => this.yScale(d[0]) - this.yScale(d[1]));
+            .attr('y', d => this.yScale(d[1]) || 0)
+            .attr('height', d => this.yScale(d[0]) - this.yScale(d[1]) || 0);
 
           return chart
             .attr('x', (d,i) =>  {
@@ -185,8 +185,8 @@
           .attr('key', d=> d[3]);
         
         return chart
-          .attr('y', d => this.yScale(d[1] - d[0]))
-          .attr('height', d => this.yScale(0) - this.yScale(d[1] - d[0]))
+          .attr('y', d => this.yScale(d[1] - d[0]) || 0)
+          .attr('height', d => this.yScale(0) - this.yScale(d[1] - d[0]) || 0)
           .attr('index', (d,i) => i);
 
       }

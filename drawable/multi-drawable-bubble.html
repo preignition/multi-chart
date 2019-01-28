@@ -108,9 +108,9 @@
 
         chart = this.drawSerieGroup(data, 'circle', this.shapeClass, chart, this.transition);
 
-        return chart.attr('cx', this.x)
-          .attr('cy', this.y)
-          .attr('r', this.z)
+        return chart.attr('cx', this.x || 0)
+          .attr('cy', this.y || 0)
+          .attr('r', this.z || 0)
           .attr('index', (d,i) => i);
       }
 

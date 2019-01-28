@@ -128,7 +128,7 @@
 
         if (this.shallTransition) {
           chart.each(function(d) {
-            this._current = d;
+            this._current = Object.assign({},d);
           });
         }
 
