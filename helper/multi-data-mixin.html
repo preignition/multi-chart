@@ -167,7 +167,7 @@
                 this.series.forEach(serie => {
                   const groupName = serie.serieName || 'default';
                   if (!ordinalDomain[groupName]) { 
-                      ordinalDomain[groupName] = this.getOrdinalDomain(this.data, ordinalAccessors[groupName] || this.ordinalDomainAccessor, serie.accessor);
+                      ordinalDomain[groupName] = this.getOrdinalDomain(this.data, ordinalAccessors[groupName] || this.ordinalDomainAccessor, serie.accessor, serie.continuous);
                     }
                 });
                 this.serieOrdinalDomain = ordinalDomain;
@@ -216,9 +216,10 @@
 
       }
 
-      getOrdinalDomain(data, keyAccessor, valueAccessor) {
+      getOrdinalDomain(data, keyAccessor, valueAccessor, continuous) {
+        // Note(cg): for continuous scales (e.g. timeseries), domain is [min, max].
+        let map = [];
         if (keyAccessor) {
-          const map = [];
           data.forEach((d, i) => {
             d.__key__ = keyAccessor(d, i);
             if(valueAccessor) {
@@ -226,9 +227,14 @@
             }
             map.push(d.__key__);
           });
-          return map;
+        } else {
+          map = d3.range(data.length);
+          
         }
-        return d3.range(data.length);
+        if(continuous) {
+          map = [map[0], map[map.length - 1]];
+        }
+        return map;
       }
 
     };

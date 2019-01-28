@@ -155,10 +155,13 @@
 
         let bandwidth = this.xScale.bandwidth;
         let align = 0 ;
+        let xScale = this.xScale;
         // we might have an x-scale that does not have a bandwidth, e.g. when we have date on x-axis and use a timeScale
         if(!bandwidth) {
           bandwidth = d3.scaleBand().domain(data[0].map((d,i) => this.xScale(d[3] || i))).range(this.xScale.range()).padding(0.2).bandwidth;
           align = bandwidth() / 2;
+          // let domain = xScale.domain();
+          // xScale = xScale.copy().domain([domain[0], domain[domain.length -1 ]]);
         }
 
         if(this.stacked) {
@@ -167,7 +170,9 @@
             .attr('height', d => this.yScale(d[0]) - this.yScale(d[1]));
 
           return chart
-            .attr('x', (d,i) =>  this.xScale(d[3] || i))
+            .attr('x', (d,i) =>  {
+              return xScale(d[3] || i);
+            })
             .attr('width', bandwidth())
             .attr('key', d=> d[3]);
             // .attr('index', (d,i) => i);
@@ -175,7 +180,7 @@
         
         const n = data.length;
         chart = chart
-          .attr('x', (d, i) =>  this.xScale(d[3] || i) + bandwidth() / n * d[2] - align)
+          .attr('x', (d, i) => xScale(d[3] || i) + bandwidth() / n * d[2] - align ) 
           .attr('width', bandwidth() / n)
           .attr('key', d=> d[3]);
         
