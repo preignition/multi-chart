@@ -48,6 +48,10 @@
       fill: none;
     }
 
+    slot[name="svg"] {
+      display: none;
+    }
+
     /*.highlight .highlighted {
       fill: green;
     }*/
@@ -56,7 +60,6 @@
     <div id="observedNode">
       <slot></slot>
     </div>
-    <slot name="svg"></slot>
 
     <svg id="svg">
       <g transform$="[[translate(margin.left, margin.top)]]">
@@ -74,6 +77,7 @@
       <g id="slot-legend"></g>
     </svg>
     <slot name="footer"></slot>
+    <slot name="svg"></slot>
 
     <!-- we include patterns in the template so as to be able to use them in css (mask: url(#mask-stripe-thick)) -->
     <svg style="width:3000px; height: 3000px; position:absolute; top:-100000px;">
@@ -83,6 +87,9 @@
         </pattern>
         <pattern id="pattern-stripe-thick" width="5" height="4" patternUnits="userSpaceOnUse" patternTransform="rotate(-45)">
           <rect width="2.5" height="4" transform="translate(0,0)" fill="white"></rect>
+        </pattern>
+        <pattern id="pattern-stripe-light" width="5" height="4" patternUnits="userSpaceOnUse" patternTransform="rotate(-45)">
+          <rect width="4" height="4" transform="translate(0,0)" fill="white"></rect>
         </pattern>
         <pattern id="pattern-stripe-hor" width="5" height="4" patternUnits="userSpaceOnUse">
           <rect width="0.5" height="4" transform="translate(0,0)" fill="white"></rect>
@@ -94,19 +101,22 @@
           <rect width="2.5" height="4" transform="translate(0,0)" fill="white"></rect>
         </pattern>
         <mask id="mask-stripe">
-          <rect x="0" y="0" width="100%" height="100%" fill="url(#pattern-stripe)" />
+          <rect x="-500" y="-500" width="1000" height="1000" fill="url(#pattern-stripe)" />
         </mask>
         <mask id="mask-stripe-thick">
-          <rect x="0" y="0" width="100%" height="100%" fill="url(#pattern-stripe-thick)" />
+          <rect x="-500" y="-500" width="1000" height="1000" fill="url(#pattern-stripe-thick)" />
+        </mask>
+          <mask id="mask-stripe-light">
+          <rect x="-500" y="-500" width="1000" height="1000" fill="url(#pattern-stripe-light)" />
         </mask>
         <mask id="mask-stripe-inverse">
-          <rect x="0" y="0" width="100%" height="100%" fill="url(#pattern-stripe-inverse)" />
+          <rect x="-500" y="-500" width="1000" height="1000" fill="url(#pattern-stripe-inverse)" />
         </mask>
         <mask id="mask-stripe-thick-inverse">
-          <rect x="0" y="0" width="100%" height="100%" fill="url(#pattern-stripe-thick-inverse)" />
+          <rect x="-500" y="-500" width="1000" height="1000" fill="url(#pattern-stripe-thick-inverse)" />
         </mask>
         <mask id="mask-stripe-hor">
-          <rect x="0" y="0" width="100%" height="100%" fill="url(#pattern-stripe-hor)" />
+          <rect x="-500" y="-500" width="1000" height="1000" fill="url(#pattern-stripe-hor)" />
         </mask>
       </defs>
     </svg>

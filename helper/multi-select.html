@@ -13,18 +13,23 @@
     }
     
     :host([has-selection]) .selectable {
-      opacity: 0.6;
+      opacity: 0.7;
     }
 
     :host([has-selection]) [selected] {
       opacity: 1;
+      @apply --multi-select-selected;
     }
 
-    :host([is-hovered]) .selectable, :host([is-hovered]) .cell {
-      opacity: 0.6;
+    :host([is-hovered]) rect, :host([is-hovered]) .selectable
+    {
+      opacity: 0.7;
+      @apply --multi-select-hovered;
     }    
-    :host([is-hovered]) [hovered] {
+
+    :host([is-hovered]) [hovered] rect,  :host([is-hovered]) .selectable[hovered] {
       opacity: 1;
+      @apply --multi-select-selected;
     }    
 
     </style>
@@ -132,7 +137,7 @@
 
         // Note(cg): store those items into _items.  
         this._setItems(sel.nodes());
-       	
+
        	// attach Listeners in TrackHover
        	super.attachListeners(sel);
       }

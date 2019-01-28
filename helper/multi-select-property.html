@@ -1,22 +1,22 @@
 <script>
-(function(){
-	
-	/**
-	 * ##  ChartSelectProperty
-	 * 
-	 * a mixin for grouping multi-verse-chart default properties
-	 * 
-	 * @memberof MultiVerse.mixin
+(function() {
+
+  /**
+   * ##  ChartSelectProperty
+   * 
+   * a mixin for grouping multi-verse-chart default properties
+   * 
+   * @memberof MultiVerse.mixin
    * @polymer
    * @mixinFunction
    */
-	const ChartSelectProperty = superClass => {
-	  
-	  return class extends superClass {
+  const ChartSelectProperty = superClass => {
 
-	    static get properties() {
-	      return {
-	      	
+    return class extends superClass {
+
+      static get properties() {
+        return {
+
           /**
            * Gets or sets the selected elements. This is used instead of `selected` when `multi`
            * is true.
@@ -58,7 +58,7 @@
            * `multi`  set true for allowing multi selection
            */
           multi: {
-            type: Boolean 
+            type: Boolean
           },
 
           /* 
@@ -66,7 +66,7 @@
            * Otherwise, default behavior is 'select'
            */
           selectType: {
-            type: String, 
+            type: String,
             value: ''
           },
 
@@ -74,29 +74,46 @@
            * `trackHover`  if true, will track mouseenter and ouseleave event
            */
           trackHover: {
-            type: Boolean 
+            type: Boolean
           }
-	      };
-	    }
+        };
+      }
+
+      connectedCallback() {
+        super.connectedCallback();
+        // Note(cg): we add `multi-clear` listener here (instead of on multi-select) as this mixin is used in multi-verse charts.
+        Polymer.RenderStatus.afterNextRender(this, () => {
+          this.addEventListener('multi-clear', this._onMultiClear);
+        });
+      }
+
+      _onMultiClear() {
+        if (this.multi) {
+          this.selectedValues = [];
+        } else {
+          this.selected = null;
+        }
+      }
 
       isEqual(value, test) {
-          return value == test;
-        }
-	  };
-	};
+        return value == test;
+      }
 
-	if (!window.MultiVerse) {
-	 window.MultiVerse = {};
-	}
+    };
+  };
 
-	/* 
-	 * @namespace MultiChart.mixin
-	 */
-	window.MultiVerse.mixin = window.MultiVerse.mixin || {};
-	/* 
-	 * @mixinFunction
-	 */
+  if (!window.MultiVerse) {
+    window.MultiVerse = {};
+  }
+
+  /* 
+   * @namespace MultiChart.mixin
+   */
+  window.MultiVerse.mixin = window.MultiVerse.mixin || {};
+  /* 
+   * @mixinFunction
+   */
   window.MultiVerse.mixin.ChartSelectProperty = ChartSelectProperty;
 
-	})();	
+})();
 </script>

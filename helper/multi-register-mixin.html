@@ -56,7 +56,6 @@
 
       ready() {
         super.ready();
-        this._warn('ready', this, this.registerEvent);
         this.addEventListener(this.registerEvent, this._onMultiRegister);
         // Note(cg): some charts (e.g. multi-graph) anounce that they are drawn  ).
         this.addEventListener('multi-drawn', this.onDrawn);
