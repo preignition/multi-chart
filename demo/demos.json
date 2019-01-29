@@ -47,6 +47,15 @@
       "image": ""
     }
   },{
+    "name": "charts in tab",
+    "url": "multi-tab-demo",
+    "src": "multi-tab-demo.html",
+    "meta": {
+      "title": "multi-chart – Charts in tabs",
+      "description": "",
+      "image": ""
+    }
+  },{
     "name": "Composable Chart",
     "url": "multi-line-demo",
     "src": "multi-line-demo.html",

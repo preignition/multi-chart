@@ -282,7 +282,18 @@
           // Note(cg): as we cannot user offsetWidth and offsetHeight for svg, we take the value of $0.$.svg.height.baseVal.
           this._setWidth(Math.floor(this.$.svg.width.baseVal.value - this.margin.left - this.margin.right));
           this._setHeight(Math.floor(this.$.svg.height.baseVal.value - this.margin.bottom - this.margin.top));
+          this._canCallResize = 0;
           super.onResize();
+          return;
+        }
+        // Note(cg): onResize is called too fast sometimes (this.$.svg is not yet resized) and we need to re-call it slightly later 
+        // This happens for instance when we have a chart within iron-pages
+        if(!this._canCallResize) {
+          this._canCallResize = 1;
+          setTimeout(() =>{
+            this.onResize(); 
+            this._canCallResize = 0;
+          }, 10);
         }
       }
 
