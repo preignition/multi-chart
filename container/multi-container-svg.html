@@ -80,7 +80,7 @@
     <slot name="svg"></slot>
 
     <!-- we include patterns in the template so as to be able to use them in css (mask: url(#mask-stripe-thick)) -->
-    <svg style="width:3000px; height: 3000px; position:absolute; top:-100000px;">
+    <svg style="position:absolute; top:-100000px;" viewBox="0 0 1000 1000">
       <defs>
         <pattern id="pattern-stripe" width="5" height="4" patternUnits="userSpaceOnUse" patternTransform="rotate(-45)">
           <rect width="0.5" height="4" transform="translate(0,0)" fill="white"></rect>
@@ -101,22 +101,22 @@
           <rect width="2.5" height="4" transform="translate(0,0)" fill="white"></rect>
         </pattern>
         <mask id="mask-stripe">
-          <rect x="-500" y="-500" width="1000" height="1000" fill="url(#pattern-stripe)" />
+          <rect x="-200" y="-200" width="10000" height="10000" fill="url(#pattern-stripe)" />
         </mask>
         <mask id="mask-stripe-thick">
-          <rect x="-500" y="-500" width="1000" height="1000" fill="url(#pattern-stripe-thick)" />
+          <rect x="-200" y="-200" width="10000" height="10000" fill="url(#pattern-stripe-thick)" />
         </mask>
           <mask id="mask-stripe-light">
-          <rect x="-500" y="-500" width="1000" height="1000" fill="url(#pattern-stripe-light)" />
+          <rect x="-200" y="-200" width="10000" height="10000" fill="url(#pattern-stripe-light)" />
         </mask>
         <mask id="mask-stripe-inverse">
-          <rect x="-500" y="-500" width="1000" height="1000" fill="url(#pattern-stripe-inverse)" />
+          <rect x="-200" y="-200" width="10000" height="10000" fill="url(#pattern-stripe-inverse)" />
         </mask>
         <mask id="mask-stripe-thick-inverse">
-          <rect x="-500" y="-500" width="1000" height="1000" fill="url(#pattern-stripe-thick-inverse)" />
+          <rect x="-200" y="-200" width="10000" height="10000" fill="url(#pattern-stripe-thick-inverse)" />
         </mask>
         <mask id="mask-stripe-hor">
-          <rect x="-500" y="-500" width="1000" height="1000" fill="url(#pattern-stripe-hor)" />
+          <rect x="-200" y="-200" width="10000" height="10000" fill="url(#pattern-stripe-hor)" />
         </mask>
       </defs>
     </svg>

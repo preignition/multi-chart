@@ -34,11 +34,22 @@
         return 'matrix(' + ',' + ')';
       }
 
-      fitTo(source, target, factor) {
+      //  fitTo set transform attribute of source so that it fits target container.
+      fitTo(source, target, factor, duration) {
         //reset the transform attribute
         factor = factor || 0.95;
         
-        const sel = d3.select(source);
+        let sel = d3.select(source);
+        
+        if(duration) {
+          sel =  sel.transition().duration(duration)
+        }
+        
+        if(!target) {
+          // Note(cg): reset.
+           return sel.attr('transform', 'translate(0,0)scale(1)');          
+        }
+        
         sel.attr('transform', null);
         
         const sourceRect = source.getBoundingClientRect(),
@@ -48,6 +59,7 @@
         if( !dx || !dy) {
           return;
         }
+
 
         const targetRect = target.getBoundingClientRect(),
           x = (-sourceRect.left + sourceRect.right) / 2,
