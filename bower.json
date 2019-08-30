@@ -23,7 +23,7 @@
     "polymer": "Polymer/polymer#^2.0.0",
     "iron-resizable-behavior": "PolymerElements/iron-resizable-behavior#^2.0.0",
     "iron-selector": "PolymerElements/iron-selector#^2.0.0",
-    "vaadin-themable-mixin": "^1.2.1",
+    "vaadin-themable-mixin": "^1.2.1"
   },
   "devDependencies": {
     "iron-demo-helpers": "PolymerElements/iron-demo-helpers#^2.0.0",
