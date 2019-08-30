@@ -1,3 +1,7 @@
+# 3.0.0 Changelog
+Version 3 makes the switch from Polymer 2.0 to [lit-element](https://github.com/polymer/lit-element), with dependecies managed through [pika-web](https://github.com/pikapkg/web).
+
+
 # 2.0.0 Changelog
 
 Version 2.0.0 is now Polymer 2.0 only. 

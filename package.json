@@ -4,7 +4,7 @@
   "description": "polymer building blocks elements for building charts and visualization (based on d3.js v5).",
   "license": "MIT",
   "authors": [
-    "christophe.geiser <christophe.geiser@e-smile.org>"
+    "christophe.geiser <christophe.geiser@preignition.org>"
   ],
   "repository": "https://github.com/polymerEl/multi-chart",
   "homepage": "webcomponents.org/polymerEl/multi-chart",
@@ -14,35 +14,119 @@
     "web-components",
     "d3.js",
     "charts",
-    "polymer",
+    "lit-element",
+    "pikaweb",
     "analytics",
     "Polymer",
     "dataviz"
   ],
+  "@pika/web": {
+    "webDependencies": [
+      "d3-array",
+      "d3-selection",
+      "d3-interpolate",
+      "d3-transition",
+      "d3-selection-multi",
+      "lit-element"
+    ]
+  },
   "dependencies": {
-    "polymer": "Polymer/polymer#^2.0.0",
-    "iron-resizable-behavior": "PolymerElements/iron-resizable-behavior#^2.0.0",
-    "iron-selector": "PolymerElements/iron-selector#^2.0.0",
-    "vaadin-themable-mixin": "^1.2.1",
-    "d3-bundle-element": "^2.0.0"
+    "d3-array": "2",
+    "d3-axis": "1",
+    "d3-brush": "^1.1.3",
+    "d3-chord": "1",
+    "d3-collection": "1",
+    "d3-color": "^1.3.0",
+    "d3-contour": "1",
+    "d3-dispatch": "1",
+    "d3-drag": "^1.2.4",
+    "d3-dsv": "1",
+    "d3-ease": "1",
+    "d3-fetch": "1",
+    "d3-force": "2",
+    "d3-format": "1",
+    "d3-geo": "^1.11.6",
+    "d3-geo-projection": "^2.7.0",
+    "d3-hexbin": "0",
+    "d3-hierarchy": "1",
+    "d3-interpolate": "1",
+    "d3-path": "^1.0.8",
+    "d3-polygon": "1",
+    "d3-quadtree": "1",
+    "d3-random": "2",
+    "d3-scale": "3",
+    "d3-scale-chromatic": "^1.5.0",
+    "d3-selection": "1",
+    "d3-selection-multi": "1",
+    "d3-shape": "1",
+    "d3-svg-legend": "git+https://github.com/christophe-g/d3-legend.git#promise",
+    "d3-time": "1",
+    "d3-time-format": "2",
+    "d3-timer": "1",
+    "d3-tip": "0",
+    "d3-transition": "1",
+    "d3-voronoi": "1",
+    "d3-zoom": "1",
+    "firebase-token-generator": "^2.0.0",
+    "lit-element": "2"
+    
   },
   "devDependencies": {
-    "iron-demo-helpers": "PolymerElements/iron-demo-helpers#^2.0.0",
-    "web-component-tester": "Polymer/web-component-tester#^6.0.0",
-    "webcomponentsjs": "webcomponents/webcomponentsjs#^1.0.0",
-    "paper-button": "PolymerElements/paper-button#^2.0.0",
-    "paper-input": "^3.0.1",
-    "iron-ajax": "PolymerElements/iron-ajax#^2.0.0",
-    "test-fixture": "PolymerElements/test-fixture#^3.0.0-rc.1",
-    "vaadin-demo-helpers": "^2.1.0",
-    "iron-component-page": "^3.0.0",
-    "paper-checkbox": "^2.0.0"
+    "eslint": "^6.1.0",
+    "@open-wc/eslint-config": "^1.0.0",
+    "@open-wc/prettier-config": "^0.1.10",
+    "husky": "^1.0.0",
+    "lint-staged": "^8.0.0",
+    "@open-wc/testing-karma": "^3.0.0",
+    "webpack-merge": "^4.1.5",
+    "@open-wc/testing-karma-bs": "^1.0.0",
+    "@open-wc/testing": "^0.11.1",
+    "@open-wc/demoing-storybook": "^0.3.0",
+    "@open-wc/building-rollup": "^0.9.0",
+    "rimraf": "^2.6.3",
+    "rollup": "^1.15.4"
   },
   "resolutions": {
     "polymer": "^2.0.0",
     "paper-input": "^2.0.0"
   },
   "scripts": {
-    "postpublish": "git push && git push --tags"
+    "postpublish": "git push && git push --tags",
+    "prepublish": "pika install --optimize",
+    "lint:eslint": "eslint --ext .js,.html . --ignore-path .gitignore",
+    "format:eslint": "eslint --ext .js,.html . --fix --ignore-path .gitignore",
+    "lint:prettier": "prettier \"**/*.js\" --check --ignore-path .gitignore",
+    "format:prettier": "prettier \"**/*.js\" --write --ignore-path .gitignore",
+    "lint": "npm run lint:eslint && npm run lint:prettier",
+    "format": "npm run format:eslint && npm run format:prettier",
+    "test": "karma start --coverage",
+    "test:watch": "karma start --auto-watch=true --single-run=false",
+    "test:update-snapshots": "karma start --update-snapshots",
+    "test:prune-snapshots": "karma start --prune-snapshots",
+    "test:compatibility": "karma start --compatibility all --coverage",
+    "test:compatibility:watch": "karma start --compatibility all --auto-watch=true --single-run=false",
+    "test:bs": "karma start karma.bs.config.js --compatibility all --coverage",
+    "site:build": "npm run storybook:build",
+    "storybook": "start-storybook -p 9001",
+    "storybook:build": "build-storybook -o _site -s storybook-static",
+    "start:build": "cd dist && es-dev-server --open",
+    "build": "rimraf dist && rollup -c rollup.config.js"
+  },
+  "eslintConfig": {
+    "extends": [
+      "@open-wc/eslint-config",
+      "eslint-config-prettier"
+    ]
+  },
+  "prettier": "@open-wc/prettier-config",
+  "husky": {
+    
+  },
+  "lint-staged": {
+    "*.js": [
+      "eslint --fix",
+      "prettier --write",
+      "git add"
+    ]
   }
 }
