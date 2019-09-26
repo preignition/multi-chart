@@ -1,0 +1,20 @@
+{
+  "name": "open-wc-lit-html-basics",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "start": "owc-dev-server -o"
+  },
+  "dependencies": {
+    "@polymer/paper-card": "^3.0.1",
+    "@vaadin/router": "^1.2.0",
+    "@vaadin/vaadin-tabs": "^2.1.2",
+    "@webcomponents/webcomponentsjs": "^2.2.7",
+    "lit-element": "^2.1.0",
+    "lit-html": "^1.0.0",
+    "pwa-helpers": "^0.9.1"
+  },
+  "devDependencies": {
+    "owc-dev-server": "^0.1.1"
+  }
+}

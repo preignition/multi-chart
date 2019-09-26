@@ -1,10 +1,9 @@
 /* eslint-disable import/no-extraneous-dependencies */
 const { createDefaultConfig } = require('@open-wc/testing-karma');
-const merge = require('webpack-merge');
 
 module.exports = config => {
   config.set(
-    merge(createDefaultConfig(config), {
+    Object.assign(createDefaultConfig(config), {
       files: [
         // runs all files ending with .test in the test folder,
         // can be overwritten by passing a --grep flag. examples:
@@ -17,6 +16,10 @@ module.exports = config => {
       esm: {
         nodeResolve: true,
       },
+      // for tests to work with pika ...
+      proxies: {
+        '/web_modules/': '/base/web_modules/'
+      }
       // you can overwrite/extend the config further
     }),
   );

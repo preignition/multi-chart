@@ -1,14 +1,5 @@
 {
-  "name": "multi-chart",
-  "version": "3.0.0",
-  "description": "polymer building blocks elements for building charts and visualization (based on d3.js v5).",
-  "license": "MIT",
-  "authors": [
-    "christophe.geiser <christophe.geiser@preignition.org>"
-  ],
-  "repository": "https://github.com/polymerEl/multi-chart",
-  "homepage": "webcomponents.org/polymerEl/multi-chart",
-  "main": "multi-chart.html",
+  "description": "lit-element components for building charts and visualization (based on d3.js v5).",
   "keywords": [
     "web-component",
     "web-components",
@@ -17,20 +8,27 @@
     "lit-element",
     "pikaweb",
     "analytics",
-    "Polymer",
     "dataviz"
   ],
-  "@pika/web": {
-    "webDependencies": [
-      "d3-array",
-      "d3-selection",
-      "d3-interpolate",
-      "d3-transition",
-      "d3-selection-multi",
-      "lit-element"
-    ]
-  },
+  "repository": "https://github.com/polymerEl/multi-chart",
+  "homepage": "webcomponents.org/polymerEl/multi-chart",
+  "name": "@preignition/multi-chart",
+  "version": "3.0.0",
+  "license": "MIT",
+  "authors": [
+    "christophe.geiser <christophe.geiser@preignition.org>"
+  ],
+  "main": "index.js",
   "dependencies": {
+    "@juggle/resize-observer": "*",
+    "@morbidick/lit-element-notify": "^1.0.2",
+    "@pika/web": "^0.5.3",
+    "@polymer/iron-resizable-behavior": "^3.0.0",
+    "@polymer/iron-selector": "^3.0.1",
+    "@polymer/polymer": "^3.0.0",
+    "@preignition/preignition-mixin": "^1.8.1",
+    "@ranfdev/deepobj": "^1.0.2",
+    "@webcomponents/webcomponentsjs": "^2.2.7",
     "d3-array": "2",
     "d3-axis": "1",
     "d3-brush": "^1.1.3",
@@ -67,66 +65,41 @@
     "d3-transition": "1",
     "d3-voronoi": "1",
     "d3-zoom": "1",
-    "firebase-token-generator": "^2.0.0",
     "lit-element": "2"
-    
   },
   "devDependencies": {
-    "eslint": "^6.1.0",
-    "@open-wc/eslint-config": "^1.0.0",
-    "@open-wc/prettier-config": "^0.1.10",
-    "husky": "^1.0.0",
-    "lint-staged": "^8.0.0",
-    "@open-wc/testing-karma": "^3.0.0",
-    "webpack-merge": "^4.1.5",
-    "@open-wc/testing-karma-bs": "^1.0.0",
-    "@open-wc/testing": "^0.11.1",
     "@open-wc/demoing-storybook": "^0.3.0",
-    "@open-wc/building-rollup": "^0.9.0",
-    "rimraf": "^2.6.3",
-    "rollup": "^1.15.4"
-  },
-  "resolutions": {
-    "polymer": "^2.0.0",
-    "paper-input": "^2.0.0"
+    "@open-wc/testing": "^0.11.1",
+    "@open-wc/testing-karma": "^3.0.0",
+    "@polymer/iron-ajax": "^3.0.0",
+    "@polymer/iron-component-page": "^4.0.0",
+    "@polymer/iron-demo-helpers": "^3.0.0",
+    "@polymer/paper-button": "^3.0.0",
+    "@polymer/paper-card": "^3.0.1",
+    "@polymer/paper-checkbox": "^3.0.0",
+    "@polymer/paper-input": "^3.0.0",
+    "@polymer/test-fixture": "^4.0.0",
+    "@vaadin/router": "^1.2.0",
+    "@vaadin/vaadin-tabs": "^2.1.2",
+    "@webcomponents/webcomponentsjs": "^2.0.0",
+    "es-dev-server": "^1.17.2",
+    "eslint": "^6.4.0",
+    "eslint-plugin-lit": "^1.2.0",
+    "pwa-helpers": "^0.9.1"
   },
   "scripts": {
     "postpublish": "git push && git push --tags",
-    "prepublish": "pika install --optimize",
-    "lint:eslint": "eslint --ext .js,.html . --ignore-path .gitignore",
-    "format:eslint": "eslint --ext .js,.html . --fix --ignore-path .gitignore",
-    "lint:prettier": "prettier \"**/*.js\" --check --ignore-path .gitignore",
-    "format:prettier": "prettier \"**/*.js\" --write --ignore-path .gitignore",
-    "lint": "npm run lint:eslint && npm run lint:prettier",
-    "format": "npm run format:eslint && npm run format:prettier",
+    "__prepublishOnly": "pika install --optimize",
+    "start": "es-dev-server",
     "test": "karma start --coverage",
     "test:watch": "karma start --auto-watch=true --single-run=false",
     "test:update-snapshots": "karma start --update-snapshots",
     "test:prune-snapshots": "karma start --prune-snapshots",
     "test:compatibility": "karma start --compatibility all --coverage",
     "test:compatibility:watch": "karma start --compatibility all --auto-watch=true --single-run=false",
-    "test:bs": "karma start karma.bs.config.js --compatibility all --coverage",
     "site:build": "npm run storybook:build",
     "storybook": "start-storybook -p 9001",
-    "storybook:build": "build-storybook -o _site -s storybook-static",
-    "start:build": "cd dist && es-dev-server --open",
-    "build": "rimraf dist && rollup -c rollup.config.js"
+    "storybook:build": "build-storybook -o _site -s storybook-static"
   },
-  "eslintConfig": {
-    "extends": [
-      "@open-wc/eslint-config",
-      "eslint-config-prettier"
-    ]
-  },
-  "prettier": "@open-wc/prettier-config",
-  "husky": {
-    
-  },
-  "lint-staged": {
-    "*.js": [
-      "eslint --fix",
-      "prettier --write",
-      "git add"
-    ]
-  }
+  "author": "christophe.geiser <christophe.geiser@e-smile.org>"
 }

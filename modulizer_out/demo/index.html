@@ -1,0 +1,55 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+  <title>multi-chart Examples</title>
+  <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+  <script>
+    window.Polymer = {
+      verbose: true
+    };
+  </script>
+  <link rel="import" href="../../polymer/polymer.html">
+  <link rel="import" href="../../vaadin-demo-helpers/vaadin-component-demo.html">
+  <link rel="import" href="../../vaadin-demo-helpers/vaadin-demo-snippet.html">
+  <link rel="import" href="../../d3-bundle-element/d3-element-multi-debug.html">
+  <script src="../../vaadin-demo-helpers/vaadin-demo-ready-event-emitter.js"></script>
+  <script src="./multi-demo.js"></script>
+
+  <!-- <link rel="import" href="../multi-chart.html"> -->
+  <!-- <link rel="import" href="./multi-demo-styles.html"> -->
+  <script type="module" src="../all-imports.js"></script>
+  <link rel="import" href="../../paper-button/paper-button.html">
+  <link rel="import" href="../../paper-checkbox/paper-checkbox.html">
+  <link rel="import" href="../../paper-tabs/paper-tabs.html">
+  <link rel="import" href="../../iron-pages/iron-pages.html">
+  <link rel="import" href="../../paper-input/paper-input.html">
+  
+  <!-- FIXME(polymer-modulizer):
+        These imperative modules that innerHTML your HTML are
+        a hacky way to be sure that any mixins in included style
+        modules are ready before any elements that reference them are
+        instantiated, otherwise the CSS @apply mixin polyfill won't be
+        able to expand the underlying CSS custom properties.
+        See: https://github.com/Polymer/polymer-modulizer/issues/154
+        -->
+    <script type="module">
+const $_documentContainer = document.createElement('template');
+
+$_documentContainer.innerHTML = `<custom-style>
+    <style include="vaadin-component-demo-shared-styles"></style>
+  </custom-style>`;
+
+document.body.appendChild($_documentContainer.content);
+</script>
+</head>
+
+<body>
+  <script type="module">
+const $_documentContainer = document.createElement('template');
+$_documentContainer.innerHTML = `<vaadin-component-demo config-src="demos.json"></vaadin-component-demo>`;
+document.body.appendChild($_documentContainer.content);
+</script>
+</body>
+</html>
