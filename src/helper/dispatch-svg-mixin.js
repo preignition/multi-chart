@@ -102,7 +102,7 @@ const DispatchSVG = dedupingMixin(superClass => {
       if (this.svgHost && this.svgHost.unregister) {
         this.svgHost.unregister(this);
       }
-      super.postRemove();
+      super.postRemove && super.postRemove();
     }
 
   };

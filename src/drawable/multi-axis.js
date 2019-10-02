@@ -1,9 +1,7 @@
 import { html, css } from 'lit-element';
 import { default as MultiDrawable } from './multi-drawable.js';
 import { default as axisProperty } from './properties/axis.js';
-// import { cssTheme } from '@preignition/preignition-mixin';
 import { select } from 'd3-selection';
-import '../d3-wrapper/component-index.js';
 
 class MultiAxis extends MultiDrawable {
 

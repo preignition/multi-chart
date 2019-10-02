@@ -1,6 +1,6 @@
 import { html } from 'lit-element';
 import '../drawable/multi-drawable-line.js';
-import { default as MultiContainer } from '../container/multi-container.js';
+import { default as MultiContainer } from '../container/multi-container-axis.js';
 import { Stack } from '../d3-wrapper/d3-shape.js';
 
 /**
@@ -32,6 +32,7 @@ class MultiBarLine extends MultiContainer {
   
   getContentRender() {
     return html`
+      ${super.getContentRender()}
       <multi-drawable-bar 
          id="drawable"
          .colorScale="${this.colorScale}"

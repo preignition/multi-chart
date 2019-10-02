@@ -5,6 +5,11 @@ import * as shapes from 'd3-shape';
 
 // Note(cg): shapes that we want to expose.
 const shapeNames = ['pie', 'arc', 'stack', 'line', 'area'];
+const shapeType = {
+  padAngle: Number,
+  innerRadius: Number, 
+  outerRadius: Number
+}
 const classes = {};
 
 class WrapperBase extends LitElement {
@@ -51,7 +56,7 @@ shapeNames.forEach(name => {
 
   keys.forEach(key => {
     props[key] = {
-      type: Function,
+      type: shapeType[key] || Function,
       attribute: camelToDashCase(key)
     }
   });

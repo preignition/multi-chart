@@ -23,7 +23,7 @@ class DemoAxis extends LitElement {
         <label>bottom-text</label><input  .value="${this.bottomText}" @input=${(e) => {this.bottomText = e.currentTarget.value;}}>  
         <label>left-text</label><input  .value="${this.leftText}" @input=${(e) => {this.leftText = e.currentTarget.value;}}>  
       </div>
-        <multi-container
+        <multi-container-axis
           .bottomAxis="${this.bottomAxis}"
           .bottomText="${this.bottomText}"
           .leftAxis="${this.leftAxis}"
@@ -38,7 +38,7 @@ class DemoAxis extends LitElement {
           .data="${this.data}"
           right-tick-format="${this.rightTickFormat}">
           <h3 slot="header">Container with Axis</h3>
-       </multi-container>
+       </multi-container-axis>
       </div>
 
     `;

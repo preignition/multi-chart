@@ -73,7 +73,11 @@ const MultiRegister = dedupingMixin(superClass => {
       if (this.onUnegister) {
         this.onUnregister(registered);
       }
-      this._registeredItems = this._registeredItems.filter(item => item !== registered);
+
+      if(this._registeredItems && this._registeredItems.filter) {
+        this._registeredItems = this._registeredItems.filter(item => item !== registered);
+      }
+
       if (registered.afterUnregister) {
         registered.afterUnregister(this, this.registerContainerName);
       }

@@ -1,6 +1,6 @@
 import { html } from 'lit-element';
 import '../drawable/multi-drawable-line.js';
-import { default as MultiContainer } from '../container/multi-container.js';
+import { default as MultiContainer } from '../container/multi-container-axis.js';
 import { Line } from '../d3-wrapper/d3-shape.js';
 import { default as Scale } from '../d3-wrapper/d3-scale.js';
 import { default as Accessor } from '../helper/multi-accessor.js';
@@ -39,6 +39,7 @@ class MultiChartLine extends MultiContainer {
   
   getContentRender() {
     return html`
+     ${super.getContentRender()}
       <d3-scale 
         id="zScale"
         .scaleType="${this.zScaleType}"

@@ -130,7 +130,7 @@ const MultiData = superClass => {
           this[`_registeredItems.${group}`] = this[`_registeredItems.${group}`].filter((s => s !== registered));
         }
       }
-      super.undregiseter && super.unregister(registered);
+      super.unregister && super.unregister(registered);
     }
 
    /* 

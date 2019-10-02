@@ -70,13 +70,13 @@ const Registerable = superClass => {
     }
 
     disconnectedCallback() {
-      this.postRemove();
+      this.postRemove && this.postRemove();
       super.disconnectedCallback();
     }
 
-    postRemove() {
+    // postRemove() {
 
-    }
+    // }
 
 
   };
