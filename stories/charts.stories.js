@@ -26,8 +26,6 @@ storiesOf('Demo | Charts', module)
       <multi-chart-pie 
         id="chart" 
         value-path="+value.count" 
-        .innerRadius="${innerRadius}"
-        .padAngle="${padAngle}"  
         .colorScale="${colorScale}"
         .data="${data}">
         <!-- add a legend -->
