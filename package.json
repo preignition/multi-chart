@@ -13,7 +13,7 @@
   "repository": "https://github.com/polymerEl/multi-chart",
   "homepage": "webcomponents.org/polymerEl/multi-chart",
   "name": "@preignition/multi-chart",
-  "version": "4.0.0-0",
+  "version": "5.0.0-0",
   "license": "MIT",
   "authors": [
     "christophe.geiser <christophe.geiser@preignition.org>"
