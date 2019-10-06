@@ -45,7 +45,15 @@ const properties = {
     notify: true,
     value: []
   },
-
+  
+  /* 
+   * `selecType` for charts that can implement brush and select at the same time (e.g. bar), set 'brush' to acticate brush. 
+   * Otherwise, default behavior is 'select'
+   */
+  selectType: {
+    type: String,
+    value: ''
+  }
 
 }
 
@@ -169,7 +177,7 @@ DispatchSVG(
   }
 
   reSelect() {
-    if(this.multi) {
+    if (this.multi) {
       this.updateSelectedValues();
     } else {
       this.updateSelected();
@@ -261,9 +269,9 @@ DispatchSVG(
     const me = this;
     let item = null;
     this.selectableItems.attr(this.selectedAttribute, function(d, i) {
-      if (me.getKey(d, this) === selected) { 
+      if (me.getKey(d, this) === selected) {
         item = this;
-        return true; 
+        return true;
       }
       return null;
     })
@@ -276,10 +284,10 @@ DispatchSVG(
     const me = this;
     const items = [];
     this.selectableItems.attr(this.selectedAttribute, function(d, i) {
-      if (selected.indexOf(me.getKey(d, this)) > -1) { 
-          items.push(this);
-          return true; 
-        }
+      if (selected.indexOf(me.getKey(d, this)) > -1) {
+        items.push(this);
+        return true;
+      }
       return null;
     })
     this.selectedItems = items;

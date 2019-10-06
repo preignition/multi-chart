@@ -1,5 +1,5 @@
 import { html } from 'lit-element';
-import '../drawable/multi-drawable-line.js';
+// import '../drawable/multi-drawable-line.js';
 import { default as MultiContainer } from '../container/multi-container-axis.js';
 import { Line } from '../d3-wrapper/d3-shape.js';
 
@@ -51,17 +51,13 @@ class MultiChartLine extends MultiContainer {
     this.log && console.log('data-grou-rescaled', e);
     this.x = this.getAccessor(e.detail.xScale, e.detail.xAccessor) ;
     this.y = this.getAccessor(e.detail.yScale, e.detail.yAccessor) ;
-    // this.x = (d, i) => e.detail.xScale(e.detail.xAccessor(d, i));
-    // this.y = (d, i) => e.detail.yScale(e.detail.yAccessor(d, i));
   }
 
   static get properties() {
     return {
       ...super.properties,
 
-
       ...Line.properties,
-
 
       bottomScaleType: {
         type: String,

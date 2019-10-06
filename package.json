@@ -10,8 +10,8 @@
     "analytics",
     "dataviz"
   ],
-  "repository": "https://github.com/polymerEl/multi-chart",
-  "homepage": "webcomponents.org/polymerEl/multi-chart",
+  "repository": "https://github.com/preignitionl/multi-chart",
+  "homepage": "webcomponents.org/preignition/multi-chart",
   "name": "@preignition/multi-chart",
   "version": "4.0.0-1",
   "license": "MIT",
