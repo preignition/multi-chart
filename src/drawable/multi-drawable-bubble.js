@@ -31,10 +31,6 @@ class MultiDrawableBubble extends
 
   static get hostStyles() {
     return css `
-      #drawable.bubble {
-        @apply --drawable-bubble;
-      }
-
       #drawable.bubble .shape {
         fill: var(--drawable-bubble-fill);
         stroke: var(--drawable-bubble-stroke);
@@ -45,7 +41,7 @@ class MultiDrawableBubble extends
   render() {
     return html `
     <svg>
-      <g id="drawable" slot-svg="slot-chart" class="drawable bubble"></g>
+      <g id="drawable" slot-svg="slot-chart" part="drawable-bubble"  class="drawable bubble"></g>
     </svg>
 `;
   }

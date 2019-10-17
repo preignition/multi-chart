@@ -39,7 +39,7 @@ class WrapperBase extends LitElement {
       }
     }); 
     if(shallNotify) {
-      this.dispatchEvent(new CustomEvent(`d3-shape-changed`, {detail: {value: this[this.name], name: this.name}, bubbles: true, composed: true})); 
+      this.dispatchEvent(new CustomEvent(`shape-changed`, {detail: {value: this[this.name], name: this.name}, bubbles: true, composed: true})); 
       delete this.__init;
     }
   }

@@ -8,6 +8,8 @@ import { default as Brush } from '../d3-wrapper/d3-brush.js';
 import { RelayTo, CacheId } from '@preignition/preignition-mixin';
 import { default as Registerable } from './multi-registerable-mixin.js';
 import { camelToDashCase } from '@polymer/polymer/lib/utils/case-map.js';
+import { microTask } from '@polymer/polymer/lib/utils/async.js';
+import { Debouncer } from '@polymer/polymer/lib/utils/debounce.js';
 // import { Resizable } from './resizable-mixin.js';
 
 
@@ -31,7 +33,6 @@ DispatchSVG(
   // Note(cg): style to add to svghost while dispatching SVG.
   static get hostStyles() {
     return css `
-      /* TODO(cg): make sure brush is styled properly;*/
       #brush rect.extent {
         fill: steelblue;
         fill-opacity: .125;
@@ -47,7 +48,7 @@ DispatchSVG(
     return html `
     <d3-brush
       id="d3-brush"
-      @d3-brush-changed="${e => this.setBrush(e.detail.value)}"
+      @brush-changed="${e => this.setBrush(e.detail.value)}"
      ></d3-legend>
 
     <svg>
@@ -71,7 +72,7 @@ DispatchSVG(
       /**
        * Returns an array of currently selected items.
        */
-      selectedItems: {
+      selectedValues: {
         type: Array,
         notify: true,
         value: []
@@ -117,7 +118,10 @@ DispatchSVG(
       /**
        * `xContinuous` indicate true if we have a `continuous` scale on X when the xScale is `ordinal` (e.g. a scaleBand for bar charts). If true a `xContinuousScale` is computed
        */
-      xContinuous: { type: Boolean },
+      xContinuous: { 
+        type: Boolean,
+        attribute: 'x-continuous'
+      },
 
       /**
        * `xContinuousScale` the continuous scale to use when selecting ranges 
@@ -146,30 +150,37 @@ DispatchSVG(
     if (props.has('hasSelection')) {
       this.reflectToHost('hasSelection')
     }
+    if (props.has('selectedValues')) {
+      this._observeSelectedValues()
+    }
+
 
   }
 
-  static get observers() {
-    return [
-      '_observeSelectedItems(selectedItems, selectedItems.*)'
+  _observeSelectedValues() {
+    this._debounceSelect = Debouncer.debounce(
+      this._debounceSelect, // initially undefined
+      microTask,
+      () => {
+        this.log && console.log('brush selection', this.selectedValues);
+        this.dispatchEvent(new CustomEvent('multi-select', {
+          detail: {
+            isRange: this.isRange,
+            selection: this.selectedValues
+          },
+          bubbles: true,
+          composed: true
+        }));
+      });
+  }
+
+  resize(width, height) {
+    this.width = width;
+    this.height = height;
+    this.extent = [
+      [0, 0],
+      [this.width, this.height]
     ];
-  }
-
-  _observeSelectedItems() {
-    this.debounce('multi-brush-select-debounce', () => {
-      this.dispatchEvent(new CustomEvent('multi-select', {
-        detail: {
-          isRange: this.isRange,
-          selection: this.selectedItems
-        },
-        bubbles: true,
-        composed: true
-      }));
-    }, 30);
-  }
-
-  resize() {
-    this._computeExtent();
   }
 
   get targetElement() {
@@ -187,16 +198,8 @@ DispatchSVG(
     if (this.brush && this.brush.move) {
       select(this.targetElement).call(this.brush.move, null);
     }
-    this.selectedItems = [];
+    this.selectedValues = [];
   }
-
-  _computeExtent() {
-    this.extent = [
-      [0, 0],
-      [this.width, this.height]
-    ];
-  }
-
 
   setBrush(brush) {
     if (brush) {
@@ -241,17 +244,18 @@ DispatchSVG(
         this.isRange = true;
         sel = sel.map(scale.invert);
         // console.info('SEL', sel);
-        if (this.selectedItems[0] !== sel[0] || this.selectedItems[1] !== sel[1]) {
+        if (this.selectedValues[0] !== sel[0] || this.selectedValues[1] !== sel[1]) {
           // only call the splice when needed 
-          this.splice('selectedItems', 0, 2, sel[0], sel[1]);
+          this.selectedValues = [sel[0], sel[1]]
         }
       } else {
         sel = xScale.domain().filter(function(d) {
           return sel[0] <= (d = xScale(d)) && d <= sel[1];
         });
-        if (this.selectedItems.length !== sel.length || this.selectedItems[0] !== sel[0] || this.selectedItems[1] !== sel[1]) {
+        if (this.selectedValues.length !== sel.length || this.selectedValues[0] !== sel[0] || this.selectedValues[1] !== sel[1]) {
           // only call the splice when needed 
-          this.splice.apply(this, ['selectedItems', 0, this.selectedItems.length + 1].concat(sel));
+          this.selectedValues = [...sel];
+          // this.splice.apply(this, ['selectedValues', 0, this.selectedValues.length + 1].concat(sel));
         }
       }
     }

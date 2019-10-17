@@ -1,10 +1,12 @@
 import { default as MultiRegister } from './mixin/multi-register-mixin.js';
-import { default as MultiData } from './mixin/multi-data-mixin.js';
+// import { default as MultiData } from './mixin/multi-data-mixin.js';
 import { default as DispatchSVG } from '../helper/dispatch-svg-mixin.js';
 import { default as Registerable } from '../helper/multi-registerable-mixin.js';
 import { default as MultiHighlight } from '../helper/multi-highlight-mixin.js';
-// import { default as Accessor } from '../helper/accessor-mixin.js';
-import { MultiChartBase } from '../base-class.js';
+import { CacheId } from '@preignition/preignition-mixin';
+// import { valueProperties as dataGroupValueProperties } from './properties/data-group.js';
+import { Base } from '../base-class.js';
+import { html } from 'lit-element';
 /**
  * # MultiContainerLayer
  * 
@@ -43,53 +45,56 @@ class MultiContainerLayer
 extends 
 // SVGHelper(
   DispatchSVG(
-      MultiHighlight(
-          MultiData(
+      CacheId(
+        MultiHighlight(
+          // MultiData(
             MultiRegister(
               Registerable(
-                MultiChartBase))))) {
-  static get template() {
-    return Polymer.html`
-    <style>
-    #observedNode {
-      display: none;
-    }
-    </style>
-    <div id="observedNode">
-      <slot></slot>
-    </div>
+                Base))))) {
+render() {
+  return html `
+    <slot></slot>
     <svg id="svg">
-      <g slot-svg="slot-chart" id="slot-layer" class\$="[[layer]]"></g>
+      <g slot-svg="slot-chart" id="slot-layer" .class="${this.layer}"></g>
     </svg>
 `;
   }
 
-  static get is() { return 'multi-container-layer'; }
-
   static get properties() {
     return {
+
+      ...super.properties,
 
       /**
        * `group` the name of the group (used when to registering this element under a multi-verse)
        */
       group: {
-        type: String
+        type: String,
+        value: 'default'
       },
 
       /* 
        * `layer` the name of the layer - is set to g#svg-slot
        */
       layer: {
-        type: String,
+        type: String
       }
+
+
     };
   }
 
-  connectedCallback() {
-    super.connectedCallback();
-    Polymer.RenderStatus.afterNextRender(this, () => {
-      this.dispatchEvent(new CustomEvent('multi-verse-added', { detail: this.group, bubbles: true, composed: true }));
-    });
+
+  firstUpdated(props) {
+    super.firstUpdated(props)
+    // Note(cg): chart container might be registered against multi-verse. We nee to notify their creation upwards.
+    this.dispatchEvent(new CustomEvent('multi-verse-added', { detail: this.group, bubbles: true, composed: true }));
+  }
+  disconnectedCallback() {
+    // TODO(cg): replace multi-removed -> multi-verse-remover
+    // XXX(cg): this event will never be caught! unregister from host instead like for drawablse
+    this.dispatchEvent(new CustomEvent('multi-verse-removed', { detail: this.group, bubbles: true, composed: true }));
+    super.disconnectedCallback();
   }
 
   /* 
@@ -97,6 +102,11 @@ extends
    */
   dataChanged() {
     this.callRegistered('dataChanged', ...arguments);
+  }
+
+  // Note(cg): refresh drawable components for the chart. 
+  debounceDraw() {
+    this.callRegistered('debounceDraw', ...arguments);
   }
 
   resize(width, height) {

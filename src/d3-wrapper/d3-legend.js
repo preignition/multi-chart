@@ -1,5 +1,5 @@
 import { LitElement } from 'lit-element';
-import { capitalize, camelToDashCase } from '../helper/utils.js';
+import { capitalize, shapeProperties } from '../helper/utils.js';
 import * as legend from 'd3-svg-legend';
 
 // Note(cg): allowed scales
@@ -9,14 +9,8 @@ const props = {};
 legendNames.forEach(name => {
   const instance = legend[`legend${capitalize(name)}`]()
   const keys = Object.keys(instance || {});
-  keys.forEach(key => {
-    if (!props[key]) {
-      props[key] = {
-        type: Function,
-        attribute: camelToDashCase(key)
-      }
-    }
-  })
+  shapeProperties(keys, props);
+  
 })
 
 class Legend extends LitElement {
@@ -61,7 +55,7 @@ class Legend extends LitElement {
       }
     });
     if (shallNotify) {
-      this.dispatchEvent(new CustomEvent(`d3-legend-changed`, { detail: { value: this.legend }, bubbles: true, composed: true }));
+      this.dispatchEvent(new CustomEvent(`legend-changed`, { detail: { value: this.legend }, bubbles: true, composed: true }));
       delete this.__init;
     }
   }

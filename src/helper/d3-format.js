@@ -1,5 +1,6 @@
 import { LitElement, html } from 'lit-element';
 import { DefaultValueMixin, DoNotSetUndefinedValue } from '@preignition/preignition-mixin';
+import { default as FormatMixin } from './d3-format-mixin.js';
 import * as format from 'd3-format';
 import * as time from 'd3-time-format';
 
@@ -17,11 +18,11 @@ import * as time from 'd3-time-format';
 class D3Format extends 
   DefaultValueMixin(
     DoNotSetUndefinedValue(
-      LitElement)) {
+      FormatMixin (
+        LitElement))) {
 
   render() {
-    const f = this.isTime ? time.timeFormat(this.specifyer) : format.format(this.specifyer);
-    return html `${this.value !== undefined && this.value !== '' ? f(this.isTime ? new Date(this.value) : this.value) : '' }`;
+    return html `${this.value !== undefined && this.value !== '' ? this.format(this.isTime ? new Date(this.value) : this.value) : '' }`;
   }
 
   static get properties() {
@@ -33,23 +34,8 @@ class D3Format extends
        */
       value: {
         type: String
-      },
-
-      /* 
-       * `isTime` true to indicate the use of d3.timeFormat (instead of d3.format)
-       */
-      isTime: {
-        type: Boolean,
-        attribute: 'is-time'
-      },
-
-      /**
-       * `specifyer` for the format function
-       */
-      specifyer: {
-        type: String,
-        value: '.1f'
       }
+
     };
   }
 

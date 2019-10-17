@@ -1,20 +1,11 @@
 import { LitElement } from 'lit-element';
 
-import { capitalize, camelToDashCase  } from '../helper/utils.js';
+import { capitalize, shapeProperties } from '../helper/utils.js';
 import * as axis from 'd3-axis';
 
-const props = {};
 const instance = axis.axisTop();
 const keys = Object.keys(instance || {});
-keys.forEach(key => {
-  if (!props[key]) {
-    props[key] = {
-      type: Function,
-      attribute: camelToDashCase(key)
-    }
-  }
-})
-
+const props = shapeProperties(keys);
 
 class Axis extends LitElement {
 
@@ -65,9 +56,9 @@ class Axis extends LitElement {
         this.axis[key](this[key]);
       }
     });
-    if(shallNotify) {
-      this.dispatchEvent(new CustomEvent(`d3-axis-changed`, { detail: { value: this.axis, type: this.type }, bubbles: true, composed: true }));
-       delete this.__init;
+    if (shallNotify) {
+      this.dispatchEvent(new CustomEvent(`axis-changed`, { detail: { value: this.axis, type: this.type }, bubbles: true, composed: true }));
+      delete this.__init;
     }
   }
 }

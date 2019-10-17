@@ -16,9 +16,9 @@ const MultiDrawableSerie = dedupingMixin( superClass => {
          * add `selectable` attribute to each individual shape (rect in car chart, circle in bubble chart)
          */
         selectSerie: {
-          type: Boolean
+          type: Boolean,
+          attribute: 'select-serie'
         }
-
       };
     }
 
@@ -65,7 +65,8 @@ const MultiDrawableSerie = dedupingMixin( superClass => {
     /* 
      * `draw` serie data, which are in the form of [{key, label, data: [dataValues]}]
      */
-    _draw(data) {
+    _draw() {
+      const data = this.drawableData;
       if(!this.width || !this.height || !data) {
         return;
       }

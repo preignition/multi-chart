@@ -6,7 +6,7 @@ import { default as Draw } from './mixin/draw-mixin.js';
 import { MultiChartBase } from '../base-class.js';
 import {scaleOrdinal} from 'd3-scale';
 import {schemeCategory10 } from 'd3-scale-chromatic';
-import { css } from 'lit-element';
+import { css, html } from 'lit-element';
 
 
 /**
@@ -37,9 +37,21 @@ class MultiDrawable extends(
         display: none;
       }`
     }
+    
+    // Note(cg): Hack allowing extend multi-container
+    // in other libraries 
+    get html() {
+      return html
+    }
+
+  // Note(cg): Hack allowing extend multi-drawable
+  // in other libraries 
+  // get css() {
+  //   return css;
+  // } 
+
 
   static get properties() {
-
 
     return {
 
@@ -59,7 +71,7 @@ class MultiDrawable extends(
         type: Function, 
         attribute: 'color-scale',
         value: function() {
-          return scaleOrdinal().domain(schemeCategory10);
+          return scaleOrdinal().range(schemeCategory10);
         }
       },
       

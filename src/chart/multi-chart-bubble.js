@@ -45,7 +45,7 @@ class MultiChartLine extends MultiContainer {
         .scaleType="${this.zScaleType}"
         .domain="${this.zDomain}"
         .range="${this.zRange}"
-        @d3-scale-changed="${e => this.zScale = e.detail.value}"
+        @scale-changed="${e => this.zScale = e.detail.value}"
       ></d3-scale>
       <multi-accessor 
         .path="${this.zPath}"
@@ -53,6 +53,7 @@ class MultiChartLine extends MultiContainer {
      ></multi-accessor>
       <multi-drawable-bubble 
          id="drawable"
+         .log="${this.log}"
          .colorScale="${this.colorScale}"
          .x="${this.x}"
          .y="${this.y}"

@@ -1,33 +1,18 @@
 import { html, css } from 'lit-element';
 import { default as MultiDrawable } from './multi-drawable.js';
+import { RelayTo, CacheId } from '@preignition/preignition-mixin';
 import { default as axisProperty } from './properties/axis.js';
+import { default as Axis } from '../d3-wrapper/d3-axis.js';
 import { select } from 'd3-selection';
 
-class MultiAxis extends MultiDrawable {
+class MultiAxis extends 
+  CacheId(
+    RelayTo(
+      MultiDrawable)) {
 
   // Note(cg): style to add to svghost while dispatching SVG.
   static get hostStyles() {
     return css`
-
-      #axis.axis {
-        @apply --multi-container-axis;
-      }
-
-      #axis.axis.left {
-        @apply --multi-chart-left-axis;
-      }
-
-      #axis.axis.right {
-        @apply --multi-chart-right-axis;
-      }
-
-      #axis.axis.bottom {
-        @apply --multi-chart-bottom-axis;
-      }  
-
-      #axis.axis.top {
-        @apply --multi-chart-top-axis;
-      }
 
       #axis.axis line,
       #axis.axis path {
@@ -45,13 +30,11 @@ class MultiAxis extends MultiDrawable {
   render() {
     return html `
       <d3-axis 
+        id="d3-axis"
         .type="${this.type}" 
-        .scale="${this.scale}" 
-        .ticks="${this.ticks}" 
-        .tickFormat="${this.tickFormat}" 
-        @d3-axis-changed="${e => this.axis = e.detail.value}"></d3-axis>
+        @axis-changed="${e => this.axis = e.detail.value}"></d3-axis>
       <svg>
-        <g id="axis" slot-svg="slot-axis" type="${this.type}" class="axis ${this.type}" transform="translate(${this._x}, ${this._y})">
+        <g id="axis" part="axis-${this.type}" slot-svg="slot-axis" type="${this.type}" class="axis ${this.type}" transform="translate(${this._x}, ${this._y})">
           <text class="axis-text" 
             transform="rotate(${this.textAngle || 0})" 
             x="${this._xText}" 
@@ -87,6 +70,8 @@ class MultiAxis extends MultiDrawable {
 
       ...super.properties,
 
+      ...Axis.properties,
+
       ...axisProperty,
 
       /**
@@ -115,8 +100,19 @@ class MultiAxis extends MultiDrawable {
 
   }
 
-  _draw(data) {
+   shallRelayTo(key, name) {
+    if (name === 'd3-axis') {
+      return Axis.properties[key];
+    }
+  }
 
+  update(props) {
+    super.update(props);
+    this.relayTo(props, 'd3-axis'); 
+  }
+
+  _draw(data) {
+    
     const sel = select(this.$.axis);
     if (sel && this.scale && this.axis) {
 

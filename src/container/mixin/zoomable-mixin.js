@@ -1,4 +1,4 @@
-import { default as zoomanbleProperty } from '../container/properties/zoomable.js';
+import { default as zoomableProperty } from '../properties/zoomable.js';
 import { event as d3Event } from 'd3-selection'
 import { zoom } from 'd3-zoom'
 // import { selectMixin } from '/web_modules/@preignition/preignition-mixin.js';
@@ -14,7 +14,7 @@ import { zoom } from 'd3-zoom'
  */
 const Zoomable = superClass => {
 
-  return class extends superClass {
+  return class extends superClass { 
 
     static get properties() {
 
@@ -22,7 +22,7 @@ const Zoomable = superClass => {
 
         ...super.properties,
 
-        ...zoomanbleProperty,
+        ...zoomableProperty,
 
         /* 
          * `enableZoom` set true to enable zoom behaviors

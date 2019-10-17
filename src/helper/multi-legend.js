@@ -51,17 +51,13 @@ DispatchSVG(
   // Note(cg): style to add to svghost while dispatching SVG.
   static get hostStyles() {
     return css`
-    #legend.legend {
-      @apply --multi-legend;
-    }
 
-    #legend.legend .lecengCells {
+    #legend.legend .legendCells {
       fill: var(--multi-legend-color, #292929);
     }
 
     #legend .legendTitle {
       transform: translate(0px,12px);
-      @apply --multi-legend-title;
     }
 
     #legendRect {
@@ -77,12 +73,12 @@ DispatchSVG(
 
     <d3-legend
       id="d3-legend"
-      @d3-legend-changed="${e => this.setLegend(e.detail.value)}"
+      @legend-changed="${e => this.setLegend(e.detail.value)}"
      ></d3-legend>
 
     <svg>
       <rect id="legendRect" opacity="${this.opacity}"  slot-svg="slot-legend" class="legend-rect"></rect>
-      <g id="legend" opacity="${this.opacity}" slot-svg="slot-legend" transform="translate(${this.x || 0},${this.y || 0})scale(${this.scaleFactor || 1})" class="legend"></g>
+      <g id="legend" part="legend" opacity="${this.opacity}" slot-svg="slot-legend" transform="translate(${this.x || 0},${this.y || 0})scale(${this.scaleFactor || 1})" class="legend"></g>
     </svg>
 `;
   }

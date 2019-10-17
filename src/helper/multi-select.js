@@ -1,6 +1,6 @@
 import { css } from 'lit-element';
 import { select, selectAll } from 'd3-selection';
-import { MultiChartBase } from '../base-class';
+import { MultiChartBase } from '../base-class.js';
 // import { LitNotify } from '@morbidick/lit-element-notify';
 // import { DoNotSetUndefinedValue } from '@preignition/preignition-mixin';
 import { default as DispatchSVG } from './dispatch-svg-mixin.js';
@@ -90,27 +90,17 @@ DispatchSVG(
 
       :host([has-selection]) [selected] {
         opacity: 1;
-        @apply --multi-select-selected;
       }
 
       :host([is-hovered]) rect, :host([is-hovered]) .selectable
       {
         opacity: 0.7;
-        @apply --multi-select-hovered;
       }    
 
       :host([is-hovered]) [hovered] rect,  :host([is-hovered]) .selectable[hovered] {
         opacity: 1;
-        @apply --multi-select-selected;
       }    
 
-      /* For muilt-graph */
-      / :host([is-hovered]) .selectable[hovered] polygon,
-      :host([is-hovered]) .selectable[hovered] ellipse,
-      :host([is-hovered]) .selectable[hovered] rect {
-        @apply --multi-select-selected-inner;
-      }
-    */
     `
   }
 
@@ -178,9 +168,9 @@ DispatchSVG(
 
   reSelect() {
     if (this.multi) {
-      this.updateSelectedValues();
+      this.updateSelectedValues(true);
     } else {
-      this.updateSelected();
+      this.updateSelected(true);
     }
 
     // if (this.selectedItems.length) {
@@ -264,7 +254,7 @@ DispatchSVG(
     return this.svgHost && select(this.svgHost.renderRoot).selectAll('.selectable') || selectAll();
   }
 
-  updateSelected() {
+  updateSelected(silent) {
     const selected = this.selected;
     const me = this;
     let item = null;
@@ -276,10 +266,10 @@ DispatchSVG(
       return null;
     })
     this.selectedItem = item;
-    this._updateSelected()
+    this._updateSelected(silent)
   }
 
-  updateSelectedValues() {
+  updateSelectedValues(silent) {
     const selected = this.selectedValues;
     const me = this;
     const items = [];
@@ -291,7 +281,7 @@ DispatchSVG(
       return null;
     })
     this.selectedItems = items;
-    this._updateSelected()
+    this._updateSelected(silent)
   }
 
   get _hasSelection() {
@@ -301,22 +291,23 @@ DispatchSVG(
    * `_updateSelected` will set `has-selection` attribute to svgHost. 
    * This is used in multi-container-svg css rules.
    */
-  _updateSelected() {
-    // super._updateSelected();
+  _updateSelected(silent) {
     if (this.svgHost) {
       select(this.svgHost).attr('has-selection', this._hasSelection ? true : null);
     }
     // Note(cg): use multi select event to potentially inform multi-verse elementes that we have a selection
-    this.dispatchEvent(new CustomEvent('multi-select', {
-      detail: {
-        isRange: false,
-        selection: this.multi ? [...this.selectedValues] : this.selected
-      },
-      bubbles: true,
-      composed: true
-    }));
+    // this should not happen when we relesect onDraw (infinite loop otherwise.)
+    if(!silent) {
+      this.dispatchEvent(new CustomEvent('multi-select', {
+        detail: {
+          isRange: false,
+          selection: this.multi ? [...this.selectedValues] : this.selected
+        },
+        bubbles: true,
+        composed: true
+      }));
+    }
   }
-
 }
 
 export default MultiSelect;

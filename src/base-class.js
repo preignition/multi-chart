@@ -14,9 +14,15 @@
 
 // import { Logger } from './helper/logger-mixin.js';
 import { LitElement } from 'lit-element';
-import deep from "@ranfdev/deepobj"
 import { SelectMixin, DefaultValueMixin, DoNotSetUndefinedValue } from '@preignition/preignition-mixin';
 import { LitNotify, LitSync } from '@morbidick/lit-element-notify';
+
+const deep = (action, obj, keys, id, key) => {
+  keys = keys.split(".");
+  id = keys.splice(-1, 1);
+  for (key in keys) obj = obj[keys[key]] = obj[keys[key]] || {};
+  return action(obj, id);
+}
 
 const get = (obj, prop) => obj[prop];
 const set = n => (obj, prop) => (obj[prop] = n);

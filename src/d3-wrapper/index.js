@@ -1,0 +1,5 @@
+export { default as Axis } from './d3-axis.js'
+export { default as Transition } from './d3-transition.js'
+export { default as Scale } from './d3-scale.js'
+export { default as Legend } from './d3-legend.js'
+export { default as Brush } from './d3-brush.js'

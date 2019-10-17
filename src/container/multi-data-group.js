@@ -1,6 +1,6 @@
 import { timeOut } from '@polymer/polymer/lib/utils/async.js';
 import { Debouncer } from '@polymer/polymer/lib/utils/debounce.js';
-import { extent, range, max } from 'd3-array';
+import { extent, range, max, min } from 'd3-array';
 import { LitElement, html } from 'lit-element';
 import * as accessor from '../helper/accessor.js';
 import { default as Registerable } from '../helper/multi-registerable-mixin.js';
@@ -31,13 +31,13 @@ Registerable(
           LitElement))))) {
 
   /* 
-   * `registerEventName`  the name of the event to be fired when connected. 
+   * `registerEventDispatch`  the name of the event to be fired when connected. 
    * A container with multi-register-mixin applied 
    * will listen to this event to register the component.
    *
    * @override Registerable
    */
-  get registerEventName() {
+  get registerEventDispatch() {
     return 'multi-data-group-register'
   }
 
@@ -83,6 +83,7 @@ Registerable(
        */
       processType: {
         type: String,
+        attribute: 'process-type'
       },
 
     }
@@ -96,7 +97,7 @@ Registerable(
     if (props.has('min') || props.has('max')) {
       this.setHostDomain(this.valuePosition, [...this.getDomainMinMax()]);
     }
-    if(props.has('stacked')) {
+    if (props.has('stacked')) {
       this._handleStackedChanged()
     }
   }
@@ -110,10 +111,10 @@ Registerable(
       });
   }
 
-    // Note(cg): we need to re-set min-max value domain when stacked changes.
-   _handleStackedChanged() {
-       this.setHostDomain(this.valuePosition, [0, this.stacked ? this._stackedMax : this._max]);
-   }
+  // Note(cg): we need to re-set min-max value domain when stacked changes.
+  _handleStackedChanged() {
+    this.setHostDomain(this.valuePosition, [0, this.stacked ? this._stackedMax : this._max]);
+  }
 
   _processDataChanged() {
     if (!this.group) {
@@ -121,15 +122,18 @@ Registerable(
     }
     if (Array.isArray(this.data) && this.data.length) {
 
+      let multiData
+
       if (this.processType) {
-        return this._processByType(this.processType)
+        multiData = this._processByType(this.processType, this.data)
+      } else if (this.series && this.series.length) {
+        multiData = this._processSeries()
       }
 
-      if (this.series && this.series.length) {
-        return this._processSeries()
-      }
-
-      this._multiData = this.data;
+      // Note(cg): processByType and processSeries returns a new array
+      // we need to make sure charts will respond to mutation when 
+      // no series and no processType (e.g. pie).
+      this._multiData = multiData || [...this.data];
       this._callDataChanged(this._multiData);
     }
 
@@ -137,36 +141,36 @@ Registerable(
 
 
 
-  _processByType(processType) {
+  _processByType(processType, data) {
 
     if (processType === 'stack') {
 
       let keyAccessor = this.keyAccessor;
 
-      // Note(cg): series and shaper stack data.
-      // 
-      let tmpMax = -Infinity;
-      const _multiData = this.shaper(this.data).map((data, i) => {
-        const ret = data.map(([y0, y1], ii) => {
-          if ((y1 - y0) > tmpMax) {
-            tmpMax = (y1 - y0);
-          }
-          // return [y0, y1, i, data[ii].data.__key__];
-          return [y0, y1, i, keyAccessor(data[ii].data)];
-        });
-        ret.index = data.index;
-        ret.key = data.key;
-        return ret;
-      });
 
-      // Note(cg): cache domains to re-use when stacked changes eventually.
-      this._max = tmpMax;
-      this._stackedMax = max(_multiData[this.data.length], d => d[1])
+        // Note(cg): series and shaper stack data.
+        let tmpMax = -Infinity;
+        const _multiData = this.shaper(data).map((data, i) => {
+          const ret = data.map(([y0, y1], ii) => {
+            if ((y1 - y0) > tmpMax) {
+              tmpMax = (y1 - y0);
+            }
+            // return [y0, y1, i, data[ii].data.__key__];
+            return [y0, y1, i, keyAccessor(data[ii].data)];
+          });
+          ret.index = data.index;
+          ret.key = data.key;
+          return ret;
+        });
+
+        // Note(cg): cache domains to re-use when stacked changes eventually.
+        this._max = this.max ? this.max :  tmpMax;
+        this._stackedMax = this.max ? this.max : max(_multiData[_multiData.length - 1], d => d[1])
 
       // this.setHostDomain(this.keyPosition, this.getOrdinalDomain(this.data, keyAccessor, serie.accessor, serie.continuous););
       this.setHostDomain(this.keyPosition, this.getOrdinalDomain(this.data, this.keyAccessor, this.accessor, this.continuous));
       this.setHostDomain(this.valuePosition, [0, this.stacked ? this._stackedMax : this._max]);
-      
+
       const valueScale = this.getHostValue(`${this.valuePosition}Scale`);
       const keyScale = this.getHostValue(`${this.keyPosition}Scale`);
 
@@ -182,9 +186,51 @@ Registerable(
         composed: true
       }));
 
-      this._multiData = _multiData;
-      this._callDataChanged(this._multiData);
-      return;
+      return _multiData;
+    }
+
+    if (processType === 'choropleth') {
+
+      const map = new Map();
+      const valueAccessor = this.valueAccessor;
+      const keyAccessor = this.keyAccessor;
+      const valuePosition = this.valuePosition;
+      const valueScale = this.getHostValue(`${valuePosition}Scale`);
+      
+      let min = Infinity;
+      let max = -Infinity;
+
+      this.data.forEach(d => {
+        const value = valueAccessor(d);
+        map.set(keyAccessor(d), value);
+        if (value < min) {
+          min = value;
+        }
+        if (value > max) {
+          max = value;
+        }
+      });
+
+      const domain = this.getDomainMinMax([min, max])
+      if(valueScale) {
+        valueScale.domain(domain);
+      }
+      this.setValueDomain(domain);
+
+      this.dispatchEvent(new CustomEvent('data-group-rescaled', {
+        detail: {
+          group: this.group,
+          colorScale: valueScale,
+          colorDomain: domain,
+        },
+        bubbles: true,
+        composed: true
+      }));
+
+      // this._mapProcessed = true;
+      this.choroplethMap = map;
+      
+      return map;
 
     }
     throw new Error(`Trying to process data throught an unknown type (${processType})`)
@@ -197,7 +243,11 @@ Registerable(
     // Note(cg): series, no stack.
 
     const valueDomain = [Infinity, -Infinity];
-    const _multiData = this.series.map(serie => {
+    const _multiData = this.series.map((serie, i) => {
+      if (!serie.key) {
+        this.log && console.warn('serie is missing a key', serie);
+        serie.key = i;
+      }
       const data = this.data.map((d, i) => {
         return {
           key: keyAccessor(d, i),
@@ -235,9 +285,7 @@ Registerable(
       composed: true
     }));
 
-
-    this._multiData = _multiData;
-    this._callDataChanged(this._multiData);
+    return _multiData;
   }
 
   getDomainMinMax(domain) {
@@ -270,7 +318,7 @@ Registerable(
 
   // Note(cg): called by container while registering item.
   onRegister(item) {
-    if (item.dataProcessType) {
+    if (item.dataProcessType && !this.processType) {
       this.processType = item.dataProcessType;
     }
     if (this._multiData && item.dataChanged) {

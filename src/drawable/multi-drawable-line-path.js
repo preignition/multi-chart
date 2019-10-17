@@ -20,7 +20,7 @@ class MultiDrawableLinePath extends
   render() {
     return html`
     <d3-shape-line 
-      @d3-shape-changed="${this.onSetShaper}" 
+      @shape-changed="${this.onSetShaper}" 
       .y="${this.y}" 
       .x="${this.x}" 
       .defined="${this.defined}"
@@ -45,7 +45,8 @@ class MultiDrawableLinePath extends
     };
   }
 
-  _draw(data) {
+  _draw() {
+    const data = this.drawableData;
     if(!this.width || !this.height || !data) {
       return;
     }

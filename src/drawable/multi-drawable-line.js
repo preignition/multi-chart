@@ -11,30 +11,28 @@ class MultiDrawableLine extends
   DrawableSerie(
     Shaper(
       MultiDrawable)) {
-  // Note(cg): style to add to svghost while dispatching SVG.
-  static get hostStyles() {
-    return css`
-      #drawable.line {
-        @apply --drawable-line;
-      }
-
-      #drawable.line .shape {
-        fill: var(--drawable-line-fill);
-        stroke: var(--drawable-line-stroke);
-      }
-    `;
-  } 
+  
+    // Note(cg): style to add to svghost while dispatching SVG.
+    static get hostStyles() {
+      return css`
+        
+        #drawable.line .shape {
+          fill: var(--drawable-line-fill);
+          stroke: var(--drawable-line-stroke);
+        }
+      `;
+    } 
 
   render() {
     return html`
   	<d3-shape-line 
-      @d3-shape-changed="${this.onSetShaper}" 
+      @shape-changed="${this.onSetShaper}" 
       .y="${this.y}" 
       .x="${this.x}" 
       .defined="${this.defined}"
     ></d3-shape-line>
     <svg>
-      <g id="drawable" slot-svg="slot-chart" class="drawable line"></g>
+      <g id="drawable" slot-svg="slot-chart" part="drawable-line"  class="drawable line"></g>
     </svg>
 `;
   }

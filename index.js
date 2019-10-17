@@ -1,2 +1,2 @@
-import './src/component-index.js';
-import './src/index.js';
+import './index.elements.js'
+export * from './index.class.js';

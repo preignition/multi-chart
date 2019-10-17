@@ -1,5 +1,5 @@
 import { LitElement } from 'lit-element';
-import { capitalize, camelToDashCase } from '../helper/utils.js';
+import { capitalize, shapeProperties } from '../helper/utils.js';
 import * as scales from 'd3-scale';
 
 // Note(cg): allowed scales
@@ -28,14 +28,7 @@ const props = {};
 Object.keys(scaleNames).forEach(name => {
   const instance = scales[`scale${capitalize(name)}`]()
   const keys = Object.keys(instance || {});
-  keys.forEach(key => {
-    if (!props[key]) {
-      props[key] = {
-        type: Function,
-        attribute: camelToDashCase(key)
-      }
-    }
-  })
+  shapeProperties(keys, props);
 })
 
 
@@ -100,7 +93,7 @@ class Scale extends LitElement {
       }
     });
     if (shallNotify) {
-      this.dispatchEvent(new CustomEvent(`d3-scale-changed`, { detail: { value: this.scale, type: this.scaleType }, bubbles: true, composed: true }));
+      this.dispatchEvent(new CustomEvent(`scale-changed`, { detail: { value: this.scale, type: this.scaleType }, bubbles: true, composed: true }));
       delete this.__init;
     }
   }

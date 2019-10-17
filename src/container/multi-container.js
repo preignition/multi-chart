@@ -4,7 +4,7 @@ import { html, css } from 'lit-element';
 import { default as ObserveResize } from './mixin/observe-resize-mixin.js';
 import { default as MultiRegister } from './mixin/multi-register-mixin.js';
 import { default as MultiData } from './mixin/multi-data-mixin.js';
-import { Zoomable } from '../d3-wrapper/zoomable-mixin.js';
+import { Zoomable } from './mixin/zoomable-mixin.js';
 
 import { MultiChartBase } from '../base-class.js';
 import { pattern } from './pattern-template.js';
@@ -41,14 +41,18 @@ import { valueProperties as dataGroupValueProperties } from './properties/data-g
  **/
 
 
-class MultiContainer
-extends
-// SVGHelper(
-MultiData(
-  ObserveResize(
-    MultiRegister(
-      Zoomable(
-        MultiChartBase)))) {
+class MultiContainer extends
+  MultiData(
+    ObserveResize(
+      MultiRegister(
+        Zoomable(
+          MultiChartBase)))) {
+
+// Note(cg): Hack allowing extend multi-container
+// in other libraries 
+  get html() {
+    return html;
+  } 
 
   static get styles() {
     return css `
@@ -70,20 +74,14 @@ MultiData(
         /* need width here, otherwise the size of this svg is not properly calculated on resize*/
         width: 100%;
         flex: 1;
-        @apply --multi-container;
       }
 
       #background {
         fill: var(--multi-chart-background-color, var(--light-theme-background-color));
-        @apply --multi-chart-background;
-      }
-
-      #slot-chart-content {
-        @apply --multi-chart-content;
       }
 
       .drawable {
-        fill: none;
+         fill: none;
       }
 
       slot[name="svg"] {
@@ -98,7 +96,6 @@ MultiData(
         /*mask: url(#mask-stripe-thick);*/
         /*mask: url(var(--multi-highlight-mask));*/
         fill: var(--multi-highlight-fill);
-        @apply --multi-highlight;
       }
  
     `;
@@ -106,42 +103,44 @@ MultiData(
 
 
   render() {
+
     return html `
-    <slot name="header"></slot>
-    <div id="observedNode">
-      ${this.getContentRender()}
-      <multi-data-group 
-        group="default" 
-        .valuePosition="${this.valuePosition}"
-        .keyPosition="${this.keyPosition}"
-        .valueAccessor="${this.valueAccessor}"
-        .keyAccessor="${this.keyAccessor}"
-        .stacked="${this.stacked}"
-        .min="${this.min}"
-        .max="${this.max}"
-        .data="${this.data}"
-        ></multi-data-group>
-      <slot></slot>
-    </div>
-    <svg id="svg">
-      <g transform="translate(${this.leftMargin || 0}, ${this.topMargin || 0})">
-        <g id="slot-background">
-        </g>
-        <g id="slot-chart-content">
-          <g id="slot-zoom">
-            <g id="slot-chart" class="chart">
-            </g>
-            <g id="slot-brush"></g>
+      <slot name="header"></slot>
+      <div id="observedNode">
+        ${this.getContentRender()}
+        <multi-data-group 
+          group="default" 
+          .processType="${this.processType}"
+          .valuePosition="${this.valuePosition}"
+          .keyPosition="${this.keyPosition}"
+          .valueAccessor="${this.valueAccessor}"
+          .keyAccessor="${this.keyAccessor}"
+          .stacked="${this.stacked}"
+          .min="${this.min}"
+          .max="${this.max}"
+          .data="${this.data}"
+          ></multi-data-group>
+        <slot></slot>
+      </div>
+      <svg id="svg" part="svg">
+        <g transform="translate(${this.leftMargin || 0}, ${this.topMargin || 0})">
+          <g id="slot-background" part="background">
           </g>
-          <g id="slot-axis"></g>
+          <g id="slot-chart-content">
+            <g id="slot-zoom">
+              <g id="slot-chart" part="chart">
+              </g>
+              <g id="slot-brush" part="brush"></g>
+            </g>
+            <g id="slot-axis" part="axis"></g>
+          </g>
         </g>
-      </g>
-      <g id="slot-legend"></g>
-    </svg>
-    <slot name="footer"></slot>
-    <slot name="svg"></slot>
-    ${this.pattern ? pattern: ''}
-  `;
+        <g id="slot-legend" part="legend"></g>
+      </svg>
+      <slot name="footer"></slot>
+      <slot name="svg"></slot>
+      ${this.pattern ? pattern: ''}
+    `;
   }
 
   /**
@@ -198,6 +197,15 @@ MultiData(
       group: { type: String },
 
       /*
+       * `multiVerseGroup` group name send along with `multi-verse-added`
+       */
+       multiVerseGroup: {
+         type: String,
+         attribute: 'multi-verse-group',
+         value: 'default'
+         },
+
+      /*
        * colorScale for the chart
        */
       colorScale: { type: Function },
@@ -207,6 +215,14 @@ MultiData(
        */
       pattern: { type: Boolean },
 
+      /*
+       * `processType`  the type of process type, e.g. stack for bar Chart
+       */
+      processType: {
+        type: String,
+        attribute: 'process-type'
+      },
+
     };
   }
 
@@ -215,7 +231,6 @@ MultiData(
     super();
     // Note(cg): allow drawble elements to be registered in this container.
     this.addEventListener('multi-drawn', this.onDrawn);
-    this.addEventListener('multi-register', this._onMultiRegister);
 
     // Note(cg): multi-data-group notify value-position. We need to make sure 
     // a scale exist for used position (left, bottom,...)
@@ -232,15 +247,16 @@ MultiData(
 
   firstUpdated(changedProperties) {
     super.firstUpdated(changedProperties)
-    this.dispatchEvent(new CustomEvent('multi-verse-added', { detail: this.group, bubbles: true, composed: true }));
+    // Note(cg): chart container might be registered against multi-verse. We nee to notify their creation upwards.
+    this.dispatchEvent(new CustomEvent('multi-verse-added', { detail: this.multiVerseGroup, bubbles: true, composed: true }));
     this.onResize();
     // this.assignSlottedSVG();
   }
   disconnectedCallback() {
-    super.disconnectedCallback();
     // TODO(cg): replace multi-removed -> multi-verse-remover
     // XXX(cg): this event will never be caught! unregister from host instead like for drawablse
-    this.dispatchEvent(new CustomEvent('multi-verse-removed', { detail: this.group, bubbles: true, composed: true }));
+    this.dispatchEvent(new CustomEvent('multi-verse-removed', { detail: this.multiVerseGroup, bubbles: true, composed: true }));
+    super.disconnectedCallback();
   }
 
   // Note(cg): refresh drawable components for the chart. 

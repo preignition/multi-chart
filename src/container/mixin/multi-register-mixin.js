@@ -40,8 +40,24 @@ const MultiRegister = dedupingMixin(superClass => {
       };
     }
 
+    /* 
+     * `registerEventListen` the name of the event that will trigger 
+     * a registration. This event is fired by an element applying 
+     * Resiterable Mixin
+     *
+     */
+    get registerEventListen() {
+      return 'multi-register'
+    }
+
+    constructor() {
+      super();
+      this.addEventListener(this.registerEventListen, this._onMultiRegister);
+
+    }
+
     _registerItem(name, item) {
-      if(!this[name]){this[name] = []}
+      if (!this[name]) { this[name] = [] }
       if (!this[name].includes(item)) {
         this[name].push(item);
         if (this.onRegister) {
@@ -54,8 +70,9 @@ const MultiRegister = dedupingMixin(superClass => {
     }
 
     _onMultiRegister(e) {
-      // Note(cg): only react if groupName is not set or is the same.
-      if (!e.detail || e.detail === this.groupName) {
+      this.log && console.info('Register', e, e.composedPath()[0])
+      // Note(cg): only react if group is not set or is the same.
+      if (e.detail === this.group) {
         // Note(cg): make sure we are not self-registering 
         // (this can be the case for elements that are registerable and also register like multi-container-layer).
         const target = e.composedPath()[0];
@@ -74,7 +91,7 @@ const MultiRegister = dedupingMixin(superClass => {
         this.onUnregister(registered);
       }
 
-      if(this._registeredItems && this._registeredItems.filter) {
+      if (this._registeredItems && this._registeredItems.filter) {
         this._registeredItems = this._registeredItems.filter(item => item !== registered);
       }
 
@@ -91,7 +108,7 @@ const MultiRegister = dedupingMixin(superClass => {
       // we replace `methodName`` with `this host` as the first argument 
       [].splice.call(arguments, 0, 1);
       const args = arguments;
-      
+
       this.registeredItems
         .filter(el => {
           return el[methodName];

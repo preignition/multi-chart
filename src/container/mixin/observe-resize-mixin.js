@@ -1,4 +1,4 @@
-import { ResizeObserver as Polyfill } from "@juggle/resize-observer";
+// import { ResizeObserver as Polyfill } from "@juggle/resize-observer";
 import { dedupingMixin } from '@polymer/polymer/lib/utils/mixin.js';
 // import { dedupingMixin } from '@polymer/lib/utils/mixin.js';
 
@@ -12,7 +12,8 @@ import { dedupingMixin } from '@polymer/polymer/lib/utils/mixin.js';
  * @mixinFunction
  */
 
-const ResizeObserver = window.ResizeObserver || Polyfill;
+// const ResizeObserver = window.ResizeObserver || Polyfill;
+const ResizeObserver = window.ResizeObserver ;
 const ro = new ResizeObserver((entries, observer) => {
   entries.forEach((entry, index) => entry.target.onResize(entry, index));
 });

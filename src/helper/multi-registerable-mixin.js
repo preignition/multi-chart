@@ -13,17 +13,18 @@
  * @polymer
  * @mixinFunction
  */
+
 const Registerable = superClass => {
 
   return class extends superClass {
 
     /* 
-     * `registerEventName`  the name of the event to be fired when connected. 
+     * `registerEventDispatch`  the name of the event to be fired when connected. 
      * A container with multi-register-mixin applied 
      * will listen to this event to register the component.
      *
      */
-    get registerEventName() {
+    get registerEventDispatch() {
       return 'multi-register'
     }
 
@@ -58,27 +59,18 @@ const Registerable = superClass => {
     // be effective. .
     firstUpdated(props) {
       super.firstUpdated(props);
-      if (!this.registerEventName) {
-        throw new Error(`registerable "registerEventName" is missing for ${this.constructor.name}`)
-      }
-      this.dispatchEvent(new CustomEvent(this.registerEventName, { detail: this.group, bubbles: true, composed: true }));
+      this.dispatchEvent(new CustomEvent(this.registerEventDispatch, { detail: this.group, bubbles: true, composed: true }));
     }
 
     // Note(cg): dispatch an event along with its group.
-    dispatchEventGroup(eventName, value) {
-      this.dispatchEvent(new CustomEvent(eventName, { detail: { value: value, group: this.group }, bubbles: true, composed: true }));
-    }
+    // dispatchEventGroup(eventName, value) {
+    //   this.dispatchEvent(new CustomEvent(eventName, { detail: { value: value, group: this.group }, bubbles: true, composed: true }));
+    // }
 
     disconnectedCallback() {
       this.postRemove && this.postRemove();
       super.disconnectedCallback();
     }
-
-    // postRemove() {
-
-    // }
-
-
   };
 };
 

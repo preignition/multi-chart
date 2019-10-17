@@ -4,6 +4,7 @@ import { default as DrawableSerie } from './mixin/drawable-serie-mixin.js';
 import { default as Shaper } from './mixin/drawable-shaper-mixin.js';
 import { Line, Stack } from '../d3-wrapper/d3-shape.js';
 import { scaleBand } from 'd3-scale';
+import { transition as Transition} from 'd3-transition';
 
 /** ## MultiDrawableBar
  *
@@ -48,10 +49,7 @@ DrawableSerie(
 
   static get hostStyles() {
     return css `
-      #drawable.bar {
-        @apply --drawable-bar;
-      }
-
+      
       #drawable.bar .shape {
         fill: var(--drawable-bar-fill);
         stroke: var(--drawable-bar-stroke);
@@ -61,24 +59,23 @@ DrawableSerie(
   }
   render() {
     return html `
-     <multi-accessor 
-      .path="${this.valuePath}"
-      @accessor-changed="${e => this.value = e.detail.value}" 
-     ></multi-accessor>
+    ${this.valuePath ? html`
+        <multi-accessor 
+          .path="${this.valuePath}"
+          @accessor-changed="${e => this.value = e.detail.value}" 
+        ></multi-accessor>` : '' }
      <d3-shape-stack 
       .value="${this.value}" 
       .keys="${this.keys}" 
       .order="${this.order}" 
       .offset="${this.offset}" 
-      @d3-shape-changed="${this.onSetShaper}" 
+      @shape-changed="${this.onSetShaper}" 
      ></d3-shape-stack>
     <svg>
-      <g id="drawable" slot-svg="slot-chart" class="drawable bar"></g>
+      <g id="drawable" slot-svg="slot-chart" part="drawable-bar" class="drawable bar"></g>
     </svg>
     `;
   }
-
-  static get is() { return 'multi-drawable-bar'; }
 
   static get properties() {
     return {
@@ -104,7 +101,15 @@ DrawableSerie(
       },
 
       xScale: { type: Function },
-      yScale: { type: Function }
+      yScale: { type: Function },
+
+      /*
+       * `valuePath` path for creating value accessor
+       */
+       valuePath: {
+         type: String,
+         attribute: 'value-path'
+         },
     };
   }
 
@@ -128,8 +133,10 @@ DrawableSerie(
     chart = this.drawSerieGroup(data, 'rect', this.shapeClass, chart, this.transition);
 
     // Note(cg): we add selectable to shape only if selectSerie is not true.
-    if (!this.selectSerie && chart.classed) {
-      chart.classed('selectable', true);
+    if (!this.selectSerie) {
+      chart instanceof Transition 
+      ? chart.selection().classed('selectable', true)
+      : chart.classed('selectable', true);
     }
 
     let bandwidth = this.xScale.bandwidth;

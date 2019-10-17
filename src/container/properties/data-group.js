@@ -40,12 +40,6 @@ const props = {
   stacked: { type: Boolean },
 
   /*
-   * `shaper` a shaper function transforming data to a shape 
-   * easier to draw. Used for stacked chart. 
-   */
-  // shaper: { type: Function },
-
-  /*
    * `min` minimum value to apply to domain
    */
   min: { type: Number },

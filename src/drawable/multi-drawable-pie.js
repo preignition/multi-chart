@@ -25,30 +25,31 @@ class MultiDrawablePie extends
     MultiDrawable) {
   render () {
     return html`
-     <multi-accessor 
-      .path="${this.valuePath}"
-      @accessor-changed="${e => this.value = e.detail.value}" 
-     ></multi-accessor>
-     <d3-shape-pie 
-      .value="${this.value}" 
-      .padAngle="${this.padAngle}" 
-      .sort="${this.sort}" 
-      .sortValues="${this.sortValues}"
-      @d3-shape-changed="${this.onSetShaper}" 
-     ></d3-shape-pie>
-     <d3-shape-arc 
-      .innerRadius="${ this.getPieWidth() || this.innerRadius}" 
-      .outerRadius="${ this.getOuterRadius() || this.outerRadius}" 
-      .cornerRadius="${this.cornerRadius}" 
-      @d3-shape-changed="${e => this.arc = e.detail.value}" 
-    ></d3-shape-arc>
-    <svg>
-      <g id="drawable" 
-        slot-svg="slot-chart" 
-        class="drawable pie" 
-        transform="translate(${this.width / 2 || 0}, ${this.height /2 || 0})"></g>
-    </svg>
-`;
+     ${this.valuePath ? html`
+        <multi-accessor 
+          .path="${this.valuePath}"
+          @accessor-changed="${e => this.value = e.detail.value}" 
+        ></multi-accessor>` : '' }
+         <d3-shape-pie 
+          .value="${this.value}" 
+          .padAngle="${this.padAngle}" 
+          .sort="${this.sort}" 
+          .sortValues="${this.sortValues}"
+          @shape-changed="${this.onSetShaper}" 
+         ></d3-shape-pie>
+         <d3-shape-arc 
+          .innerRadius="${ this.getPieWidth() || this.innerRadius}" 
+          .outerRadius="${ this.getOuterRadius() || this.outerRadius}" 
+          .cornerRadius="${this.cornerRadius}" 
+          @shape-changed="${e => this.arc = e.detail.value}" 
+        ></d3-shape-arc>
+        <svg>
+          <g id="drawable" 
+            slot-svg="slot-chart" 
+            class="drawable pie" 
+            transform="translate(${this.width / 2 || 0}, ${this.height /2 || 0})"></g>
+        </svg>
+    `;
   }
 
   static get properties() {
@@ -70,7 +71,15 @@ class MultiDrawablePie extends
 
       arc: {
         type: Function,
-      }
+      },
+
+      /*
+       * `valuePath` path for creating value accessor
+       */
+       valuePath: {
+         type: String,
+         attribute: 'value-path'
+        },
     };
   }
 
@@ -81,8 +90,9 @@ class MultiDrawablePie extends
   }
 
   getPieWidth() {
-    if (this.pieWidth && this.outerRadius) {
-       (this.pieWidth + '').endsWith('%') ?  this.outerRadius * (1 - parseFloat(this.pieWidth)/100) : this.outerRadius - parseFloat(this.pieWidth);
+    if (this.pieWidth ) {
+        const outerRadius = this.getOuterRadius();
+        return (this.pieWidth + '').endsWith('%') ?  outerRadius * (1 - parseFloat(this.pieWidth)/100) : outerRadius - parseFloat(this.pieWidth);
     }
   }
 
@@ -93,8 +103,8 @@ class MultiDrawablePie extends
     return 'path';
   }
 
-  _draw(data) {
- 
+  _draw() {
+   const data = this.drawableData;
     if(!this.width || !this.height || !data) {
       return;
     }

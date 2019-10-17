@@ -54,7 +54,7 @@ const DispatchSVG = dedupingMixin(superClass => {
       if (host && this.renderRoot) {
         this.renderRoot.querySelectorAll('[slot-svg]').forEach(node => {
           const target = node.getAttribute('slot-svg');
-          const targetNode = host.renderRoot.querySelector(`#${target}`);
+          const targetNode = (host.$ && host.$[target])|| host.renderRoot.querySelector(`#${target}`);
           if (targetNode) {
             this._hostedNodes[node.id || target] = node;
             return targetNode.appendChild(node);
@@ -71,10 +71,18 @@ const DispatchSVG = dedupingMixin(superClass => {
       }
     }
 
+    getRootHost(host) {
+      while (host.svgHost) {
+        host = host.svgHost;
+      }
+      return host;
+    }
+
     // Note(cg): hack to inject style in host.
     setHostStyle(host) {
       if(this.constructor.hostStyles) {
         const name = this.constructor.name;
+        host = this.getRootHost(host);
         if(!host.renderRoot.querySelector(`style[id=${name}]`)) {
           const st = document.createElement('style')
           st.id = name;

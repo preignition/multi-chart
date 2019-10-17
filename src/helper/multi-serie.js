@@ -1,23 +1,21 @@
 import { LitElement, html } from 'lit-element';
 import { default as Registerable } from '../helper/multi-registerable-mixin.js';
 import { DefaultValueMixin, DoNotSetUndefinedValue } from '@preignition/preignition-mixin';
-import { LitNotify } from '@morbidick/lit-element-notify';
 
 class MultiSerie extends
 Registerable(
   DefaultValueMixin(
-    // LitNotify(
     DoNotSetUndefinedValue(
       LitElement))) {
 
   /* 
-   * `registerEventName`  the name of the event to be fired when connected. 
+   * `registerEventDispatch`  the name of the event to be fired when connected. 
    * A container with multi-register-mixin applied 
    * will listen to this event to register the component.
    *
    * @override Registerable
    */
-  get registerEventName() {
+  get registerEventDispatch() {
     return 'multi-serie-register'
   }
 
@@ -73,7 +71,9 @@ Registerable(
       /* 
        * `accessor` the accessor function for transforming data. 
        */
-      accessor: { type: Function, },
+      accessor: { 
+        type: Function
+      },
 
       /**
        * `keyPath` the path from which the key accessor function is built

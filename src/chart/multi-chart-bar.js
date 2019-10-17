@@ -35,8 +35,10 @@ class MultiBarLine extends MultiContainer {
       ${super.getContentRender()}
       <multi-drawable-bar 
          id="drawable"
+         .log="${this.log}"
          .colorScale="${this.colorScale}"
          .value="${this.value}" 
+         .valuePath="${this.valuePath}" 
          .keys="${this.keys}" 
          .order="${this.order}" 
          .offset="${this.offset}" 
@@ -70,12 +72,20 @@ class MultiBarLine extends MultiContainer {
       stacked: {
         type: Boolean
       },
+      /*
+       * `valuePath` we can pass a value path to calculate value accessor
+       */
+      valuePath: {
+        type: String,
+        attribute: 'value-path'
+      },
 
-
-      // bottomScaleType: {
-      //   type: String,
-      //   value: 'point'
-      // }
+      // Note(cg): set default bottom scale type as band
+      bottomScaleType: {
+        type: String,
+        value: 'band',
+        attribute: 'bottom-scale-type'
+      }
     };
   }
 

@@ -1,12 +1,12 @@
 import { select } from 'd3-selection';
-import { camelToDashCase, dashToCamelCase} from '@polymer/polymer/lib/utils/case-map.js';
+import { camelToDashCase, dashToCamelCase } from '@polymer/polymer/lib/utils/case-map.js';
 
 // Capitalize the first letter od a word.
 const capitalize = str => str[0].toUpperCase() + str.slice(1)
 
 //  fitTo set transform attribute of source so that it fits target container.
 const fitTo = (source, target, factor = 0.05, duration) => {
-  
+
   let sel = select(source);
 
   if (duration) {
@@ -36,9 +36,22 @@ const fitTo = (source, target, factor = 0.05, duration) => {
   sel.attr('transform', 'translate(' + translate[0] + ',' + translate[1] + ') scale(' + scale + ')');
 };
 
-export { 
-  fitTo, 
-  capitalize, 
-  camelToDashCase, 
-  dashToCamelCase 
+const shapeProperties = (keys, props = {}) =>  {
+  keys.forEach(key => {
+    if (!props[key]) {
+      props[key] = {
+        type: Function,
+        attribute: camelToDashCase(key)
+      }
+    }
+  })
+  return props;
+}
+
+export {
+  fitTo,
+  capitalize,
+  camelToDashCase,
+  dashToCamelCase,
+  shapeProperties
 };

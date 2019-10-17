@@ -18,13 +18,19 @@
   "authors": [
     "christophe.geiser <christophe.geiser@preignition.org>"
   ],
+  "files": [
+    "src/**",
+    "elements/**",
+    "index.js",
+    "index.elements.js",
+    "index.class.js"
+  ],
   "main": "index.js",
+  "moodule": "index.js",
   "dependencies": {
     "@juggle/resize-observer": "*",
     "@morbidick/lit-element-notify": "^1.0.2",
     "@pika/web": "^0.5.3",
-    "@polymer/iron-resizable-behavior": "^3.0.0",
-    "@polymer/iron-selector": "^3.0.1",
     "@polymer/polymer": "^3.0.0",
     "@preignition/preignition-mixin": "^1.8.1",
     "@ranfdev/deepobj": "^1.0.2",
@@ -68,29 +74,14 @@
     "lit-element": "2"
   },
   "devDependencies": {
-    "@open-wc/demoing-storybook": "^0.3.0",
     "@open-wc/testing": "^0.11.1",
     "@open-wc/testing-karma": "^3.0.0",
-    "@polymer/iron-ajax": "^3.0.0",
-    "@polymer/iron-component-page": "^4.0.0",
-    "@polymer/iron-demo-helpers": "^3.0.0",
-    "@polymer/paper-button": "^3.0.0",
-    "@polymer/paper-card": "^3.0.1",
-    "@polymer/paper-checkbox": "^3.0.0",
-    "@polymer/paper-input": "^3.0.0",
-    "@polymer/test-fixture": "^4.0.0",
-    "@vaadin/router": "^1.2.0",
-    "@vaadin/vaadin-tabs": "^2.1.2",
-    "@webcomponents/webcomponentsjs": "^2.0.0",
-    "es-dev-server": "^1.17.2",
     "eslint": "^6.4.0",
     "eslint-plugin-lit": "^1.2.0",
     "pwa-helpers": "^0.9.1"
   },
   "scripts": {
     "postpublish": "git push && git push --tags",
-    "__prepublishOnly": "pika install --optimize",
-    "start": "es-dev-server",
     "test": "karma start --coverage",
     "test:watch": "karma start --auto-watch=true --single-run=false",
     "test:update-snapshots": "karma start --update-snapshots",

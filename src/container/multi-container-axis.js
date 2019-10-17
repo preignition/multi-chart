@@ -11,7 +11,7 @@ class MultiContainerAxis extends MultiContainer {
 
   getContentRender() {
     return html `
-      ${super.getContentRender()}
+      ${super.getContentRender && super.getContentRender()}
       ${this.topHasScale || this.topAxis ? this.getScaleRender('top') : ''}
       ${this.rightHasScale || this.rightAxis ? this.getScaleRender('right') : ''}
       ${this.bottomHasScale || this.bottomAxis ? this.getScaleRender('bottom') : ''}
@@ -49,7 +49,7 @@ class MultiContainerAxis extends MultiContainer {
         .paddingOuter="${this[`${type}PaddingOuter`]}" 
         .paddingInner="${this[`${type}PaddingInner`]}" 
         .align="${this[`${type}Align`]}" 
-        @d3-scale-changed="${e => {this[`${type}Scale`] = e.detail.value; this.refresh();}}"></d3-scale>`
+        @scale-changed="${e => {this[`${type}Scale`] = e.detail.value; this.refresh();}}"></d3-scale>`
   }
 
   getAxisRender(type) {
@@ -63,9 +63,12 @@ class MultiContainerAxis extends MultiContainer {
         .text="${this[`${type}Text`]}" 
         .dx="${this[`${type}Dx`]}" 
         .dy="${this[`${type}Dy`]}" 
+        .textAngle="${this[`${type}TextAngle`]}" 
+        .tickSize="${this[`${type}TickSize`]}" 
+        .tickPadding="${this[`${type}TickPadding`]}" 
         .ticks="${this[`${type}Ticks`]}" 
         .tickFormat="${this[`${type}TickFormat`]}" 
-        .textAngle="${this[`${type}TextAngle`]}" 
+        .tickArguments="${this[`${type}TickArguments`]}" 
         ></multi-axis>
      `
   }

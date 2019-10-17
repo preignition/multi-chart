@@ -2,15 +2,15 @@
 /**
  * Lit-Element wrapper around d3.transiton
  *
- * anytime the transition is changed, will expose a `d3-transition-changed` event
+ * anytime the transition is changed, will expose a `transition-changed` event
  */
 
 import { LitElement } from 'lit-element';
 import { camelToDashCase  } from '../helper/utils.js';
-import * as transition from 'd3-transition';
+import { transition } from 'd3-transition';
 
 const props = {};
-const instance = transition.transition();
+const instance = transition();
 const keys = Object.keys(instance || {});
 keys.filter(key => key !== 'transition').forEach(key => {
   if (!props[key]) {
@@ -35,7 +35,7 @@ class Transition extends LitElement {
 
   constructor() {
     super()
-    this.transition = transition.transition();
+    this.transition = transition();
     this.__init = true;
   }
 
@@ -54,7 +54,7 @@ class Transition extends LitElement {
       }
     });
     if(shallNotify) {
-      this.dispatchEvent(new CustomEvent(`d3-transition-changed`, { detail: { value: this.transition }, bubbles: true, composed: true }));
+      this.dispatchEvent(new CustomEvent(`transition-changed`, { detail: { value: this.transition }, bubbles: true, composed: true }));
       delete this.__init;
     }
   }

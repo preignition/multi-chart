@@ -1,4 +1,5 @@
 import { html } from 'lit-element';
+// import { html } from '/node_modules/lit-element/lit-element.js';
 // import '../drawable/multi-drawable-line.js';
 import { default as MultiContainer } from '../container/multi-container-axis.js';
 import { Line } from '../d3-wrapper/d3-shape.js';
@@ -35,6 +36,7 @@ class MultiChartLine extends MultiContainer {
       ${super.getContentRender()}
       <multi-drawable-line 
          id="drawable"
+         .log="${this.log}"
          .colorScale="${this.colorScale}"
          .x="${this.x}"
          .y="${this.y}"
@@ -48,13 +50,14 @@ class MultiChartLine extends MultiContainer {
   }
 
   onDataGroupRescaled(e) {
-    this.log && console.log('data-grou-rescaled', e);
+    this.log && console.log('data-group-rescaled', e);
     this.x = this.getAccessor(e.detail.xScale, e.detail.xAccessor) ;
     this.y = this.getAccessor(e.detail.yScale, e.detail.yAccessor) ;
   }
 
   static get properties() {
     return {
+      
       ...super.properties,
 
       ...Line.properties,

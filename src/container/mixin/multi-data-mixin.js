@@ -50,7 +50,7 @@ const MultiData = superClass => {
 
       this.addEventListener('multi-serie-register', this._onMultiSerieRegister);
       this.addEventListener('multi-data-group-register', this._onMultiSerieGroupRegister);
-      this.addEventListener('d3-shape-changed', this._onShapeChanged);
+      this.addEventListener('shape-changed', this._onShapeChanged);
 
 
     }
