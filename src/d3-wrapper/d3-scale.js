@@ -32,7 +32,7 @@ Object.keys(scaleNames).forEach(name => {
 })
 
 
-class Scale extends LitElement {
+class D3Scale extends LitElement {
 
   get family() {
     if (this.type) {
@@ -99,4 +99,4 @@ class Scale extends LitElement {
   }
 }
 
-export default Scale;
+export default D3Scale;

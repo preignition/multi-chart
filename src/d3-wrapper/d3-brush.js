@@ -7,7 +7,7 @@ const instance = brush.brush();
 const keys = Object.keys(instance || {});
 const props = shapeProperties(keys)
 
-class Brush extends LitElement {
+class D3Brush extends LitElement {
 
   static get properties() {
 
@@ -59,4 +59,4 @@ class Brush extends LitElement {
   }
 }
 
-export default Brush;
+export default D3Brush;

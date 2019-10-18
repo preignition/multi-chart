@@ -13,7 +13,7 @@
   "repository": "https://github.com/preignitionl/multi-chart",
   "homepage": "webcomponents.org/preignition/multi-chart",
   "name": "@preignition/multi-chart",
-  "version": "4.0.0-1",
+  "version": "4.0.0",
   "license": "MIT",
   "authors": [
     "christophe.geiser <christophe.geiser@preignition.org>"
@@ -30,7 +30,6 @@
   "dependencies": {
     "@juggle/resize-observer": "*",
     "@morbidick/lit-element-notify": "^1.0.2",
-    "@pika/web": "^0.5.3",
     "@polymer/polymer": "^3.0.0",
     "@preignition/preignition-mixin": "^1.8.1",
     "@ranfdev/deepobj": "^1.0.2",

@@ -7,7 +7,7 @@ const instance = axis.axisTop();
 const keys = Object.keys(instance || {});
 const props = shapeProperties(keys);
 
-class Axis extends LitElement {
+class D3Axis extends LitElement {
 
   static get properties() {
 
@@ -63,4 +63,4 @@ class Axis extends LitElement {
   }
 }
 
-export default Axis;
+export default D3Axis;

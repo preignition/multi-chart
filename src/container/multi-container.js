@@ -181,6 +181,11 @@ class MultiContainer extends
 
       ...dataGroupValueProperties,
 
+      topMargin: { type: Number, attribute: 'top-margin' },
+      rightMargin: { type: Number, attribute: 'right-margin' },
+      bottomMargin: { type: Number, attribute: 'bottom-margin' },
+      leftMargin: { type: Number, attribute: 'left-margin' },
+
       /* 
        * `width`  of the chart area. Equals actual width of component - margins
        */

@@ -35,9 +35,9 @@ const Draw = superClass => {
         transition: {
           type: Function,
           value: function() {
-              // return function(transition) {
-                return transition().duration(200);
-              // }
+              return function(transition) {
+                return transition.duration(200);
+              }
           }
         },
 
@@ -140,10 +140,8 @@ const Draw = superClass => {
     /* 
      * `applyTransition`  applies a transition to chart
      */
-    applyTransition(chart, tr) {
-      tr = tr instanceof transition ? () => transition(tr) : tr
-      return chart.transition().call(tr)
-      // return chart.transition(transition(tr))
+    applyTransition(chart, transition) {
+      return chart.transition().call(transition)
         .on('end', this.onEndTransition);
     }
 
@@ -153,7 +151,4 @@ const Draw = superClass => {
   };
 };
 
-/*
- * @mixinFunction
- */
 export default Draw ;

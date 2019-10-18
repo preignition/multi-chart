@@ -13,7 +13,7 @@ legendNames.forEach(name => {
   
 })
 
-class Legend extends LitElement {
+class D3Legend extends LitElement {
 
   static get properties() {
 
@@ -61,4 +61,4 @@ class Legend extends LitElement {
   }
 }
 
-export default Legend;
+export default D3Legend;

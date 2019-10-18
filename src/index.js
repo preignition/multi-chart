@@ -1,6 +1,4 @@
 
-export { default as Select } from './helper/multi-select.js'
-
 export { default as RegisterMixin } from './container/mixin/multi-register-mixin.js'
 export { default as RegisterableMixin } from './helper/multi-registerable-mixin.js'
 export { default as FormatMixin } from './helper/d3-format-mixin.js'

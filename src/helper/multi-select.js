@@ -33,6 +33,7 @@ const properties = {
    */
   selectedValues: {
     type: Array,
+    attribute: 'selected-values',
     notify: true,
     value: []
   },
@@ -42,6 +43,7 @@ const properties = {
    */
   selectedItems: {
     type: Array,
+    attribute: 'selected-items',
     notify: true,
     value: []
   },
@@ -51,6 +53,7 @@ const properties = {
    * Otherwise, default behavior is 'select'
    */
   selectType: {
+    attribute: 'select-tpye',
     type: String,
     value: ''
   }
@@ -133,6 +136,7 @@ DispatchSVG(
        */
       attrForSelected: {
         type: String,
+        attribute: 'attr-for-selected',
         value: 'key'
       },
 
@@ -142,6 +146,7 @@ DispatchSVG(
        */
       selectedAttribute: {
         type: String,
+        attribute: 'selected-attribute',
         value: 'selected'
       }
     };
@@ -236,12 +241,12 @@ DispatchSVG(
       let wasSelected = false;
       const selectedValues = this.selectedValues.filter(val => {
         if (val === value) {
-          wasSelected = false;
+          wasSelected = true;
           return false
         }
         return true
       })
-      if (wasSelected) {
+      if (!wasSelected) {
         selectedValues.push(value);
       }
       this.selectedValues = selectedValues;

@@ -5,7 +5,7 @@ import { camelToDashCase, dashToCamelCase } from '@polymer/polymer/lib/utils/cas
 const capitalize = str => str[0].toUpperCase() + str.slice(1)
 
 //  fitTo set transform attribute of source so that it fits target container.
-const fitTo = (source, target, factor = 0.05, duration) => {
+const fitTo = (source, target, factor = 0.95, duration) => {
 
   let sel = select(source);
 
@@ -30,8 +30,10 @@ const fitTo = (source, target, factor = 0.05, duration) => {
   const targetRect = target.getBoundingClientRect(),
     x = (-sourceRect.left + sourceRect.right) / 2,
     y = (-sourceRect.top + sourceRect.bottom) / 2,
+    xOffset = targetRect.x -sourceRect.x,
+    yOffset = targetRect.y -sourceRect.y,
     scale = factor / Math.max(dx / targetRect.width, dy / targetRect.height),
-    translate = [targetRect.width / 2 - scale * x, targetRect.height / 2 - scale * y];
+    translate = [xOffset * scale + (targetRect.width / 2 - scale * x), yOffset * scale + (targetRect.height / 2 - scale * y)];
 
   sel.attr('transform', 'translate(' + translate[0] + ',' + translate[1] + ') scale(' + scale + ')');
 };
