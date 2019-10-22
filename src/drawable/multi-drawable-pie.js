@@ -103,7 +103,7 @@ class MultiDrawablePie extends
     return 'path';
   }
 
-  _draw() {
+  draw() {
    const data = this.drawableData;
     if(!this.width || !this.height || !data) {
       return;

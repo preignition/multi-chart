@@ -55,7 +55,7 @@ render() {
   return html `
     <slot></slot>
     <svg id="svg">
-      <g slot-svg="slot-chart" id="slot-layer" .class="${this.layer}"></g>
+      <g slot-svg="slot-chart" data-multi-position="${this.multiPosition}" id="slot-layer" .class="${this.layer}"></g>
     </svg>
 `;
   }

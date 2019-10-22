@@ -45,14 +45,23 @@ const Registerable = superClass => {
           value: 'default'
         },
 
-        /* 
-         * `registerOrder` - registerable elements are sorted on the basis of this property. 
+        /*
+         * `multiPosition` position used to re-order items when appended by dispatch-svg
+         * nodePosition larger than 0 will render on top. 
          */
-        registerOrder: {
+        multiPosition: {
           type: Number,
+          attribute: 'multi-position',
           value: 0
-        }
+        },
       };
+    }
+
+    /* 
+     * `registerOrder` - registerable elements are sorted on the basis of this property. 
+     */
+    get registerOrder() {
+      return 0;
     }
 
     // Note(cg): we fire under first Updated and not connectedCallback so as to make sure nested slots have had time to 
@@ -61,11 +70,6 @@ const Registerable = superClass => {
       super.firstUpdated(props);
       this.dispatchEvent(new CustomEvent(this.registerEventDispatch, { detail: this.group, bubbles: true, composed: true }));
     }
-
-    // Note(cg): dispatch an event along with its group.
-    // dispatchEventGroup(eventName, value) {
-    //   this.dispatchEvent(new CustomEvent(eventName, { detail: { value: value, group: this.group }, bubbles: true, composed: true }));
-    // }
 
     disconnectedCallback() {
       this.postRemove && this.postRemove();

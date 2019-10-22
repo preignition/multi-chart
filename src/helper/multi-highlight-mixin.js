@@ -1,6 +1,6 @@
 import { dedupingMixin } from '@polymer/polymer/lib/utils/mixin.js';
 import { cssTheme } from '@preignition/preignition-mixin';
-
+import { select } from 'd3-selection';
 /**
  * ## MultiHighlight
  * 
@@ -24,12 +24,14 @@ const MultiHighlight = dedupingMixin(superClass => {
         ...super.properties,
 
         highlightedKeys: {
-          type: Array
+          type: Array,
+          attribute: 'highlighted-keys'
         },
 
         highlightedCls: {
           type: String,
-          value: 'highlighted'
+          value: 'highlighted',
+          attribute: 'highlighted-cls'
         },
 
         /* 
@@ -37,7 +39,8 @@ const MultiHighlight = dedupingMixin(superClass => {
          */
         layerId: {
           type: String,
-          value: 'slot-layer'
+          value: 'slot-layer',
+          attribute: 'layer-id'
         },
 
         /* 
@@ -46,6 +49,7 @@ const MultiHighlight = dedupingMixin(superClass => {
          */
         highlightAccessor: {
           type: Function,
+          attribute: 'highlight-accessor',
           value: function() {
             return function(d) {
               return this.getAttribute('key');
@@ -59,22 +63,30 @@ const MultiHighlight = dedupingMixin(superClass => {
       return this.$[this.layerId];
     }
 
-    static get observers() {
-      return [
-        '_observeHighlightedKeys(highlightedKeys, layer)'
-      ];
+    updated(props) {
+      super.updated(props);
+      if(props.has('highlightedKeys')) {
+        this._observeHighlightedKeys();
+      }
     }
 
-    _observeHighlightedKeys(keys) {
+    // static get observers() {
+    //   return [
+    //     '_observeHighlightedKeys(highlightedKeys, layer)'
+    //   ];
+    // }
+
+     _observeHighlightedKeys() {
 
       if (!this.highlightedLayer) {
         console.error('cannot get layer in highlightedKeys');
       }
-      const accessor = this.highlightAccessor;
+      
+      const {highlightAccessor, highlightedKeys} = this;
 
-      d3.select(this.highlightedLayer).selectAll('.selectable')
+      select(this.highlightedLayer).selectAll('.selectable')
         .classed(this.highlightedCls, function(d) {
-          return keys.indexOf(accessor.call(this, d)) > -1;
+          return highlightedKeys.indexOf(highlightAccessor.call(this, d)) > -1;
         });
 
     }

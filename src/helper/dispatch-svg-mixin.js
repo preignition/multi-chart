@@ -1,4 +1,5 @@
 import { dedupingMixin } from '@polymer/polymer/lib/utils/mixin.js';
+import { select } from 'd3-selection'
 
 /**
  * ##  DispatchSVG
@@ -15,7 +16,7 @@ const DispatchSVG = dedupingMixin(superClass => {
   return class extends superClass {
 
     static get properties() {
-      
+
       return {
 
         ...super.properties,
@@ -42,11 +43,11 @@ const DispatchSVG = dedupingMixin(superClass => {
 
     update(props) {
       super.update(props);
-      if(props.has('svgHost')) {
-        if(this.svgHost && this.resize) {
-          this.resize(this.svgHost.width, this.svgHost.height);     
+      if (props.has('svgHost')) {
+        if (this.svgHost && this.resize) {
+          this.resize(this.svgHost.width, this.svgHost.height);
         }
-        this.observeSvgHost(this.svgHost,  props.get('svgHost'));
+        this.observeSvgHost(this.svgHost, props.get('svgHost'));
       }
     }
 
@@ -54,10 +55,25 @@ const DispatchSVG = dedupingMixin(superClass => {
       if (host && this.renderRoot) {
         this.renderRoot.querySelectorAll('[slot-svg]').forEach(node => {
           const target = node.getAttribute('slot-svg');
-          const targetNode = (host.$ && host.$[target])|| host.renderRoot.querySelector(`#${target}`);
-          if (targetNode) {
+          const parent = (host.$ && host.$[target]) || host.renderRoot.querySelector(`#${target}`);
+          if (parent) {
             this._hostedNodes[node.id || target] = node;
-            return targetNode.appendChild(node);
+            const position = node.dataset.multiPosition;
+            const appended = [...parent.childNodes].some(n => {
+              if (node.dataset.multiPosition >= position) {
+                parent.insertBefore(node,n);
+                return true;
+              }
+            })
+            if (!appended) {
+              parent.appendChild(node);
+            }
+
+            // parent.appendChild(node);
+            // Note(cg): reorder according to multi-position
+            return
+            // select(targetNode).selectAll('>*').sort((a,b) => a.dataset.multiPosition - b.dataset.multiPosition);
+            // return;
           }
           throw new Error(`cannot dispatch node ${target}`);
         });
@@ -80,10 +96,10 @@ const DispatchSVG = dedupingMixin(superClass => {
 
     // Note(cg): hack to inject style in host.
     setHostStyle(host) {
-      if(this.constructor.hostStyles) {
+      if (this.constructor.hostStyles) {
         const name = this.constructor.name;
         host = this.getRootHost(host);
-        if(!host.renderRoot.querySelector(`style[id=${name}]`)) {
+        if (!host.renderRoot.querySelector(`style[id=${name}]`)) {
           const st = document.createElement('style')
           st.id = name;
           st.innerHTML = this.constructor.hostStyles.cssText;
@@ -119,4 +135,4 @@ const DispatchSVG = dedupingMixin(superClass => {
 /*
  * @mixinFunction
  */
-export default DispatchSVG ;
+export default DispatchSVG;

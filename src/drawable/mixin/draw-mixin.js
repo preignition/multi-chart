@@ -107,16 +107,16 @@ const Draw = superClass => {
         timeOut.after(10),
         () => {
           this.log && console.info('debounced',  this)
-          const isDrawn = this._draw();
+          const isDrawn = this.draw();
           this._isDrawn = !!isDrawn;
           this.dispatchEvent(new CustomEvent('multi-drawn', {detail: {}, bubbles: true, composed: true})); 
         });
     }
 
     /* 
-     * `_draw` this is where do the work !
+     * `draw` this is where do the work !
      */
-    _draw() {
+    draw() {
       this.log && console.error(`draw method shall be overriden in subClasses.`)
     }
     

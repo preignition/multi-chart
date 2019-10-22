@@ -64,7 +64,7 @@ Registerable(
        * `path` the path from which the value accessor function is built
        * For instance `+value.count` will create `d => {return +d.value.count}` function.
        */
-      path: { type: String },
+      path: { type: String , reflect: true},
 
       subPath: { type: Boolean },
 

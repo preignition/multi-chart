@@ -28,7 +28,8 @@ class MultiAccessor extends
        * For instance `+count` will create `d => {return +d.count}` function.
        */
       path: {
-        type: String
+        type: String,
+        reflect: true
       },
 
       subPath: {

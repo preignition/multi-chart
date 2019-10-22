@@ -1,5 +1,5 @@
 import { html, css } from 'lit-element';
-// import { CacheId } from '@preignition/preignition-mixin';
+import { CacheId } from '@preignition/preignition-mixin';
 // import { SVGHelper } from '../helper/svg-helper-mixin.js';
 import { default as ObserveResize } from './mixin/observe-resize-mixin.js';
 import { default as MultiRegister } from './mixin/multi-register-mixin.js';
@@ -45,8 +45,9 @@ class MultiContainer extends
   MultiData(
     ObserveResize(
       MultiRegister(
-        Zoomable(
-          MultiChartBase)))) {
+        CacheId(
+          Zoomable(
+            MultiChartBase))))) {
 
 // Note(cg): Hack allowing extend multi-container
 // in other libraries 
@@ -93,8 +94,7 @@ class MultiContainer extends
         opacity: 1;
         stroke: #FFF;
         stroke-width: 0;
-        /*mask: url(#mask-stripe-thick);*/
-        /*mask: url(var(--multi-highlight-mask));*/
+        mask: var(--multi-highlight-mask);
         fill: var(--multi-highlight-fill);
       }
  
@@ -128,8 +128,8 @@ class MultiContainer extends
           </g>
           <g id="slot-chart-content">
             <g id="slot-zoom">
-              <g id="slot-chart" part="chart">
-              </g>
+              <g id="slot-chart" part="chart"></g>
+              <g id="slot-top-chart" part="chart"></g>
               <g id="slot-brush" part="brush"></g>
             </g>
             <g id="slot-axis" part="axis"></g>
@@ -255,7 +255,7 @@ class MultiContainer extends
     // Note(cg): chart container might be registered against multi-verse. We nee to notify their creation upwards.
     this.dispatchEvent(new CustomEvent('multi-verse-added', { detail: this.multiVerseGroup, bubbles: true, composed: true }));
     this.onResize();
-    // this.assignSlottedSVG();
+    this.assignSlottedSVG();
   }
   disconnectedCallback() {
     // TODO(cg): replace multi-removed -> multi-verse-remover
@@ -306,6 +306,57 @@ class MultiContainer extends
     if (position && !this[`${position}Axis`]) {
       this[`${position}HasScale`] = true;
     }
+  }
+
+  assignSlottedSVG() {
+    const nodes = [];
+    const treeWalker = (root) => {
+      return document.createTreeWalker(root, NodeFilter.SHOW_ELEMENT, { acceptNode: function(node) {return NodeFilter.FILTER_ACCEPT;}}, false);
+    };
+
+    const assignedNodes = (node) => {
+      let n = node;
+      while(n.assignedNodes && n.assignedNodes()[0] ) {
+        n = n.assignedNodes()[0];
+      }
+      return n;
+    };
+
+    const loop = (node) => {
+      const walker = treeWalker(node);
+      while (walker.nextNode()) {
+        const currentNode = walker.currentNode;
+        if (currentNode.getAttribute('slot-svg')) {
+          // Note(cg): we push slot-svg here.
+          nodes.push(currentNode);
+        }
+        // Note(cg): slotted assigned elements are not catched by try treewalker.
+        if(currentNode.localName === 'slot') {
+          loop(assignedNodes(currentNode));
+        }
+      }
+    };
+    loop(this);
+
+    nodes.forEach(node => {
+       const target = node.getAttribute('slot-svg');
+       const parent = this.$[target];
+        if (parent) {
+          const position = node.dataset.multiPosition;
+          const appended = [...parent.childNodes].some(n => {
+               if(node.dataset.multiPosition >= position) {
+                 parent.insertBefore(node, n);
+                 return true;
+               }   
+           })
+           if(!appended) {
+               parent.appendChild(node);
+             }
+           // select(this.$[target]).selectAll('>*').sort((a,b) => a.multiPosition - b.multiPosition);
+        }
+        this.log && console.warn(`cannot dispatch node ${target}`);
+    });
+    // console.info('NODES', nodes);
   }
 }
 

@@ -109,7 +109,7 @@ const MultiRegister = dedupingMixin(superClass => {
       [].splice.call(arguments, 0, 1);
       const args = arguments;
 
-      this.registeredItems
+      (this.registeredItems || [])
         .filter(el => {
           return el[methodName];
         })

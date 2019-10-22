@@ -45,7 +45,7 @@ class MultiDrawableLinePath extends
     };
   }
 
-  _draw() {
+  draw() {
     const data = this.drawableData;
     if(!this.width || !this.height || !data) {
       return;

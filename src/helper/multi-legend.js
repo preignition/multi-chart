@@ -193,7 +193,7 @@ DispatchSVG(
       this._debounceDraw, // initially undefined
       timeOut.after(10),
       () => {
-        this._draw(this._shaped);
+        this.draw(this._shaped);
         this._isDrawn = true;
       });
   }
@@ -202,7 +202,7 @@ DispatchSVG(
     this.debounceDraw();
   }
 
-  _draw() {
+  draw() {
     setTimeout(() => {
       // Note(cg): async as we need to make sure legend is drawn before we can calculate real size and adjust position.
       // this.selectShadow('#legend').call(this.legend);

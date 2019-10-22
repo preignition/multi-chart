@@ -111,7 +111,7 @@ class MultiAxis extends
     this.relayTo(props, 'd3-axis'); 
   }
 
-  _draw(data) {
+  draw(data) {
     
     const sel = select(this.$.axis);
     if (sel && this.scale && this.axis) {

@@ -65,7 +65,7 @@ const MultiDrawableSerie = dedupingMixin( superClass => {
     /* 
      * `draw` serie data, which are in the form of [{key, label, data: [dataValues]}]
      */
-    _draw() {
+    draw() {
       const data = this.drawableData;
       if(!this.width || !this.height || !data) {
         return;

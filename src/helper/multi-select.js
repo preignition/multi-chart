@@ -47,7 +47,7 @@ const properties = {
     notify: true,
     value: []
   },
-  
+
   /* 
    * `selecType` for charts that can implement brush and select at the same time (e.g. bar), set 'brush' to acticate brush. 
    * Otherwise, default behavior is 'select'
@@ -113,16 +113,6 @@ DispatchSVG(
       ...super.properties,
 
       ...properties,
-      /* 
-       * `registerOrder` - registerable elements are sorted on the basis of this property. 
-       * `multi-select` need to be last in the list of registered items, so that we attach 
-       * events after all shapes are drawn.
-       */
-      registerOrder: {
-        type: Number,
-        attribute: 'register-order',
-        value: 100
-      },
 
       /**
        * If you want to use an attribute value or property of an element for
@@ -150,6 +140,14 @@ DispatchSVG(
         value: 'selected'
       }
     };
+  }
+  /* 
+   * `registerOrder` - registerable elements are sorted on the basis of this property. 
+   * `multi-select` need to be last in the list of registered items, so that we attach 
+   * events after all shapes are drawn.
+   */
+  get registerOrder() {
+    return 100;
   }
 
   update(props) {
@@ -302,7 +300,7 @@ DispatchSVG(
     }
     // Note(cg): use multi select event to potentially inform multi-verse elementes that we have a selection
     // this should not happen when we relesect onDraw (infinite loop otherwise.)
-    if(!silent) {
+    if (!silent) {
       this.dispatchEvent(new CustomEvent('multi-select', {
         detail: {
           isRange: false,
