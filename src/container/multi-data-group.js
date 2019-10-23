@@ -1,6 +1,7 @@
 import { timeOut } from '@polymer/polymer/lib/utils/async.js';
 import { Debouncer } from '@polymer/polymer/lib/utils/debounce.js';
 import { extent, range, max, min } from 'd3-array';
+import * as scale from 'd3-scale';
 import { LitElement, html } from 'lit-element';
 import * as accessor from '../helper/accessor.js';
 import { default as Registerable } from '../helper/multi-registerable-mixin.js';
@@ -168,11 +169,13 @@ Registerable(
         this._stackedMax = this.max ? this.max : max(_multiData[_multiData.length - 1], d => d[1])
 
       // this.setHostDomain(this.keyPosition, this.getOrdinalDomain(this.data, keyAccessor, serie.accessor, serie.continuous););
-      this.setHostDomain(this.keyPosition, this.getOrdinalDomain(this.data, this.keyAccessor, this.accessor, this.continuous));
-      this.setHostDomain(this.valuePosition, [0, this.stacked ? this._stackedMax : this._max]);
-
       const valueScale = this.getHostValue(`${this.valuePosition}Scale`);
       const keyScale = this.getHostValue(`${this.keyPosition}Scale`);
+      const isContinuous = keyScale.category === 'continuous'
+
+      this.setHostDomain(this.keyPosition, this.getOrdinalDomain(this.data, this.keyAccessor, this.accessor, isContinuous));
+      this.setHostDomain(this.valuePosition, [0, this.stacked ? this._stackedMax : this._max]);
+
 
       this.dispatchEvent(new CustomEvent('data-group-rescaled', {
         detail: {

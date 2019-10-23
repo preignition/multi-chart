@@ -60,10 +60,10 @@ DrawableSerie(
   render() {
     return html `
     ${this.valuePath ? html`
-        <multi-accessor 
-          .path="${this.valuePath}"
-          @accessor-changed="${e => this.value = e.detail.value}" 
-        ></multi-accessor>` : '' }
+      <multi-accessor 
+        .path="${this.valuePath}"
+        @accessor-changed="${e => this.value = e.detail.value}" 
+      ></multi-accessor>` : '' }
      <d3-shape-stack 
       .value="${this.value}" 
       .keys="${this.keys}" 
@@ -155,7 +155,7 @@ DrawableSerie(
 
       return chart
         .attr('x', (d, i) => {
-          return xScale(d[3] || i);
+          return xScale(d[3] || i) - align;
         })
         .attr('width', bandwidth())
         .attr('key', d => d[3]);

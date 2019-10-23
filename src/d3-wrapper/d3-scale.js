@@ -76,6 +76,9 @@ class D3Scale extends LitElement {
 
     if (!this.scale || props.has('scaleType')) {
       this.scale = scales[`scale${capitalize(this.scaleType)}`]()
+      // Note(cg): we need a way to know the type of scale (e.g. to know if a scale is contiuous in multi-group)
+      this.scale.scaleType = this.scaleType;
+      this.scale.category = scaleNames[this.scaleType];
     }
 
     if (this.scale) {

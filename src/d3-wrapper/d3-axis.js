@@ -39,6 +39,11 @@ class D3Axis extends LitElement {
       this.type = 'bottom';
     }
 
+    // Note(cg): ensure number for ticks.
+    if(props.has('ticks') && typeof this.ticks  === 'string') {
+      this.ticks = this.ticks * 1;
+    }
+
     if (!this.axis || props.has('type')) {
       this.axis = axis[`axis${capitalize(this.type)}`]();
     }

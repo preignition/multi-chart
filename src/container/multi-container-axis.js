@@ -49,6 +49,7 @@ class MultiContainerAxis extends MultiContainer {
         .paddingOuter="${this[`${type}PaddingOuter`]}" 
         .paddingInner="${this[`${type}PaddingInner`]}" 
         .align="${this[`${type}Align`]}" 
+
         @scale-changed="${e => {this[`${type}Scale`] = e.detail.value; this.refresh();}}"></d3-scale>`
   }
 
@@ -67,7 +68,7 @@ class MultiContainerAxis extends MultiContainer {
         .tickSize="${this[`${type}TickSize`]}" 
         .tickPadding="${this[`${type}TickPadding`]}" 
         .ticks="${this[`${type}Ticks`]}" 
-        .tickFormat="${this[`${type}TickFormat`]}" 
+        .tickFormat="${this[`${type}TickFormat`]}"         
         .tickArguments="${this[`${type}TickArguments`]}" 
         ></multi-axis>
      `
