@@ -59,6 +59,10 @@ class D3Scale extends LitElement {
       range: {
         type: Array,
         hasChanged: hasChanged
+      },
+
+      clamp: {
+        type: Boolean
       }
     };
   }
@@ -89,7 +93,7 @@ class D3Scale extends LitElement {
   updateWrapper(props) {
     let shallNotify = this.__init;
     props.forEach((value, key) => {
-      if ((this[key] !== undefined) && key !== 'scale' && this.scale[key]) {
+      if ((this[key] !== undefined) && key !== 'scale' && key !== 'scaleType' && this.scale[key]) {
         shallNotify = true;
         this.log && console.info(`d3-scale ${this.type} updates ${key} to ${JSON.stringify(this[key])}`);
         this.scale[key](this[key]);

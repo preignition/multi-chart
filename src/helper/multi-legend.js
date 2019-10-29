@@ -207,8 +207,8 @@ DispatchSVG(
       // Note(cg): async as we need to make sure legend is drawn before we can calculate real size and adjust position.
       // this.selectShadow('#legend').call(this.legend);
       select(this.$.legend).call(this.legend);
-      setTimeout(() => { this.setPosition(); }, 50);
-    }, 10);
+      setTimeout(() => { this.setPosition(); }, 150);
+    }, 50);
   }
 
   setLegend(legend) {
