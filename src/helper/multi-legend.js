@@ -19,13 +19,13 @@ import { select } from 'd3-selection';
  * ### Styling
  * `<multi-drawable-feature>` provides the following custom properties and mixins
  * for styling:
- * 
+ *
  * Custom property | Description | Default
  * ----------------|-------------|----------
  * `--multi-legend-color` | text color for legends | `#292929`
- * `--multi-legend-background` | background color for legenx box | `#efefef` 
- * `--multi-legend-stroke` | stroke color for legend box | `none` 
- * `--multi-legend-opacity` | opacity for legend box | `0.6` 
+ * `--multi-legend-background` | background color for legenx box | `#efefef`
+ * `--multi-legend-stroke` | stroke color for legend box | `none`
+ * `--multi-legend-opacity` | opacity for legend box | `0.6`
  * `--multi-legend` | Mixin applied to legend | `{}`
 
  *
@@ -50,7 +50,7 @@ DispatchSVG(
 
   // Note(cg): style to add to svghost while dispatching SVG.
   static get hostStyles() {
-    return css`
+    return css `
 
     #legend.legend .legendCells {
       fill: var(--multi-legend-color, #292929);
@@ -66,7 +66,7 @@ DispatchSVG(
       stroke: var(--multi-legend-stroke, none);
       opacity: var(--multi-legend-opacity, 0.6);
     }`;
-  } 
+  }
 
   render() {
     return html `
@@ -91,7 +91,7 @@ DispatchSVG(
 
       ...Legend.properties,
       /**
-       * legend `type` the type of legend (`color`, `size`, `symbol`) 
+       * legend `type` the type of legend (`color`, `size`, `symbol`)
        * for instantiating the legend ([d3-legend](http://d3-legend.susielu.com/).
        */
       type: {
@@ -114,7 +114,7 @@ DispatchSVG(
         value: 0
       },
 
-      /* 
+      /*
        * `retOffset` the offset for legend rect
        */
       rectOffset: {
@@ -129,7 +129,7 @@ DispatchSVG(
 
       /**
        * `position` this position within the chart. e.g. top-right, bottom-left
-       * position is recalculated on resize. 
+       * position is recalculated on resize.
        */
       position: {
         type: String,
@@ -137,7 +137,7 @@ DispatchSVG(
       },
 
       /**
-       * `padding` the padding to be applied when calculation the position 
+       * `padding` the padding to be applied when calculation the position
        */
       padding: {
         type: Number,
@@ -170,19 +170,10 @@ DispatchSVG(
 
   updated(props) {
     super.updated(props);
-    if(props.has('position')) {
+    if (props.has('position')) {
       this.debounceDraw();
     }
   }
-
-
-
-  // connectedCallback() {
-  //   super.connectedCallback();
-  //   // this.addEventListener('multi-refresh', this.onRefresh);
-  //   // this.notifyResize();
-
-  // }
 
   resize() {
     this.debounceDraw();
@@ -194,7 +185,7 @@ DispatchSVG(
       timeOut.after(10),
       () => {
         this.draw(this._shaped);
-        this._isDrawn = true;
+        // this._isDrawn = true;
       });
   }
 
@@ -203,12 +194,16 @@ DispatchSVG(
   }
 
   draw() {
-    setTimeout(() => {
-      // Note(cg): async as we need to make sure legend is drawn before we can calculate real size and adjust position.
-      // this.selectShadow('#legend').call(this.legend);
-      select(this.$.legend).call(this.legend);
-      setTimeout(() => { this.setPosition(); }, 150);
-    }, 50);
+    if (!this._isDrawn) {
+      setTimeout(() => {
+        // Note(cg): async as we need to make sure legend is drawn before we can calculate real size and adjust position.
+        // this.selectShadow('#legend').call(this.legend);
+        select(this.$.legend).call(this.legend);
+        setTimeout(() => { this.setPosition(); }, 250);
+      }, 50);
+    } else {
+      setTimeout(() => { this.setPosition(); }, 40);
+    }
   }
 
   setLegend(legend) {
@@ -261,6 +256,5 @@ DispatchSVG(
     this.height = size.height;
   }
 }
-
 
 export default MultiLegend;
