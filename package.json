@@ -16,7 +16,7 @@
   "version": "4.1.3",
   "license": "MIT",
   "authors": [
-    "christophe.geiser <christophe.geiser@preignition.org>"
+    "christophe.geiser <christophe@preignition.org>"
   ],
   "files": [
     "src/**",
