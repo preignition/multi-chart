@@ -13,7 +13,7 @@
   "repository": "https://github.com/preignitionl/multi-chart",
   "homepage": "webcomponents.org/preignition/multi-chart",
   "name": "@preignition/multi-chart",
-  "version": "4.1.3",
+  "version": "4.2.0",
   "license": "MIT",
   "authors": [
     "christophe.geiser <christophe@preignition.org>"
