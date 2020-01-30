@@ -103,7 +103,7 @@ class MultiDrawable extends(
   }
 
   get minSize() {
-    if(this.width && this.height) {
+    if (this.width && this.height) {
       return Math.min(this.width, this.height);
     }
     return null;

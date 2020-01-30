@@ -10,16 +10,16 @@ import { DefaultValueMixin, DoNotSetUndefinedValue } from '@preignition/preignit
 import { LitNotify } from '@morbidick/lit-element-notify';
 import { default as dataGroupProps } from './properties/data-group.js';
 
-// Note(cg): yet to do 
-// 
+// Note(cg): yet to do
+//
 // - [x] remove loops over groupName
 // - [x] remove groupName
 // - [x] force creation of scale depending on position (top / bottom / ...)
 // - [ ] integrate stack
-// - [x] properly bind config: it should be easy to set it from multi-container. 
+// - [x] properly bind config: it should be easy to set it from multi-container.
 //       easyt to set min max
 // - [x] remove config object
-// - [x] review axis listeners. 
+// - [x] review axis listeners.
 
 // .
 
@@ -31,15 +31,15 @@ Registerable(
         DoNotSetUndefinedValue(
           LitElement))))) {
 
-  /* 
-   * `registerEventDispatch`  the name of the event to be fired when connected. 
-   * A container with multi-register-mixin applied 
+  /*
+   * `registerEventDispatch`  the name of the event to be fired when connected.
+   * A container with multi-register-mixin applied
    * will listen to this event to register the component.
    *
    * @override Registerable
    */
   get registerEventDispatch() {
-    return 'multi-data-group-register'
+    return 'multi-data-group-register';
   }
 
   static get properties() {
@@ -52,24 +52,24 @@ Registerable(
 
       log: { type: Boolean },
 
-      /* 
+      /*
        * `data` to display the chart
        */
       data: { type: Array },
 
-      /* 
+      /*
        * `group` the name of the group. default for default group
        */
       group: { type: String },
 
       /*
-       * `_registeredItems` the list of registerd Items under this group. 
+       * `_registeredItems` the list of registerd Items under this group.
        */
       _registeredItems: { type: Array },
 
       /*
        * `series` the series belonging to this serie group
-       * `series` the list of data serie registered for this container. 
+       * `series` the list of data serie registered for this container.
        * We can eiher pass a serie array like [{key: 'apple', label:'apple'}, accessor: d => +d.value.apple}, {key: 'orange', label:'orange'}, accessor: d => +d.value.orange}], 
        *  or use `<multi-serie>` component to register series via markup
        *
@@ -99,7 +99,7 @@ Registerable(
       this.setHostDomain(this.valuePosition, [...this.getDomainMinMax()]);
     }
     if (props.has('stacked')) {
-      this._handleStackedChanged()
+      this._handleStackedChanged();
     }
   }
 
@@ -119,20 +119,20 @@ Registerable(
 
   _processDataChanged() {
     if (!this.group) {
-      throw new Error(`group name has to be set for multi-data-group. `)
+      throw new Error(`group name has to be set for multi-data-group. `);
     }
     if (Array.isArray(this.data) && this.data.length) {
 
-      let multiData
+      let multiData;
 
       if (this.processType) {
-        multiData = this._processByType(this.processType, this.data)
+        multiData = this._processByType(this.processType, this.data);
       } else if (this.series && this.series.length) {
-        multiData = this._processSeries()
+        multiData = this._processSeries();
       }
 
       // Note(cg): processByType and processSeries returns a new array
-      // we need to make sure charts will respond to mutation when 
+      // we need to make sure charts will respond to mutation when
       // no series and no processType (e.g. pie).
       this._multiData = multiData || [...this.data];
       this._callDataChanged(this._multiData);
@@ -140,14 +140,11 @@ Registerable(
 
   }
 
-
-
   _processByType(processType, data) {
 
     if (processType === 'stack') {
 
-      let keyAccessor = this.keyAccessor;
-
+      const keyAccessor = this.keyAccessor;
 
         // Note(cg): series and shaper stack data.
         let tmpMax = -Infinity;
@@ -165,17 +162,16 @@ Registerable(
         });
 
         // Note(cg): cache domains to re-use when stacked changes eventually.
-        this._max = this.max ? this.max :  tmpMax;
-        this._stackedMax = this.max ? this.max : max(_multiData[_multiData.length - 1], d => d[1])
+        this._max = this.max ? this.max : tmpMax;
+        this._stackedMax = this.max ? this.max : max(_multiData[_multiData.length - 1], d => d[1]);
 
       // this.setHostDomain(this.keyPosition, this.getOrdinalDomain(this.data, keyAccessor, serie.accessor, serie.continuous););
       const valueScale = this.getHostValue(`${this.valuePosition}Scale`);
       const keyScale = this.getHostValue(`${this.keyPosition}Scale`);
-      const isContinuous = keyScale.category === 'continuous'
+      const isContinuous = keyScale.category === 'continuous';
 
       this.setHostDomain(this.keyPosition, this.getOrdinalDomain(this.data, this.keyAccessor, this.accessor, isContinuous));
       this.setHostDomain(this.valuePosition, [0, this.stacked ? this._stackedMax : this._max]);
-
 
       this.dispatchEvent(new CustomEvent('data-group-rescaled', {
         detail: {
@@ -214,8 +210,8 @@ Registerable(
         }
       });
 
-      const domain = this.getDomainMinMax([min, max])
-      if(valueScale) {
+      const domain = this.getDomainMinMax([min, max]);
+      if (valueScale) {
         valueScale.domain(domain);
       }
       this.setValueDomain(domain);
@@ -232,16 +228,15 @@ Registerable(
 
       // this._mapProcessed = true;
       this.choroplethMap = map;
-      
       return map;
 
     }
-    throw new Error(`Trying to process data throught an unknown type (${processType})`)
+    throw new Error(`Trying to process data throught an unknown type (${processType})`);
   }
 
   _processSeries() {
     // Note(cg): we transform serie data differently for charts that expect stacked data or not.
-    let keyAccessor = this.keyAccessor;
+    const keyAccessor = this.keyAccessor;
 
     // Note(cg): series, no stack.
 
@@ -296,7 +291,7 @@ Registerable(
     const position = this.valuePosition;
     domain = domain || host[`${position}Domain`];
 
-    const { min, max } = this
+    const { min, max } = this;
     if (min || min === 0) {
       domain[0] = min;
     }
@@ -329,7 +324,7 @@ Registerable(
     }
   }
 
-  /* 
+  /*
    * `shallNotify` should return true to actually render the component
    */
   shallNotify(data) {

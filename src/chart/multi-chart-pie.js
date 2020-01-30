@@ -55,7 +55,7 @@ class MultiChartPie extends MultiContainer {
 
       /**
        * `pieWidth` a way to indicate the width of the radius (either in % or absolute value). 
-       * If set, inner radius will be inferred. 
+       * If set, inner radius will be inferred.
        */
       pieWidth: {
         type: String,

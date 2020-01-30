@@ -23,13 +23,13 @@ import  { Pie, Arc }  from '../d3-wrapper/d3-shape.js';
 class MultiDrawablePie extends 
   Shaper(
     MultiDrawable) {
-  render () {
+  render() {
     return html`
      ${this.valuePath ? html`
         <multi-accessor 
           .path="${this.valuePath}"
           @accessor-changed="${e => this.value = e.detail.value}" 
-        ></multi-accessor>` : '' }
+        ></multi-accessor>` : ''}
          <d3-shape-pie 
           .value="${this.value}" 
           .padAngle="${this.padAngle}" 
@@ -38,8 +38,8 @@ class MultiDrawablePie extends
           @shape-changed="${this.onSetShaper}" 
          ></d3-shape-pie>
          <d3-shape-arc 
-          .innerRadius="${ this.getPieWidth() || this.innerRadius}" 
-          .outerRadius="${ this.getOuterRadius() || this.outerRadius}" 
+          .innerRadius="${this.getPieWidth() || this.innerRadius}" 
+          .outerRadius="${this.getOuterRadius() || this.outerRadius}" 
           .cornerRadius="${this.cornerRadius}" 
           @shape-changed="${e => this.arc = e.detail.value}" 
         ></d3-shape-arc>
@@ -62,8 +62,8 @@ class MultiDrawablePie extends
       ...Arc.properties,
 
       /**
-       * `pieWidth` a way to indicate the width of the radius (either in % or absolute value). 
-       * If set, inner radius will be inferred. 
+       * `pieWidth` a way to indicate the width of the radius (either in % or absolute value).
+       * If set, inner radius will be inferred.
        */
       pieWidth: {
         type: String
@@ -85,14 +85,14 @@ class MultiDrawablePie extends
 
   getOuterRadius() {
     if (typeof this.outerRadius !== 'function' && this.minSize) {
-      return  this.minSize / 2;
-    } 
+      return this.minSize / 2;
+    }
   }
 
   getPieWidth() {
-    if (this.pieWidth ) {
+    if (this.pieWidth) {
         const outerRadius = this.getOuterRadius();
-        return (this.pieWidth + '').endsWith('%') ?  outerRadius * (1 - parseFloat(this.pieWidth)/100) : outerRadius - parseFloat(this.pieWidth);
+        return (this.pieWidth + '').endsWith('%') ? outerRadius * (1 - parseFloat(this.pieWidth) / 100) : outerRadius - parseFloat(this.pieWidth);
     }
   }
 
@@ -105,7 +105,7 @@ class MultiDrawablePie extends
 
   draw() {
    const data = this.drawableData;
-    if(!this.width || !this.height || !data) {
+    if (!this.width || !this.height || !data) {
       return;
     }
 
@@ -113,12 +113,12 @@ class MultiDrawablePie extends
 
     if (this.shallTransition) {
       chart.each(function(d) {
-        this._current = Object.assign({},d);
+        this._current = Object.assign({}, d);
       });
     }
 
     // var arcs = this.pie(data);
-    const arcs = this.shaper(data); //this.$.shaper.shapedData;
+    const arcs = this.shaper(data); // this.$.shaper.shapedData;
     const arc = this.arc;
     const colorScale = this.colorScale;
 
@@ -127,7 +127,7 @@ class MultiDrawablePie extends
     chart.exit().remove();
 
     chart = chart.enter().append(this.shapeName)
-      .attr('class',`${this.shapeClass} selectable shape`)
+      .attr('class', `${this.shapeClass} selectable shape`)
       .merge(chart);
 
     if (this.shallTransition) {
@@ -157,8 +157,8 @@ class MultiDrawablePie extends
         return colorScale(d.data.key);
       });
 
-    return chart;  
+    return chart;
   }
 }
 
-export default MultiDrawablePie ;
+export default MultiDrawablePie;

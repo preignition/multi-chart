@@ -84,16 +84,15 @@ DrawableSerie(
 
       ...Stack.properties,
 
-      /* 
+      /*
        * `stacked` if true, draw a stack chart, otherwise, default bar chart
        */
       stacked: {
         type: Boolean
       },
 
-
-      /* 
-       * `serieName` used for resetting value domain. 
+      /*
+       * `serieName` used for resetting value domain.
        */
       serieName: {
         type: String,
@@ -134,14 +133,14 @@ DrawableSerie(
 
     // Note(cg): we add selectable to shape only if selectSerie is not true.
     if (!this.selectSerie) {
-      chart instanceof Transition 
+      chart instanceof Transition
       ? chart.selection().classed('selectable', true)
       : chart.classed('selectable', true);
     }
 
     let bandwidth = this.xScale.bandwidth;
     let align = 0;
-    let xScale = this.xScale;
+    const xScale = this.xScale;
     // we might have an x-scale that does not have a bandwidth, e.g. when we have date on x-axis and use a timeScale
     if (!bandwidth) {
       bandwidth = scaleBand().domain(data[0].map((d, i) => this.xScale(d[3] || i))).range(this.xScale.range()).padding(0.2).bandwidth;

@@ -1,4 +1,5 @@
 import { html } from 'lit-element';
+import { default as ScaleRender } from './mixin/scale-render-mixin.js';
 import { default as MultiContainer } from './multi-container.js';
 import { default as Scale } from '../d3-wrapper/d3-scale.js';
 import { default as Axis } from '../d3-wrapper/d3-axis.js';
@@ -7,7 +8,7 @@ import { valueProperties as axisValueProperties } from './properties/container-a
 import { default as axisProps } from '../drawable/properties/axis.js';
 
 
-class MultiContainerAxis extends MultiContainer {
+class MultiContainerAxis extends ScaleRender(MultiContainer) {
 
   getContentRender() {
     return html `
@@ -20,7 +21,7 @@ class MultiContainerAxis extends MultiContainer {
       ${this.rightAxis ? this.getAxisRender('right') : ''}
       ${this.bottomAxis ? this.getAxisRender('bottom') : ''}
       ${this.leftAxis ? this.getAxisRender('left') : ''}
-    `
+    `;
   }
 
   static get properties() {
@@ -35,22 +36,7 @@ class MultiContainerAxis extends MultiContainer {
       ...extendProperty('left', Axis.properties, Scale.properties, axisProps),
 
       ...axisValueProperties,
-    }
-  }
-
-    getScaleRender(type, axis) {
-    return html `
-     <d3-scale 
-        .scaleType="${this[`${type}ScaleType`]}" 
-        .range="${this.getRange(type)}" 
-        .domain="${this[`${type}Domain`]}" 
-        .unknown="${this[`${type}Unknown`]}" 
-        .padding="${this[`${type}Padding`]}" 
-        .paddingOuter="${this[`${type}PaddingOuter`]}" 
-        .paddingInner="${this[`${type}PaddingInner`]}" 
-        .align="${this[`${type}Align`]}" 
-
-        @scale-changed="${e => {this[`${type}Scale`] = e.detail.value; this.refresh();}}"></d3-scale>`
+    };
   }
 
   getAxisRender(type) {
@@ -71,8 +57,8 @@ class MultiContainerAxis extends MultiContainer {
         .tickFormat="${this[`${type}TickFormat`]}"         
         .tickArguments="${this[`${type}TickArguments`]}" 
         ></multi-axis>
-     `
+     `;
   }
 }
 
-export default MultiContainerAxis
+export default MultiContainerAxis;

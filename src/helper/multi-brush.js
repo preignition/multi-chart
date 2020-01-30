@@ -118,7 +118,7 @@ DispatchSVG(
       /**
        * `xContinuous` indicate true if we have a `continuous` scale on X when the xScale is `ordinal` (e.g. a scaleBand for bar charts). If true a `xContinuousScale` is computed
        */
-      xContinuous: { 
+      xContinuous: {
         type: Boolean,
         attribute: 'x-continuous'
       },
@@ -135,6 +135,9 @@ DispatchSVG(
     };
   }
 
+  /**
+   * From RelayTo mixin, used to automatically relay properties to child components
+   */
   shallRelayTo(key, name) {
     if (name === 'd3-brush') {
       return Brush.properties[key];

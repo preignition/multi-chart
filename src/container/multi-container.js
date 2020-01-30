@@ -10,12 +10,10 @@ import { MultiChartBase } from '../base-class.js';
 import { pattern } from './pattern-template.js';
 import { valueProperties as dataGroupValueProperties } from './properties/data-group.js';
 
-
-
 /**
  * # MultiContainer
- * 
- * `<multi-chart-base>` is a base element for buiding charts 
+ *
+ * `<multi-chart-base>` is a base element for buiding charts
  *
  *
  * ### Events
@@ -31,9 +29,9 @@ import { valueProperties as dataGroupValueProperties } from './properties/data-g
  *
  *
  * @memberof MultiChart
- * @appliesMixin  Vaadin.ThemableMixin    
- * @appliesMixin  MultiChart.mixin.MultiRegister    
- * @appliesMixin  MultiChart.mixin.SVGHelper   
+ * @appliesMixin  Vaadin.ThemableMixin
+ * @appliesMixin  MultiChart.mixin.MultiRegister
+ * @appliesMixin  MultiChart.mixin.SVGHelper
  * @appliesMixin MultiChart.mixin.Accessor
  * @appliesMixin  MultiChart.mixin.Zoomable
  * @customElement
@@ -42,18 +40,18 @@ import { valueProperties as dataGroupValueProperties } from './properties/data-g
 
 
 class MultiContainer extends
-  MultiData(
-    ObserveResize(
-      MultiRegister(
-        CacheId(
-          Zoomable(
-            MultiChartBase))))) {
+MultiData(
+  ObserveResize(
+    MultiRegister(
+      CacheId(
+        Zoomable(
+          MultiChartBase))))) {
 
-// Note(cg): Hack allowing extend multi-container
-// in other libraries 
+  // Note(cg): Hack allowing extend multi-container
+  // in other libraries
   get html() {
     return html;
-  } 
+  }
 
   static get styles() {
     return css `
@@ -139,7 +137,7 @@ class MultiContainer extends
       </svg>
       <slot name="footer"></slot>
       <slot name="svg"></slot>
-      ${this.pattern ? pattern: ''}
+      ${this.pattern ? pattern : ''}
     `;
   }
 
@@ -151,17 +149,9 @@ class MultiContainer extends
     return '';
   }
 
-  getRange(type) {
-    if (type) {
-
-      return type === 'left' || type === 'right' ? [this.height, 0] : [0, this.width];
-    }
-    return [0, 1];
-  }
-
   /**
    * return a scaled accessor function
-   * @param  {d3Scale} scale    scale as 
+   * @param  {d3Scale} scale    scale as
    * @param  {Function} accessor function (exampe: `(d,i) => d.value.x``)
    * @return {Function} an accessor function
    */
@@ -186,12 +176,12 @@ class MultiContainer extends
       bottomMargin: { type: Number, attribute: 'bottom-margin' },
       leftMargin: { type: Number, attribute: 'left-margin' },
 
-      /* 
+      /*
        * `width`  of the chart area. Equals actual width of component - margins
        */
       width: { type: Number, },
 
-      /* 
+      /*
        * `height`  of the chart area. Equals actual height of component - margins
        */
       height: { type: Number, },
@@ -204,11 +194,11 @@ class MultiContainer extends
       /*
        * `multiVerseGroup` group name send along with `multi-verse-added`
        */
-       multiVerseGroup: {
-         type: String,
-         attribute: 'multi-verse-group',
-         value: 'default'
-         },
+      multiVerseGroup: {
+        type: String,
+        attribute: 'multi-verse-group',
+        value: 'default'
+      },
 
       /*
        * colorScale for the chart
@@ -237,26 +227,27 @@ class MultiContainer extends
     // Note(cg): allow drawble elements to be registered in this container.
     this.addEventListener('multi-drawn', this.onDrawn);
 
-    // Note(cg): multi-data-group notify value-position. We need to make sure 
+    // Note(cg): multi-data-group notify value-position. We need to make sure
     // a scale exist for used position (left, bottom,...)
     this.addEventListener('value-position-changed', this._onScalePosition);
     this.addEventListener('key-position-changed', this._onScalePosition);
   }
 
   updated(props) {
-    super.updated(props)
+    super.updated(props);
     if (props.has('topMargin') || props.has('rightMargin') || props.has('bottomMargin') || props.has('leftMargin')) {
-      this.onResize()
+      this.onResize();
     }
   }
 
   firstUpdated(changedProperties) {
-    super.firstUpdated(changedProperties)
+    super.firstUpdated(changedProperties);
     // Note(cg): chart container might be registered against multi-verse. We nee to notify their creation upwards.
     this.dispatchEvent(new CustomEvent('multi-verse-added', { detail: this.multiVerseGroup, bubbles: true, composed: true }));
     this.onResize();
     this.assignSlottedSVG();
   }
+  
   disconnectedCallback() {
     // TODO(cg): replace multi-removed -> multi-verse-remover
     // XXX(cg): this event will never be caught! unregister from host instead like for drawablse
@@ -264,7 +255,7 @@ class MultiContainer extends
     super.disconnectedCallback();
   }
 
-  // Note(cg): refresh drawable components for the chart. 
+  // Note(cg): refresh drawable components for the chart.
   refresh() {
     this.callRegistered('debounceDraw');
   }
@@ -278,9 +269,9 @@ class MultiContainer extends
   }
 
   onRegister(item) {
-    super.onRegister && super.onRegister(item)
+    super.onRegister && super.onRegister(item);
     if (this.width && this.height && item.resize) {
-      item.resize(this.width, this.height)
+      item.resize(this.width, this.height);
     }
   }
 
@@ -311,12 +302,12 @@ class MultiContainer extends
   assignSlottedSVG() {
     const nodes = [];
     const treeWalker = (root) => {
-      return document.createTreeWalker(root, NodeFilter.SHOW_ELEMENT, { acceptNode: function(node) {return NodeFilter.FILTER_ACCEPT;}}, false);
+      return document.createTreeWalker(root, NodeFilter.SHOW_ELEMENT, { acceptNode: function(node) { return NodeFilter.FILTER_ACCEPT; } }, false);
     };
 
     const assignedNodes = (node) => {
       let n = node;
-      while(n.assignedNodes && n.assignedNodes()[0] ) {
+      while (n.assignedNodes && n.assignedNodes()[0]) {
         n = n.assignedNodes()[0];
       }
       return n;
@@ -331,7 +322,7 @@ class MultiContainer extends
           nodes.push(currentNode);
         }
         // Note(cg): slotted assigned elements are not catched by try treewalker.
-        if(currentNode.localName === 'slot') {
+        if (currentNode.localName === 'slot') {
           loop(assignedNodes(currentNode));
         }
       }
@@ -339,22 +330,22 @@ class MultiContainer extends
     loop(this);
 
     nodes.forEach(node => {
-       const target = node.getAttribute('slot-svg');
-       const parent = this.$[target];
-        if (parent) {
-          const position = node.dataset.multiPosition;
-          const appended = [...parent.childNodes].some(n => {
-               if(node.dataset.multiPosition >= position) {
-                 parent.insertBefore(node, n);
-                 return true;
-               }   
-           })
-           if(!appended) {
-               parent.appendChild(node);
-             }
-           // select(this.$[target]).selectAll('>*').sort((a,b) => a.multiPosition - b.multiPosition);
+      const target = node.getAttribute('slot-svg');
+      const parent = this.$[target];
+      if (parent) {
+        const position = node.dataset.multiPosition;
+        const appended = [...parent.childNodes].some(n => {
+          if (node.dataset.multiPosition >= position) {
+            parent.insertBefore(node, n);
+            return true;
+          }
+        })
+        if (!appended) {
+          parent.appendChild(node);
         }
-        this.log && console.warn(`cannot dispatch node ${target}`);
+        // select(this.$[target]).selectAll('>*').sort((a,b) => a.multiPosition - b.multiPosition);
+      }
+      this.log && console.warn(`cannot dispatch node ${target}`);
     });
     // console.info('NODES', nodes);
   }

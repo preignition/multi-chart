@@ -47,7 +47,7 @@ class MultiDrawableLinePath extends
 
   draw() {
     const data = this.drawableData;
-    if(!this.width || !this.height || !data) {
+    if (!this.width || !this.height || !data) {
       return;
     }
 
@@ -66,4 +66,4 @@ class MultiDrawableLinePath extends
   }
 }
 
-export default  MultiDrawableLinePath;
+export default MultiDrawableLinePath;

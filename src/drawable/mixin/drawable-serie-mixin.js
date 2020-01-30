@@ -11,8 +11,8 @@ const MultiDrawableSerie = dedupingMixin( superClass => {
 
         ...super.properties,
 
-        /* 
-         * `selectSerie` if true, will set the `selectable` attribute at serie level. Default (falsy) will 
+        /*
+         * `selectSerie` if true, will set the `selectable` attribute at serie level. Default (falsy) will
          * add `selectable` attribute to each individual shape (rect in car chart, circle in bubble chart)
          */
         selectSerie: {
@@ -36,7 +36,7 @@ const MultiDrawableSerie = dedupingMixin( superClass => {
       return chart;
     }
 
-    /* 
+    /*
      * `drawSerieGroup` builds one level of data  binding -> remove superfluous -> append new -> merge -> return chart
      * We can hence call this function for first grouping all keys and then build individual shapes (see multi-drawable-bubble)
      */
@@ -62,16 +62,16 @@ const MultiDrawableSerie = dedupingMixin( superClass => {
 
     }
 
-    /* 
+    /*
      * `draw` serie data, which are in the form of [{key, label, data: [dataValues]}]
      */
     draw() {
       const data = this.drawableData;
-      if(!this.width || !this.height || !data) {
+      if (!this.width || !this.height || !data) {
         return;
       }
 
-      let chart = this.drawSerieGroup(data, this.shapeName, this.shapeClass, null, this.transition);
+      const chart = this.drawSerieGroup(data, this.shapeName, this.shapeClass, null, this.transition);
 
       // Note(cg): individual serie members (e.g. draw individual line or bar) are handled by subclasses .
       return this.drawSerieElement(chart, data);

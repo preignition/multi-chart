@@ -1,4 +1,6 @@
 export { default as DrawableAxis } from './multi-axis.js'
+export { default as DrawableRadarAxes } from './multi-radar-axes.js'
+export { default as DrawableRadar} from './multi-drawable-radar.js'
 export { default as DrawablePie } from './multi-drawable-pie.js'
 export { default as DrawableLine } from './multi-drawable-line.js'
 export { default as DrawableLinePath } from './multi-drawable-line-path.js'

@@ -4,14 +4,14 @@ import { default as MultiDrawable } from './multi-drawable.js';
 import { default as DrawableSerie } from './mixin/drawable-serie-mixin.js';
 import { default as Shaper } from './mixin/drawable-shaper-mixin.js';
 
-import  { Line }  from '../d3-wrapper/d3-shape.js';
+import { Line } from '../d3-wrapper/d3-shape.js';
 
  // TODO(cg): Make this as a sublcass ot MultiDrawableLinePath.
-class MultiDrawableLine extends  
+class MultiDrawableLine extends
   DrawableSerie(
     Shaper(
       MultiDrawable)) {
-  
+
     // Note(cg): style to add to svghost while dispatching SVG.
     static get hostStyles() {
       return css`
@@ -21,7 +21,7 @@ class MultiDrawableLine extends
           stroke: var(--drawable-line-stroke);
         }
       `;
-    } 
+    } ;
 
   render() {
     return html`
@@ -60,4 +60,4 @@ class MultiDrawableLine extends
   }
 }
 
-export default MultiDrawableLine ;
+export default MultiDrawableLine;

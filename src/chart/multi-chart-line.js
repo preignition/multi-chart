@@ -7,13 +7,13 @@ import { Line } from '../d3-wrapper/d3-shape.js';
 /**
  * ## MultiChartLine
  *
- * `<multi-chart-line>` an element for displaying data as a line chart. 
- * 
+ * `<multi-chart-line>` an element for displaying data as a line chart.
+ *
  * ### Example
  *
  * ```html
- *    <multi-chart-line 
- *        id="chart"  
+ *    <multi-chart-line
+ *        id="chart"
  *        color-scale="[[colorScale]]"
  *        data="[[data]]"
  *        left-tick-format="[[leftTickFormat]]">
@@ -25,12 +25,12 @@ import { Line } from '../d3-wrapper/d3-shape.js';
  *         <multi-accessor accessor="{{item.accessor}}" path="+value.[[item.key]]"></multi-accessor>
  *        </template>
  *      </dom-repeat>
- *    </multi-chart-line>   
+ *    </multi-chart-line>
  * ```
 
  **/
 class MultiChartLine extends MultiContainer {
-  
+
   getContentRender() {
     return html`
       ${super.getContentRender()}
@@ -41,7 +41,7 @@ class MultiChartLine extends MultiContainer {
          .x="${this.x}"
          .y="${this.y}"
       ></multi-drawable-line>
-    `
+    `;
   }
 
   constructor() {
@@ -51,13 +51,12 @@ class MultiChartLine extends MultiContainer {
 
   onDataGroupRescaled(e) {
     this.log && console.log('data-group-rescaled', e);
-    this.x = this.getAccessor(e.detail.xScale, e.detail.xAccessor) ;
-    this.y = this.getAccessor(e.detail.yScale, e.detail.yAccessor) ;
+    this.x = this.getAccessor(e.detail.xScale, e.detail.xAccessor);
+    this.y = this.getAccessor(e.detail.yScale, e.detail.yAccessor);
   }
 
   static get properties() {
     return {
-      
       ...super.properties,
 
       ...Line.properties,

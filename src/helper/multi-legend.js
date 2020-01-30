@@ -157,6 +157,9 @@ DispatchSVG(
     };
   }
 
+  /**
+   * From RelayTo mixin, used to automatically relay properties to child components
+   */
   shallRelayTo(key, name) {
     if (name === 'd3-legend') {
       return Legend.properties[key];

@@ -35,7 +35,7 @@ const props = {
   },
 
   /*
-   * `stacked` true when data is stacked 
+   * `stacked` true when data is stacked
    */
   stacked: { type: Boolean },
 
@@ -49,7 +49,7 @@ const props = {
    */
   max: { type: Number },
 
-  /* 
+  /*
    * `continuous` true to set continuous ordinal domain for this group
    * For instance, time series are continusou
    */
@@ -62,9 +62,9 @@ const values = {
   keyPosition: 'bottom',
   valueAccessor: () => accessor.value,
   keyAccessor: () => accessor.key,
-}
+};
 
-const valueProperties = Object.assign({}, props)
+const valueProperties = Object.assign({}, props);
 Object.keys(values).forEach(k => valueProperties[k].value = values[k]);
 
 export default props;

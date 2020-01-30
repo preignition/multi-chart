@@ -96,10 +96,13 @@ class MultiAxis extends
         type: String,
         reflect: true
       }
-    }
+    };
 
   }
 
+/**
+   * From RelayTo mixin, used to automatically relay properties to child components
+   */
    shallRelayTo(key, name) {
     if (name === 'd3-axis') {
       return Axis.properties[key];
@@ -108,11 +111,10 @@ class MultiAxis extends
 
   update(props) {
     super.update(props);
-    this.relayTo(props, 'd3-axis'); 
+    this.relayTo(props, 'd3-axis');
   }
 
   draw(data) {
-    
     const sel = select(this.$.axis);
     if (sel && this.scale && this.axis) {
 
