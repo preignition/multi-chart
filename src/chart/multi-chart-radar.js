@@ -1,11 +1,16 @@
 import { html } from 'lit-element';
 import { default as MultiContainerRadar } from '../container/multi-container-radar.js';
-// import { range} from 'd3-array';
 import { scaleLinear, scaleOrdinal } from 'd3-scale';
 import { curveCardinalClosed } from 'd3-shape';
-// import { scaleLinear } from 'd3-scale';
-import  { LineRadial }  from '../d3-wrapper/d3-shape.js';
+import { LineRadial }  from '../d3-wrapper/d3-shape.js';
 
+
+/**
+ * ## Radar Chart
+ * A radar chart is a graphical method of displaying multivariate data in the form of a two-dimensional chart of three or more quantitative variables represented on axes starting from the same point. The relative position and angle of the axes is typically uninformative, but various heuristics, such as algorithms that plot data as the maximal total area, can be applied to sort the variables (axes) into relative positions that reveal distinct correlations, trade-offs, and a multitude of other comparative measures.
+ *
+ * @element multi-radar-chart
+ */
 class MultiChartRadar extends MultiContainerRadar {
 
   getContentRender() {
@@ -33,7 +38,7 @@ class MultiChartRadar extends MultiContainerRadar {
 
       /*
        * `tension` tension for [curveCardinalClosed](https://github.com/d3/d3-shape#curveCardinalClosed)
-       * value between 0 an 1. 
+       * value between 0 an 1.
        */
       tension: {
         type: Number,

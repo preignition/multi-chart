@@ -1,0 +1,247 @@
+{
+  "version": "experimental",
+  "tags": [
+    {
+      "name": "multi-chart-bar",
+      "path": "./../src/chart/multi-chart-bar.js",
+      "description": "## MultiChartBar\n\n`<multi-chart-line>` an element for displaying data as a line chart. \n\n### Example\n\n```html\n    <multi-chart-bar \n        id=\"chart\"  \n        color-scale=\"[[colorScale]]\"\n        data=\"[[data]]\"\n        left-tick-format=\"[[leftTickFormat]]\">\n      <dom-repeat items=\"{{keys}}\">\n        <template>\n         <!-- set the series inthe markup. We can also pass a series object directly to the chart. -->\n         <multi-serie key=\"[[item.key]]\" label=\"[[item.label]]\" accessor=\"{{item.accessor}}\"></multi-serie>\n         <!-- we need a accessor for y-scale -->\n         <multi-accessor accessor=\"{{item.accessor}}\" path=\"+value.[[item.key]]\"></multi-accessor>\n        </template>\n      </dom-repeat>\n    </multi-chart-bar>   \n```",
+      "attributes": [
+        {
+          "name": "stacked",
+          "description": "`stacked` if true, draw a stack chart, otherwise, default bar chart",
+          "type": "boolean"
+        },
+        {
+          "name": "value-path",
+          "description": "`valuePath` we can pass a value path to calculate value accessor",
+          "type": "string"
+        },
+        {
+          "name": "bottom-scale-type",
+          "type": "string",
+          "default": "\"band\""
+        },
+        {
+          "name": "top-margin",
+          "type": "number"
+        },
+        {
+          "name": "right-margin",
+          "type": "number"
+        },
+        {
+          "name": "bottom-margin",
+          "type": "number"
+        },
+        {
+          "name": "left-margin",
+          "type": "number"
+        },
+        {
+          "name": "group",
+          "description": "`group` the name of the group (used when to registering this element under a multi-verse)",
+          "type": "string"
+        },
+        {
+          "name": "multi-verse-group",
+          "description": "`multiVerseGroup` group name send along with `multi-verse-added`",
+          "type": "string",
+          "default": "\"default\""
+        },
+        {
+          "name": "colorScale",
+          "description": "colorScale for the chart"
+        },
+        {
+          "name": "pattern",
+          "description": "`pattern` set true for charts using patterns (e.g. geo charts)",
+          "type": "boolean"
+        },
+        {
+          "name": "process-type",
+          "description": "`processType`  the type of process type, e.g. stack for bar Chart",
+          "type": "string"
+        },
+        {
+          "name": "data",
+          "description": "`data` to display the chart",
+          "type": "array"
+        },
+        {
+          "name": "transition",
+          "description": "`transition` to apply while drawing"
+        },
+        {
+          "name": "width",
+          "description": "`width`  of the chart area. Equals actual width of component - margins",
+          "type": "number"
+        },
+        {
+          "name": "height",
+          "description": "`height`  of the chart area. Equals actual height of component - margins",
+          "type": "number"
+        },
+        {
+          "name": "register-container-name",
+          "description": "`registerContainerName` the name of the container set to registered items. This is needed because\nsome items can be registered agains mutiple domain. For instance, multi-g : as an resizable svg item\nand against multi-verse.",
+          "type": "string",
+          "default": "\"svgHost\""
+        },
+        {
+          "name": "enable-zoom",
+          "description": "`enableZoom` set true to enable zoom behaviors",
+          "type": "boolean"
+        },
+        {
+          "name": "log",
+          "description": "`log`  true to show log",
+          "type": "boolean"
+        }
+      ],
+      "properties": [
+        {
+          "name": "stacked",
+          "attribute": "stacked",
+          "description": "`stacked` if true, draw a stack chart, otherwise, default bar chart",
+          "type": "boolean"
+        },
+        {
+          "name": "valuePath",
+          "attribute": "value-path",
+          "description": "`valuePath` we can pass a value path to calculate value accessor",
+          "type": "string"
+        },
+        {
+          "name": "bottomScaleType",
+          "attribute": "bottom-scale-type",
+          "type": "string",
+          "default": "\"band\""
+        },
+        {
+          "name": "html",
+          "type": "(strings: TemplateStringsArray, ...values: unknown[]) => TemplateResult"
+        },
+        {
+          "name": "topMargin",
+          "attribute": "top-margin",
+          "type": "number"
+        },
+        {
+          "name": "rightMargin",
+          "attribute": "right-margin",
+          "type": "number"
+        },
+        {
+          "name": "bottomMargin",
+          "attribute": "bottom-margin",
+          "type": "number"
+        },
+        {
+          "name": "leftMargin",
+          "attribute": "left-margin",
+          "type": "number"
+        },
+        {
+          "name": "group",
+          "attribute": "group",
+          "description": "`group` the name of the group (used when to registering this element under a multi-verse)",
+          "type": "string"
+        },
+        {
+          "name": "multiVerseGroup",
+          "attribute": "multi-verse-group",
+          "description": "`multiVerseGroup` group name send along with `multi-verse-added`",
+          "type": "string",
+          "default": "\"default\""
+        },
+        {
+          "name": "colorScale",
+          "attribute": "colorScale",
+          "description": "colorScale for the chart"
+        },
+        {
+          "name": "pattern",
+          "attribute": "pattern",
+          "description": "`pattern` set true for charts using patterns (e.g. geo charts)",
+          "type": "boolean"
+        },
+        {
+          "name": "processType",
+          "attribute": "process-type",
+          "description": "`processType`  the type of process type, e.g. stack for bar Chart",
+          "type": "string"
+        },
+        {
+          "name": "data",
+          "attribute": "data",
+          "description": "`data` to display the chart",
+          "type": "array"
+        },
+        {
+          "name": "transition",
+          "attribute": "transition",
+          "description": "`transition` to apply while drawing"
+        },
+        {
+          "name": "width",
+          "attribute": "width",
+          "description": "`width`  of the chart area. Equals actual width of component - margins",
+          "type": "number"
+        },
+        {
+          "name": "height",
+          "attribute": "height",
+          "description": "`height`  of the chart area. Equals actual height of component - margins",
+          "type": "number"
+        },
+        {
+          "name": "registerContainerName",
+          "attribute": "register-container-name",
+          "description": "`registerContainerName` the name of the container set to registered items. This is needed because\nsome items can be registered agains mutiple domain. For instance, multi-g : as an resizable svg item\nand against multi-verse.",
+          "type": "string",
+          "default": "\"svgHost\""
+        },
+        {
+          "name": "registerEventListen",
+          "description": "`registerEventListen` the name of the event that will trigger\na registration. This event is fired by an element applying\nResiterable Mixin\n",
+          "type": "string"
+        },
+        {
+          "name": "registeredItems",
+          "type": "array"
+        },
+        {
+          "name": "enableZoom",
+          "attribute": "enable-zoom",
+          "description": "`enableZoom` set true to enable zoom behaviors",
+          "type": "boolean"
+        },
+        {
+          "name": "zoomedEl"
+        },
+        {
+          "name": "log",
+          "attribute": "log",
+          "description": "`log`  true to show log",
+          "type": "boolean"
+        }
+      ],
+      "events": [
+        {
+          "name": "multi-verse-added"
+        },
+        {
+          "name": "multi-container-removed"
+        },
+        {
+          "name": "multi-verse-removed"
+        }
+      ],
+      "slots": [
+        {
+          "name": ""
+        }
+      ]
+    }
+  ]
+}

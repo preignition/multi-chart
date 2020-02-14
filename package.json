@@ -25,6 +25,7 @@
     "index.elements.js",
     "index.class.js"
   ],
+  "type": "module",
   "main": "index.js",
   "module": "index.js",
   "dependencies": {
@@ -77,9 +78,13 @@
     "@open-wc/testing-karma": "^3.2.30",
     "eslint": "^6.8.0",
     "eslint-plugin-lit": "^1.2.0",
-    "pwa-helpers": "^0.9.1"
+    "pwa-helpers": "^0.9.1",
+    "web-component-analyzer": "^1.0.3"
   },
   "scripts": {
+    "generate-docs-md": "wca analyze src/chart/**/*.js src/d3-wrapper/**/*.js src/container/**/*.js --outFiles docs/{tagname}.md ",
+    "generate-docs-json": "wca analyze src/chart/**/*.js src/d3-wrapper/**/*.js src/container/**/*.js --outFiles docs/{tagname}.json ",
+    "generate-docs": "npm run generate-docs-md && npm run generate-docs-json",
     "postpublish": "git push && git push --tags",
     "test": "karma start --coverage",
     "test:watch": "karma start --auto-watch=true --single-run=false",

@@ -4,14 +4,14 @@ import { default as MultiContainer } from '../container/multi-container-axis.js'
 import { Stack } from '../d3-wrapper/d3-shape.js';
 
 /**
- * ## MultiChartLine
+ * ## MultiChartBar
  *
  * `<multi-chart-line>` an element for displaying data as a line chart. 
  * 
  * ### Example
  *
  * ```html
- *    <multi-chart-line 
+ *    <multi-chart-bar 
  *        id="chart"  
  *        color-scale="[[colorScale]]"
  *        data="[[data]]"
@@ -24,8 +24,10 @@ import { Stack } from '../d3-wrapper/d3-shape.js';
  *         <multi-accessor accessor="{{item.accessor}}" path="+value.[[item.key]]"></multi-accessor>
  *        </template>
  *      </dom-repeat>
- *    </multi-chart-line>   
+ *    </multi-chart-bar>   
  * ```
+ *
+ * @element multi-chart-bar
 
  **/
 class MultiBarLine extends MultiContainer {

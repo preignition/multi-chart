@@ -1,4 +1,6 @@
+
 import { LitElement } from 'lit-element';
+
 
 import { capitalize, shapeProperties } from '../helper/utils.js';
 import * as axis from 'd3-axis';
@@ -7,6 +9,15 @@ const instance = axis.axisTop();
 const keys = Object.keys(instance || {});
 const props = shapeProperties(keys);
 
+/**
+ * A litElement wrapper around [d3.axis](https://github.com/d3/d3-axis). 
+ * 
+ * @element d3-axis
+ * @fires axis-changed - fires when axis value changes (and need to be re-rendered)
+ *
+ * 
+ * 
+ */
 class D3Axis extends LitElement {
 
   static get properties() {
@@ -15,6 +26,10 @@ class D3Axis extends LitElement {
 
       ...props,
 
+      /**
+       * type of axis
+       * @type {'top'|'bottom'|'left'|'right'}
+       */
       type: {
         type: String,
       },
@@ -22,6 +37,7 @@ class D3Axis extends LitElement {
       domain: {
         type: Array
       },
+      
       range: {
         type: Array
       }
@@ -34,13 +50,13 @@ class D3Axis extends LitElement {
 
   update(props) {
     super.update(props);
-    this.log && console.info(`d3-axis ${this.type} update`, props)
+    this.log && console.info(`d3-axis ${this.type} update`, props);
     if (!this.type && !props.has('type')) {
       this.type = 'bottom';
     }
 
     // Note(cg): ensure number for ticks.
-    if(props.has('ticks') && typeof this.ticks  === 'string') {
+    if (props.has('ticks') && typeof this.ticks === 'string') {
       this.ticks = this.ticks * 1;
     }
 
