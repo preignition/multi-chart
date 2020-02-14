@@ -1,0 +1,266 @@
+{
+  "version": "experimental",
+  "tags": [
+    {
+      "name": "multi-chart-radar",
+      "path": "./../src/chart/multi-chart-radar.js",
+      "description": "## Radar Chart\nA radar chart is a graphical method of displaying multivariate data in the form of a two-dimensional chart of three or more quantitative variables represented on axes starting from the same point. The relative position and angle of the axes is typically uninformative, but various heuristics, such as algorithms that plot data as the maximal total area, can be applied to sort the variables (axes) into relative positions that reveal distinct correlations, trade-offs, and a multitude of other comparative measures.",
+      "attributes": [
+        {
+          "name": "tension",
+          "description": "`tension` tension for [curveCardinalClosed](https://github.com/d3/d3-shape#curveCardinalClosed)\nvalue between 0 an 1.",
+          "type": "number",
+          "default": "0.6"
+        },
+        {
+          "name": "min",
+          "description": "`min` minumum value\nwe need to set it, otherwise will be inferred  frmo data",
+          "type": "number",
+          "default": "0"
+        },
+        {
+          "name": "value-position",
+          "description": "`valuePosition` position type for values.\nthis is used to calculate scale vor values in `multi-data-group`",
+          "type": "string",
+          "default": "\"radial\""
+        },
+        {
+          "name": "key-position",
+          "description": "`keyPosition` position type for keys.\nthis is used to calculate scale vor values in `multi-data-group`",
+          "type": "string",
+          "default": "\"angle\""
+        },
+        {
+          "name": "top-margin",
+          "type": "number"
+        },
+        {
+          "name": "right-margin",
+          "type": "number"
+        },
+        {
+          "name": "bottom-margin",
+          "type": "number"
+        },
+        {
+          "name": "left-margin",
+          "type": "number"
+        },
+        {
+          "name": "group",
+          "description": "`group` the name of the group (used when to registering this element under a multi-verse)",
+          "type": "string"
+        },
+        {
+          "name": "multi-verse-group",
+          "description": "`multiVerseGroup` group name send along with `multi-verse-added`",
+          "type": "string",
+          "default": "\"default\""
+        },
+        {
+          "name": "colorScale",
+          "description": "colorScale for the chart"
+        },
+        {
+          "name": "pattern",
+          "description": "`pattern` set true for charts using patterns (e.g. geo charts)",
+          "type": "boolean"
+        },
+        {
+          "name": "process-type",
+          "description": "`processType`  the type of process type, e.g. stack for bar Chart",
+          "type": "string"
+        },
+        {
+          "name": "data",
+          "description": "`data` to display the chart",
+          "type": "array"
+        },
+        {
+          "name": "transition",
+          "description": "`transition` to apply while drawing"
+        },
+        {
+          "name": "width",
+          "description": "`width`  of the chart area. Equals actual width of component - margins",
+          "type": "number"
+        },
+        {
+          "name": "height",
+          "description": "`height`  of the chart area. Equals actual height of component - margins",
+          "type": "number"
+        },
+        {
+          "name": "register-container-name",
+          "description": "`registerContainerName` the name of the container set to registered items. This is needed because\nsome items can be registered agains mutiple domain. For instance, multi-g : as an resizable svg item\nand against multi-verse.",
+          "type": "string",
+          "default": "\"svgHost\""
+        },
+        {
+          "name": "enable-zoom",
+          "description": "`enableZoom` set true to enable zoom behaviors",
+          "type": "boolean"
+        },
+        {
+          "name": "log",
+          "description": "`log`  true to show log",
+          "type": "boolean"
+        }
+      ],
+      "properties": [
+        {
+          "name": "tension",
+          "attribute": "tension",
+          "description": "`tension` tension for [curveCardinalClosed](https://github.com/d3/d3-shape#curveCardinalClosed)\nvalue between 0 an 1.",
+          "type": "number",
+          "default": "0.6"
+        },
+        {
+          "name": "min",
+          "attribute": "min",
+          "description": "`min` minumum value\nwe need to set it, otherwise will be inferred  frmo data",
+          "type": "number",
+          "default": "0"
+        },
+        {
+          "name": "valuePosition",
+          "attribute": "value-position",
+          "description": "`valuePosition` position type for values.\nthis is used to calculate scale vor values in `multi-data-group`",
+          "type": "string",
+          "default": "\"radial\""
+        },
+        {
+          "name": "keyPosition",
+          "attribute": "key-position",
+          "description": "`keyPosition` position type for keys.\nthis is used to calculate scale vor values in `multi-data-group`",
+          "type": "string",
+          "default": "\"angle\""
+        },
+        {
+          "name": "html",
+          "type": "(strings: TemplateStringsArray, ...values: unknown[]) => TemplateResult"
+        },
+        {
+          "name": "topMargin",
+          "attribute": "top-margin",
+          "type": "number"
+        },
+        {
+          "name": "rightMargin",
+          "attribute": "right-margin",
+          "type": "number"
+        },
+        {
+          "name": "bottomMargin",
+          "attribute": "bottom-margin",
+          "type": "number"
+        },
+        {
+          "name": "leftMargin",
+          "attribute": "left-margin",
+          "type": "number"
+        },
+        {
+          "name": "group",
+          "attribute": "group",
+          "description": "`group` the name of the group (used when to registering this element under a multi-verse)",
+          "type": "string"
+        },
+        {
+          "name": "multiVerseGroup",
+          "attribute": "multi-verse-group",
+          "description": "`multiVerseGroup` group name send along with `multi-verse-added`",
+          "type": "string",
+          "default": "\"default\""
+        },
+        {
+          "name": "colorScale",
+          "attribute": "colorScale",
+          "description": "colorScale for the chart"
+        },
+        {
+          "name": "pattern",
+          "attribute": "pattern",
+          "description": "`pattern` set true for charts using patterns (e.g. geo charts)",
+          "type": "boolean"
+        },
+        {
+          "name": "processType",
+          "attribute": "process-type",
+          "description": "`processType`  the type of process type, e.g. stack for bar Chart",
+          "type": "string"
+        },
+        {
+          "name": "data",
+          "attribute": "data",
+          "description": "`data` to display the chart",
+          "type": "array"
+        },
+        {
+          "name": "transition",
+          "attribute": "transition",
+          "description": "`transition` to apply while drawing"
+        },
+        {
+          "name": "width",
+          "attribute": "width",
+          "description": "`width`  of the chart area. Equals actual width of component - margins",
+          "type": "number"
+        },
+        {
+          "name": "height",
+          "attribute": "height",
+          "description": "`height`  of the chart area. Equals actual height of component - margins",
+          "type": "number"
+        },
+        {
+          "name": "registerContainerName",
+          "attribute": "register-container-name",
+          "description": "`registerContainerName` the name of the container set to registered items. This is needed because\nsome items can be registered agains mutiple domain. For instance, multi-g : as an resizable svg item\nand against multi-verse.",
+          "type": "string",
+          "default": "\"svgHost\""
+        },
+        {
+          "name": "registerEventListen",
+          "description": "`registerEventListen` the name of the event that will trigger\na registration. This event is fired by an element applying\nResiterable Mixin\n",
+          "type": "string"
+        },
+        {
+          "name": "registeredItems",
+          "type": "array"
+        },
+        {
+          "name": "enableZoom",
+          "attribute": "enable-zoom",
+          "description": "`enableZoom` set true to enable zoom behaviors",
+          "type": "boolean"
+        },
+        {
+          "name": "zoomedEl"
+        },
+        {
+          "name": "log",
+          "attribute": "log",
+          "description": "`log`  true to show log",
+          "type": "boolean"
+        }
+      ],
+      "events": [
+        {
+          "name": "multi-verse-added"
+        },
+        {
+          "name": "multi-container-removed"
+        },
+        {
+          "name": "multi-verse-removed"
+        }
+      ],
+      "slots": [
+        {
+          "name": ""
+        }
+      ]
+    }
+  ]
+}
