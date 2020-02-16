@@ -11,6 +11,15 @@ import { RelayTo} from '@preignition/preignition-mixin';
 // import { default as axisProps } from '../drawable/properties/axis.js';
 
 
+/**
+ * ## MultiContainerRadat
+ *
+ * A container for radar chart. It is responsible for drawing axes.
+ *
+ * @element multi-container-radar
+ *
+ * @prop {Array} axes - array of axis for radar chart. Example {label: 'label', key: 'key', max: max, class: 'class', xOffset, offset, yOffset: offset}
+ */
 class MultiContainerRadar extends 
   RelayTo(
     ScaleRender(
