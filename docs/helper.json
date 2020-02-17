@@ -1,0 +1,773 @@
+{
+  "version": "experimental",
+  "tags": [
+    {
+      "name": "d3-fetch",
+      "path": "./../src/helper/d3-fetch.js",
+      "description": "## d3-fetch\n\nA wrapper aroud [d3-fetch](https://github.com/d3/d3-fetch), a module providing convenient parsing on top of [Fetch](https://fetch.spec.whatwg.org/).",
+      "attributes": [
+        {
+          "name": "type",
+          "description": "expected data type",
+          "type": "'blob'|'buffer'|'csv'|'dsv'|'html'|'image'|'json'|'svg'|'text'|'tsv'|'xml'"
+        },
+        {
+          "name": "url",
+          "description": "the url to fetch data from",
+          "type": "string"
+        },
+        {
+          "name": "loading",
+          "description": "`loading` true when loading",
+          "type": "boolean",
+          "default": "false"
+        },
+        {
+          "name": "error",
+          "description": "`error`",
+          "type": "object"
+        },
+        {
+          "name": "log",
+          "description": "`log`  true to show log",
+          "type": "boolean"
+        }
+      ],
+      "properties": [
+        {
+          "name": "type",
+          "attribute": "type",
+          "description": "expected data type",
+          "type": "'blob'|'buffer'|'csv'|'dsv'|'html'|'image'|'json'|'svg'|'text'|'tsv'|'xml'"
+        },
+        {
+          "name": "url",
+          "attribute": "url",
+          "description": "the url to fetch data from",
+          "type": "string"
+        },
+        {
+          "name": "loading",
+          "attribute": "loading",
+          "description": "`loading` true when loading",
+          "type": "boolean",
+          "default": "false"
+        },
+        {
+          "name": "data",
+          "description": "`data` fetched data",
+          "type": "array"
+        },
+        {
+          "name": "error",
+          "attribute": "error",
+          "description": "`error`",
+          "type": "object"
+        },
+        {
+          "name": "log",
+          "attribute": "log",
+          "description": "`log`  true to show log",
+          "type": "boolean"
+        }
+      ],
+      "events": [
+        {
+          "name": "loading-changed",
+          "description": "fired when loading property changes"
+        },
+        {
+          "name": "data-changed",
+          "description": "fired when data is set"
+        },
+        {
+          "name": "error-changed",
+          "description": "fired when there is an error"
+        }
+      ]
+    },
+    {
+      "name": "d3-format",
+      "path": "./../src/helper/d3-format.js",
+      "description": "## d3-format\n\n  A lit-element wrapper around [d3-format](https://github.com/d3/d3-format).\n  d3-format helps format numbers for human consumption. See also https://observablehq.com/@d3/d3-format.\n\n### Example\n`<d3-format specifier=\".1f\" value=\"12.2135\"></d3-format>` will display `12.2`.\n\n### Examples from [d3-format](https://github.com/d3/d3-format)\n```js\nd3.format(\".0%\")(0.123);  // rounded percentage, \"12%\"\nd3.format(\"($.2f\")(-3.5); // localized fixed-point currency, \"(£3.50)\"\nd3.format(\"+20\")(42);     // space-filled and signed, \"                 +42\"\nd3.format(\".^20\")(42);    // dot-filled and centered, \".........42.........\"\nd3.format(\".2s\")(42e6);   // SI-prefix with two significant digits, \"42M\"\nd3.format(\"#x\")(48879);   // prefixed lowercase hexadecimal, \"0xbeef\"\nd3.format(\",.2r\")(4223);  // grouped thousands with two significant digits, \"4,200\"\n```",
+      "attributes": [
+        {
+          "name": "value",
+          "description": "the value to be formated",
+          "type": "string"
+        },
+        {
+          "name": "is-time",
+          "description": "true to indicate the use of d3.timeFormat (instead of d3.format)",
+          "type": "boolean"
+        },
+        {
+          "name": "specifier",
+          "description": "`specifier` for the format function (as per https://github.com/d3/d3-format#locale_format)",
+          "type": "string",
+          "default": "\".1f\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "value",
+          "attribute": "value",
+          "description": "the value to be formated",
+          "type": "string"
+        },
+        {
+          "name": "isTime",
+          "attribute": "is-time",
+          "description": "true to indicate the use of d3.timeFormat (instead of d3.format)",
+          "type": "boolean"
+        },
+        {
+          "name": "specifier",
+          "attribute": "specifier",
+          "description": "`specifier` for the format function (as per https://github.com/d3/d3-format#locale_format)",
+          "type": "string",
+          "default": "\".1f\""
+        }
+      ]
+    },
+    {
+      "name": "",
+      "description": "",
+      "slots": [
+        {
+          "name": ""
+        }
+      ]
+    },
+    {
+      "name": "",
+      "path": "./../src/helper/multi-accessor.js",
+      "description": "## MultiAccessor\n\n`<multi-accessor>` creates an accessor function from a String path",
+      "attributes": [
+        {
+          "name": "accessor",
+          "description": "`accessor` the accessor function \nexample function : `d => {return +d.count}`"
+        },
+        {
+          "name": "path",
+          "description": "`path` the path from which tha accessor function is built\nFor instance `+count` will create `d => {return +d.count}` function.",
+          "type": "string"
+        },
+        {
+          "name": "sub-path",
+          "type": "boolean"
+        }
+      ],
+      "properties": [
+        {
+          "name": "accessor",
+          "attribute": "accessor",
+          "description": "`accessor` the accessor function \nexample function : `d => {return +d.count}`"
+        },
+        {
+          "name": "path",
+          "attribute": "path",
+          "description": "`path` the path from which tha accessor function is built\nFor instance `+count` will create `d => {return +d.count}` function.",
+          "type": "string"
+        },
+        {
+          "name": "subPath",
+          "attribute": "sub-path",
+          "type": "boolean"
+        }
+      ],
+      "events": [
+        {
+          "name": "accessor-changed"
+        }
+      ]
+    },
+    {
+      "name": "",
+      "path": "./../src/helper/multi-legend.js",
+      "description": "## MultiLegend\n\n`<multi-legend>` a element for displaying chart legends\nRelying on [d3-legend](https://d3-legend.susielu.com/), A library to make legends in svg-land easy as pie.\n\n### Styling\n`<multi-drawable-feature>` provides the following custom properties and mixins\nfor styling:\n\nCustom property | Description | Default\n----------------|-------------|----------\n`--multi-legend-color` | text color for legends | `#292929`\n`--multi-legend-background` | background color for legenx box | `#efefef`\n`--multi-legend-stroke` | stroke color for legend box | `none`\n`--multi-legend-opacity` | opacity for legend box | `0.6`\n`--multi-legend` | Mixin applied to legend | `{}`",
+      "attributes": [
+        {
+          "name": "type",
+          "description": "legend `type` the type of legend (`color`, `size`, `symbol`)\nfor instantiating the legend ([d3-legend](http://d3-legend.susielu.com/).",
+          "type": "string",
+          "default": "\"color\""
+        },
+        {
+          "name": "width",
+          "type": "number"
+        },
+        {
+          "name": "height",
+          "type": "number"
+        },
+        {
+          "name": "opacity",
+          "type": "number",
+          "default": "0"
+        },
+        {
+          "name": "rect-offset",
+          "description": "`retOffset` the offset for legend rect",
+          "type": "number",
+          "default": "5"
+        },
+        {
+          "name": "scale-factor",
+          "type": "number",
+          "default": "0.7"
+        },
+        {
+          "name": "position",
+          "description": "`position` this position within the chart. e.g. top-right, bottom-left\nposition is recalculated on resize.",
+          "type": "string",
+          "default": "\"top-right\""
+        },
+        {
+          "name": "padding",
+          "description": "`padding` the padding to be applied when calculation the position",
+          "type": "number",
+          "default": "10"
+        },
+        {
+          "name": "x",
+          "type": "number",
+          "default": "0"
+        },
+        {
+          "name": "y",
+          "type": "number",
+          "default": "0"
+        },
+        {
+          "name": "svg-host",
+          "description": "`svgHost` the host to which [slog-svg] nodes must be stamped",
+          "type": "object"
+        },
+        {
+          "name": "track-hover",
+          "description": "`trackHover` set true if selector listen to mouseenter/mouseleave events and set hoveredItem accordingly.\nWhen true, this element also and fires `multi-mouseenter` and multi-mouseleave.",
+          "type": "boolean",
+          "default": "false"
+        },
+        {
+          "name": "hovered",
+          "description": "`hovered` the hovered item, tracked when `trackHover` is set to true.\nThis is usefull for instance when we want to highlight the legend being hovered",
+          "type": "string"
+        },
+        {
+          "name": "group",
+          "description": "`group` against which the drawable object is registered.\nA chart can have multiple group (e.g. one displayed against right axis,\nthe other against the left axis).\nSet another group name for objects belonging to alternate chart settings.",
+          "type": "string",
+          "default": "\"default\""
+        },
+        {
+          "name": "multi-position",
+          "description": "`multiPosition` position used to re-order items when appended by dispatch-svg\nnodePosition larger than 0 will render on top.",
+          "type": "number",
+          "default": "0"
+        },
+        {
+          "name": "log",
+          "description": "`log`  true to show log",
+          "type": "boolean"
+        }
+      ],
+      "properties": [
+        {
+          "name": "type",
+          "attribute": "type",
+          "description": "legend `type` the type of legend (`color`, `size`, `symbol`)\nfor instantiating the legend ([d3-legend](http://d3-legend.susielu.com/).",
+          "type": "string",
+          "default": "\"color\""
+        },
+        {
+          "name": "width",
+          "attribute": "width",
+          "type": "number"
+        },
+        {
+          "name": "height",
+          "attribute": "height",
+          "type": "number"
+        },
+        {
+          "name": "opacity",
+          "attribute": "opacity",
+          "type": "number",
+          "default": "0"
+        },
+        {
+          "name": "rectOffset",
+          "attribute": "rect-offset",
+          "description": "`retOffset` the offset for legend rect",
+          "type": "number",
+          "default": "5"
+        },
+        {
+          "name": "scaleFactor",
+          "attribute": "scale-factor",
+          "type": "number",
+          "default": "0.7"
+        },
+        {
+          "name": "position",
+          "attribute": "position",
+          "description": "`position` this position within the chart. e.g. top-right, bottom-left\nposition is recalculated on resize.",
+          "type": "string",
+          "default": "\"top-right\""
+        },
+        {
+          "name": "padding",
+          "attribute": "padding",
+          "description": "`padding` the padding to be applied when calculation the position",
+          "type": "number",
+          "default": "10"
+        },
+        {
+          "name": "x",
+          "attribute": "x",
+          "type": "number",
+          "default": "0"
+        },
+        {
+          "name": "y",
+          "attribute": "y",
+          "type": "number",
+          "default": "0"
+        },
+        {
+          "name": "svgHost",
+          "attribute": "svg-host",
+          "description": "`svgHost` the host to which [slog-svg] nodes must be stamped",
+          "type": "object"
+        },
+        {
+          "name": "trackHover",
+          "attribute": "track-hover",
+          "description": "`trackHover` set true if selector listen to mouseenter/mouseleave events and set hoveredItem accordingly.\nWhen true, this element also and fires `multi-mouseenter` and multi-mouseleave.",
+          "type": "boolean",
+          "default": "false"
+        },
+        {
+          "name": "hovered",
+          "attribute": "hovered",
+          "description": "`hovered` the hovered item, tracked when `trackHover` is set to true.\nThis is usefull for instance when we want to highlight the legend being hovered",
+          "type": "string"
+        },
+        {
+          "name": "registerEventDispatch",
+          "description": "`registerEventDispatch`  the name of the event to be fired when connected.\nA container with multi-register-mixin applied\nwill listen to this event to register the component.\n",
+          "type": "string"
+        },
+        {
+          "name": "group",
+          "attribute": "group",
+          "description": "`group` against which the drawable object is registered.\nA chart can have multiple group (e.g. one displayed against right axis,\nthe other against the left axis).\nSet another group name for objects belonging to alternate chart settings.",
+          "type": "string",
+          "default": "\"default\""
+        },
+        {
+          "name": "multiPosition",
+          "attribute": "multi-position",
+          "description": "`multiPosition` position used to re-order items when appended by dispatch-svg\nnodePosition larger than 0 will render on top.",
+          "type": "number",
+          "default": "0"
+        },
+        {
+          "name": "registerOrder",
+          "description": "`registerOrder` - registerable elements are sorted on the basis of this property.",
+          "type": "number"
+        },
+        {
+          "name": "log",
+          "attribute": "log",
+          "description": "`log`  true to show log",
+          "type": "boolean"
+        }
+      ],
+      "events": [
+        {
+          "name": "multi-cell-click"
+        },
+        {
+          "name": "multi-mouseenter"
+        },
+        {
+          "name": "multi-mouseleave"
+        }
+      ]
+    },
+    {
+      "name": "",
+      "path": "./../src/helper/multi-select.js",
+      "description": "## MultiSelect\n\n`<multi-select>` is an element for selecting ranges or chart shapes.",
+      "attributes": [
+        {
+          "name": "attr-for-selected",
+          "description": "If you want to use an attribute value or property of an element for\n`selected` instead of the index, set this to the name of the attribute\nor property. Hyphenated values are converted to camel case when used to\nlook up the property of a selectable element. Camel cased values are\n*not* converted to hyphenated values for attribute lookup. It's\nrecommended that you provide the hyphenated form of the name so that\nselection works in both cases. (Use `attr-or-property-name` instead of\n`attrOrPropertyName`.)",
+          "type": "string",
+          "default": "\"key\""
+        },
+        {
+          "name": "selected-attribute",
+          "description": "The attribute to set on elements when selected.",
+          "type": "string",
+          "default": "\"selected\""
+        },
+        {
+          "name": "svg-host",
+          "description": "`svgHost` the host to which [slog-svg] nodes must be stamped",
+          "type": "object"
+        },
+        {
+          "name": "group",
+          "description": "`group` against which the drawable object is registered.\nA chart can have multiple group (e.g. one displayed against right axis,\nthe other against the left axis).\nSet another group name for objects belonging to alternate chart settings.",
+          "type": "string",
+          "default": "\"default\""
+        },
+        {
+          "name": "multi-position",
+          "description": "`multiPosition` position used to re-order items when appended by dispatch-svg\nnodePosition larger than 0 will render on top.",
+          "type": "number",
+          "default": "0"
+        },
+        {
+          "name": "track-hover",
+          "description": "`trackHover` set true if selector listen to mouseenter/mouseleave events and set hoveredItem accordingly.\nWhen true, this element also and fires `multi-mouseenter` and multi-mouseleave.",
+          "type": "boolean",
+          "default": "false"
+        },
+        {
+          "name": "hovered",
+          "description": "`hovered` the hovered item, tracked when `trackHover` is set to true.\nThis is usefull for instance when we want to highlight the legend being hovered",
+          "type": "string"
+        },
+        {
+          "name": "log",
+          "description": "`log`  true to show log",
+          "type": "boolean"
+        }
+      ],
+      "properties": [
+        {
+          "name": "attrForSelected",
+          "attribute": "attr-for-selected",
+          "description": "If you want to use an attribute value or property of an element for\n`selected` instead of the index, set this to the name of the attribute\nor property. Hyphenated values are converted to camel case when used to\nlook up the property of a selectable element. Camel cased values are\n*not* converted to hyphenated values for attribute lookup. It's\nrecommended that you provide the hyphenated form of the name so that\nselection works in both cases. (Use `attr-or-property-name` instead of\n`attrOrPropertyName`.)",
+          "type": "string",
+          "default": "\"key\""
+        },
+        {
+          "name": "selectedAttribute",
+          "attribute": "selected-attribute",
+          "description": "The attribute to set on elements when selected.",
+          "type": "string",
+          "default": "\"selected\""
+        },
+        {
+          "name": "selectableItems"
+        },
+        {
+          "name": "svgHost",
+          "attribute": "svg-host",
+          "description": "`svgHost` the host to which [slog-svg] nodes must be stamped",
+          "type": "object"
+        },
+        {
+          "name": "registerEventDispatch",
+          "description": "`registerEventDispatch`  the name of the event to be fired when connected.\nA container with multi-register-mixin applied\nwill listen to this event to register the component.\n",
+          "type": "string"
+        },
+        {
+          "name": "group",
+          "attribute": "group",
+          "description": "`group` against which the drawable object is registered.\nA chart can have multiple group (e.g. one displayed against right axis,\nthe other against the left axis).\nSet another group name for objects belonging to alternate chart settings.",
+          "type": "string",
+          "default": "\"default\""
+        },
+        {
+          "name": "multiPosition",
+          "attribute": "multi-position",
+          "description": "`multiPosition` position used to re-order items when appended by dispatch-svg\nnodePosition larger than 0 will render on top.",
+          "type": "number",
+          "default": "0"
+        },
+        {
+          "name": "registerOrder",
+          "description": "`registerOrder` - registerable elements are sorted on the basis of this property.\n`multi-select` need to be last in the list of registered items, so that we attach\nevents after all shapes are drawn.",
+          "type": "number"
+        },
+        {
+          "name": "trackHover",
+          "attribute": "track-hover",
+          "description": "`trackHover` set true if selector listen to mouseenter/mouseleave events and set hoveredItem accordingly.\nWhen true, this element also and fires `multi-mouseenter` and multi-mouseleave.",
+          "type": "boolean",
+          "default": "false"
+        },
+        {
+          "name": "hovered",
+          "attribute": "hovered",
+          "description": "`hovered` the hovered item, tracked when `trackHover` is set to true.\nThis is usefull for instance when we want to highlight the legend being hovered",
+          "type": "string"
+        },
+        {
+          "name": "log",
+          "attribute": "log",
+          "description": "`log`  true to show log",
+          "type": "boolean"
+        }
+      ],
+      "events": [
+        {
+          "name": "multi-tap"
+        },
+        {
+          "name": "multi-select"
+        },
+        {
+          "name": "multi-mouseenter"
+        },
+        {
+          "name": "multi-mouseleave"
+        }
+      ]
+    },
+    {
+      "name": "",
+      "path": "./../src/helper/multi-brush.js",
+      "description": "## MultiBrush\n\n`<multi-brush>` implements a brush selection as in  [d3-brush](https://github.com/d3/d3-brush)",
+      "attributes": [
+        {
+          "name": "selected-values",
+          "description": "Returns an array of currently selected items.",
+          "type": "array",
+          "default": "[]"
+        },
+        {
+          "name": "x-scale"
+        },
+        {
+          "name": "y-scale"
+        },
+        {
+          "name": "brush",
+          "description": "`brush` brushing for mouse or touch event implementation [d3-brush](https://github.com/d3/d3-brush)"
+        },
+        {
+          "name": "extent",
+          "description": "`extent` extent of the brush",
+          "type": "array"
+        },
+        {
+          "name": "is-selecting",
+          "description": "`isSelection` is true when a selection is being done (e.g. by brushing). The attribute is used for css rules.\nThis property is aimed at being bound to a multi-container-svg",
+          "type": "boolean",
+          "default": "false"
+        },
+        {
+          "name": "has-selection",
+          "description": "`hasSelection`  is true when a selection exists. The attribute is used for css rules.\nThis property is aimed at being bound to a multi-container-svg",
+          "type": "boolean"
+        },
+        {
+          "name": "is-range",
+          "type": "boolean"
+        },
+        {
+          "name": "x-continuous",
+          "description": "`xContinuous` indicate true if we have a `continuous` scale on X when the xScale is `ordinal` (e.g. a scaleBand for bar charts). If true a `xContinuousScale` is computed",
+          "type": "boolean"
+        },
+        {
+          "name": "x-continuous-scale",
+          "description": "`xContinuousScale` the continuous scale to use when selecting ranges"
+        },
+        {
+          "name": "svg-host",
+          "description": "`svgHost` the host to which [slog-svg] nodes must be stamped",
+          "type": "object"
+        },
+        {
+          "name": "group",
+          "description": "`group` against which the drawable object is registered.\nA chart can have multiple group (e.g. one displayed against right axis,\nthe other against the left axis).\nSet another group name for objects belonging to alternate chart settings.",
+          "type": "string",
+          "default": "\"default\""
+        },
+        {
+          "name": "multi-position",
+          "description": "`multiPosition` position used to re-order items when appended by dispatch-svg\nnodePosition larger than 0 will render on top.",
+          "type": "number",
+          "default": "0"
+        },
+        {
+          "name": "log",
+          "description": "`log`  true to show log",
+          "type": "boolean"
+        }
+      ],
+      "properties": [
+        {
+          "name": "selectedValues",
+          "attribute": "selected-values",
+          "description": "Returns an array of currently selected items.",
+          "type": "array",
+          "default": "[]"
+        },
+        {
+          "name": "xScale",
+          "attribute": "x-scale"
+        },
+        {
+          "name": "yScale",
+          "attribute": "y-scale"
+        },
+        {
+          "name": "brush",
+          "attribute": "brush",
+          "description": "`brush` brushing for mouse or touch event implementation [d3-brush](https://github.com/d3/d3-brush)"
+        },
+        {
+          "name": "extent",
+          "attribute": "extent",
+          "description": "`extent` extent of the brush",
+          "type": "array"
+        },
+        {
+          "name": "isSelecting",
+          "attribute": "is-selecting",
+          "description": "`isSelection` is true when a selection is being done (e.g. by brushing). The attribute is used for css rules.\nThis property is aimed at being bound to a multi-container-svg",
+          "type": "boolean",
+          "default": "false"
+        },
+        {
+          "name": "hasSelection",
+          "attribute": "has-selection",
+          "description": "`hasSelection`  is true when a selection exists. The attribute is used for css rules.\nThis property is aimed at being bound to a multi-container-svg",
+          "type": "boolean"
+        },
+        {
+          "name": "isRange",
+          "attribute": "is-range",
+          "type": "boolean"
+        },
+        {
+          "name": "xContinuous",
+          "attribute": "x-continuous",
+          "description": "`xContinuous` indicate true if we have a `continuous` scale on X when the xScale is `ordinal` (e.g. a scaleBand for bar charts). If true a `xContinuousScale` is computed",
+          "type": "boolean"
+        },
+        {
+          "name": "xContinuousScale",
+          "attribute": "x-continuous-scale",
+          "description": "`xContinuousScale` the continuous scale to use when selecting ranges"
+        },
+        {
+          "name": "targetElement"
+        },
+        {
+          "name": "effectiveScale",
+          "type": "{ x: any; y: any; }"
+        },
+        {
+          "name": "svgHost",
+          "attribute": "svg-host",
+          "description": "`svgHost` the host to which [slog-svg] nodes must be stamped",
+          "type": "object"
+        },
+        {
+          "name": "registerEventDispatch",
+          "description": "`registerEventDispatch`  the name of the event to be fired when connected.\nA container with multi-register-mixin applied\nwill listen to this event to register the component.\n",
+          "type": "string"
+        },
+        {
+          "name": "group",
+          "attribute": "group",
+          "description": "`group` against which the drawable object is registered.\nA chart can have multiple group (e.g. one displayed against right axis,\nthe other against the left axis).\nSet another group name for objects belonging to alternate chart settings.",
+          "type": "string",
+          "default": "\"default\""
+        },
+        {
+          "name": "multiPosition",
+          "attribute": "multi-position",
+          "description": "`multiPosition` position used to re-order items when appended by dispatch-svg\nnodePosition larger than 0 will render on top.",
+          "type": "number",
+          "default": "0"
+        },
+        {
+          "name": "registerOrder",
+          "description": "`registerOrder` - registerable elements are sorted on the basis of this property.",
+          "type": "number"
+        },
+        {
+          "name": "log",
+          "attribute": "log",
+          "description": "`log`  true to show log",
+          "type": "boolean"
+        }
+      ],
+      "events": [
+        {
+          "name": "multi-select"
+        }
+      ]
+    },
+    {
+      "name": "",
+      "description": "",
+      "attributes": [
+        {
+          "name": "highlighted-keys",
+          "type": "array"
+        },
+        {
+          "name": "highlighted-cls",
+          "type": "string",
+          "default": "\"highlighted\""
+        },
+        {
+          "name": "layer-id",
+          "description": "`layerId` id of the layer containing elements to be highlighted.",
+          "type": "string",
+          "default": "\"slot-layer\""
+        },
+        {
+          "name": "highlight-accessor",
+          "description": "`highlightAccessor` accessor function to fetch keys to be highlighted\ndefault value supposes that we have elements like `<path data-key=\"tyhKey\"></path>`"
+        }
+      ],
+      "properties": [
+        {
+          "name": "highlightedKeys",
+          "attribute": "highlighted-keys",
+          "type": "array"
+        },
+        {
+          "name": "highlightedCls",
+          "attribute": "highlighted-cls",
+          "type": "string",
+          "default": "\"highlighted\""
+        },
+        {
+          "name": "layerId",
+          "attribute": "layer-id",
+          "description": "`layerId` id of the layer containing elements to be highlighted.",
+          "type": "string",
+          "default": "\"slot-layer\""
+        },
+        {
+          "name": "highlightAccessor",
+          "attribute": "highlight-accessor",
+          "description": "`highlightAccessor` accessor function to fetch keys to be highlighted\ndefault value supposes that we have elements like `<path data-key=\"tyhKey\"></path>`"
+        },
+        {
+          "name": "highlightedLayer"
+        }
+      ],
+      "slots": [
+        {
+          "name": ""
+        }
+      ]
+    }
+  ]
+}

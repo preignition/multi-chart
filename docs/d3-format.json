@@ -1,0 +1,49 @@
+{
+  "version": "experimental",
+  "tags": [
+    {
+      "name": "d3-format",
+      "path": "./../src/helper/d3-format.js",
+      "description": "## d3-format\n\n  a lit-element wrapper around [d3-format](https://github.com/d3/d3-format).\n\n### Example\n`<d3-format specifier= \".1f\" value=\"12.2135\"></d3-format>` will display `12.2``\n\n### Examples from [d3-format](https://github.com/d3/d3-format)\n```js\nd3.format(\".0%\")(0.123);  // rounded percentage, \"12%\"\nd3.format(\"($.2f\")(-3.5); // localized fixed-point currency, \"(£3.50)\"\nd3.format(\"+20\")(42);     // space-filled and signed, \"                 +42\"\nd3.format(\".^20\")(42);    // dot-filled and centered, \".........42.........\"\nd3.format(\".2s\")(42e6);   // SI-prefix with two significant digits, \"42M\"\nd3.format(\"#x\")(48879);   // prefixed lowercase hexadecimal, \"0xbeef\"\nd3.format(\",.2r\")(4223);  // grouped thousands with two significant digits, \"4,200\"\n```",
+      "attributes": [
+        {
+          "name": "value",
+          "description": "the value to be formated",
+          "type": "string"
+        },
+        {
+          "name": "is-time",
+          "description": "true to indicate the use of d3.timeFormat (instead of d3.format)",
+          "type": "boolean"
+        },
+        {
+          "name": "specifier",
+          "description": "`specifier` for the format function (as per https://github.com/d3/d3-format#locale_format)",
+          "type": "string",
+          "default": "\".1f\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "value",
+          "attribute": "value",
+          "description": "the value to be formated",
+          "type": "string"
+        },
+        {
+          "name": "isTime",
+          "attribute": "is-time",
+          "description": "true to indicate the use of d3.timeFormat (instead of d3.format)",
+          "type": "boolean"
+        },
+        {
+          "name": "specifier",
+          "attribute": "specifier",
+          "description": "`specifier` for the format function (as per https://github.com/d3/d3-format#locale_format)",
+          "type": "string",
+          "default": "\".1f\""
+        }
+      ]
+    }
+  ]
+}

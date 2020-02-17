@@ -1,0 +1,88 @@
+{
+  "version": "experimental",
+  "tags": [
+    {
+      "name": "d3-fetch",
+      "path": "./../src/helper/d3-fetch.js",
+      "description": "## d3-fetch\n\nFetches data of different types and expose them in `data`.",
+      "attributes": [
+        {
+          "name": "type",
+          "description": "`type`  data type (json, xml, blob, ...)",
+          "type": "string"
+        },
+        {
+          "name": "url",
+          "description": "`url`  the url to fetch data from",
+          "type": "string"
+        },
+        {
+          "name": "loading",
+          "description": "`loading` true when loading",
+          "type": "boolean",
+          "default": "false"
+        },
+        {
+          "name": "data",
+          "description": "`data` fetched data",
+          "type": "array"
+        },
+        {
+          "name": "error",
+          "description": "`error`",
+          "type": "object"
+        },
+        {
+          "name": "log",
+          "description": "`log`  true to show log",
+          "type": "boolean"
+        }
+      ],
+      "properties": [
+        {
+          "name": "type",
+          "attribute": "type",
+          "description": "`type`  data type (json, xml, blob, ...)",
+          "type": "string"
+        },
+        {
+          "name": "url",
+          "attribute": "url",
+          "description": "`url`  the url to fetch data from",
+          "type": "string"
+        },
+        {
+          "name": "loading",
+          "attribute": "loading",
+          "description": "`loading` true when loading",
+          "type": "boolean",
+          "default": "false"
+        },
+        {
+          "name": "data",
+          "attribute": "data",
+          "description": "`data` fetched data",
+          "type": "array"
+        },
+        {
+          "name": "error",
+          "attribute": "error",
+          "description": "`error`",
+          "type": "object"
+        },
+        {
+          "name": "log",
+          "attribute": "log",
+          "description": "`log`  true to show log",
+          "type": "boolean"
+        }
+      ],
+      "events": [
+        {
+          "name": "loading-changed",
+          "description": "fired when loading property changes"
+        }
+      ]
+    }
+  ]
+}

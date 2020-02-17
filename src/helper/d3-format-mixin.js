@@ -6,15 +6,18 @@ const Format = dedupingMixin(superClass => {
 
   return class extends superClass {
 
-    get format() {
-      return this.isTime ? time.timeFormat(this.specifyer) : format.format(this.specifyer);
+    get _format() {
+      return this.isTime ? time.timeFormat(this.specifier) : format.format(this.specifier);
     }
+
     static get properties() {
 
       return {
+
         ...super.properties,
-        /* 
-         * `isTime` true to indicate the use of d3.timeFormat (instead of d3.format)
+
+        /*
+         * true to indicate the use of d3.timeFormat (instead of d3.format)
          */
         isTime: {
           type: Boolean,
@@ -22,15 +25,15 @@ const Format = dedupingMixin(superClass => {
         },
 
         /**
-         * `specifyer` for the format function
+         * `specifier` for the format function (as per https://github.com/d3/d3-format#locale_format)
          */
-        specifyer: {
+        specifier: {
           type: String,
           value: '.1f'
         }
-      }
+      };
     }
-  }
-})
+  };
+});
 
 export default Format;
