@@ -1,18 +1,20 @@
 import { LitElement, html, css } from 'lit-element';
 
-// import '/web_modules/@preignition/multi-chart.js';
-// import '@preignition/multi-chart';
-
-// import '/web_modules/@polymer/paper-card.js';
-// Note(cg): meterial still depends on polymer.
-// import '@vaadin/vaadin-tabs/theme/material/vaadin-tabs.js';
 import '@vaadin/vaadin-tabs';
 import 'api-viewer-element';
 import { Router } from '@vaadin/router';
 
-import { github } from '../assets/github.js';
-import { preignition } from '../assets/preignition.js';
+import { github } from './assets/github.js';
+import { preignition } from './assets/preignition.js';
 import { installMediaQueryWatcher } from 'pwa-helpers/media-query.js';
+
+import './helper-demo.js';
+import './chart-demo.js';
+
+import './src/demo-api-viewer.js';
+import './src/demo-container.js';
+import './src/demo-fancy-list.js';
+import './src/demo-readme.js';
 
 /**
  * This component combines all the examples to be displayed. See the basic/intermediate/advanced folders for the actual examples.
@@ -24,7 +26,7 @@ class OpenWcDemo extends LitElement {
       css `
         :host {
           display: block;
-          margin: 20px;
+          margin: 20px ;
           color: var(--primary-text-color);
         }
 
@@ -41,8 +43,6 @@ class OpenWcDemo extends LitElement {
           font-weight: 400;
           letter-spacing: -.018em;
           line-height: 55px;
-
-          
         }
 
         #header {
@@ -84,7 +84,7 @@ class OpenWcDemo extends LitElement {
   constructor() {
     super();
     this.activeTab = location.pathname === '/' ? 'helper' : location.pathname.replace('/', '');
-    this.tabs = ['helper', 'container', 'charts', 'advanced'];
+    this.tabs = ['intro', 'charts', 'container', 'helper', 'advanced'];
 
     installMediaQueryWatcher(`(min-width: 600px)`, (matches) => {
       this.smallScreen = !matches;
@@ -95,10 +95,11 @@ class OpenWcDemo extends LitElement {
     const router = new Router(this.shadowRoot.getElementById('outlet'));
     router.setRoutes([
       { path: '/', component: 'helper-demos' },
-      { path: '/charts', component: 'charts-demos' },
-      { path: '/helper', component: 'helper-demos' },
-      { path: '/container', component: 'container-demos' },
-      { path: '/advanced', component: 'advanced-demos' },
+      { path: '/intro', component: 'demo-readme' },
+      { path: '/chart', component: 'chart-demo' },
+      { path: '/helper', component: 'helper-demo' },
+      { path: '/container', component: 'container-demo' },
+      { path: '/advanced', component: 'advanced-demo' },
       {
         path: '(.*)',
         redirect: '/',
@@ -123,7 +124,8 @@ class OpenWcDemo extends LitElement {
       </div>
 
       <vaadin-tabs class="${this.smallScreen ? 'nav' : ''}" orientation="${this.smallScreen ? 'vertical' : 'horizontal'}" selected=${this.tabs.indexOf(this.activeTab)} theme="${this.smallScreen ? '' : 'centered'}">
-        <vaadin-tab @click=${() => this.switchRoute('charts')}>Charts</vaadin-tab>
+        <vaadin-tab @click=${() => this.switchRoute('intro')}>Intro</vaadin-tab>
+        <vaadin-tab @click=${() => this.switchRoute('chart')}>Charts</vaadin-tab>
         <vaadin-tab @click=${() => this.switchRoute('container')}>Container</vaadin-tab>
         <vaadin-tab @click=${() => this.switchRoute('helper')}>Helper</vaadin-tab>
         <vaadin-tab @click=${() => this.switchRoute('advanced')}>Advanced</vaadin-tab>
@@ -131,7 +133,7 @@ class OpenWcDemo extends LitElement {
 
       <div id="outlet">
       </div>
-      <p class="footer">Made with love by <a target="_blank" href="https://preignition.org/">preignition</a>, with the help of <a target="_blank" href="https://github.com/web-padawan/api-viewer-element">api-viewer-element</a> and <a target="_blank" href="https://github.com/runem/web-component-analyzer">web-component-analyzer</a></p>
+      <p class="footer">Made with love by <a target="_blank" href="https://preignition.org/">preignition</a>, with precious help of <a target="_blank" href="https://github.com/web-padawan/api-viewer-element">api-viewer-element</a> and <a target="_blank" href="https://github.com/runem/web-component-analyzer">web-component-analyzer</a></p>
     `;
   }
 

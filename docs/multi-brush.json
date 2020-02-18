@@ -1,0 +1,198 @@
+{
+  "version": "experimental",
+  "tags": [
+    {
+      "name": "multi-brush",
+      "path": "./../src/helper/multi-brush.js",
+      "description": "## MultiBrush\n\n`<multi-brush>` implements a brush selection as in  [d3-brush](https://github.com/d3/d3-brush)",
+      "attributes": [
+        {
+          "name": "selectedValues",
+          "description": "Returns an array of currently selected items.",
+          "type": "array",
+          "default": "[]"
+        },
+        {
+          "name": "xScale"
+        },
+        {
+          "name": "yScale"
+        },
+        {
+          "name": "brush",
+          "description": "`brush` brushing for mouse or touch event implementation [d3-brush](https://github.com/d3/d3-brush)"
+        },
+        {
+          "name": "extent",
+          "description": "extent of the brush  as per https://github.com/d3/d3-brush#brush_extent",
+          "type": "array"
+        },
+        {
+          "name": "isSelecting",
+          "description": "`isSelection` is true when a selection is being done (e.g. by brushing). The attribute is used for css rules.\nThis property is aimed at being bound to a multi-container-svg",
+          "type": "boolean",
+          "default": "false"
+        },
+        {
+          "name": "hasSelection",
+          "description": "`hasSelection`  is true when a selection exists. The attribute is used for css rules.\nThis property is aimed at being bound to a multi-container-svg",
+          "type": "boolean"
+        },
+        {
+          "name": "isRange",
+          "description": "true when brush is implemented with a range scale",
+          "type": "Object"
+        },
+        {
+          "name": "x-continuous",
+          "description": "`xContinuous` indicate true if we have a `continuous` scale on X when the xScale is `ordinal` (e.g. a scaleBand for bar charts). If true a `xContinuousScale` is computed",
+          "type": "boolean"
+        },
+        {
+          "name": "xContinuousScale",
+          "description": "`xContinuousScale` the continuous scale to use when selecting ranges"
+        },
+        {
+          "name": "svg-host",
+          "description": "`svgHost` the host to which [slog-svg] nodes must be stamped",
+          "type": "object"
+        },
+        {
+          "name": "group",
+          "description": "`group` against which the drawable object is registered.\nA chart can have multiple group (e.g. one displayed against right axis,\nthe other against the left axis).\nSet another group name for objects belonging to alternate chart settings.",
+          "type": "string",
+          "default": "\"default\""
+        },
+        {
+          "name": "multi-position",
+          "description": "`multiPosition` position used to re-order items when appended by dispatch-svg\nnodePosition larger than 0 will render on top.",
+          "type": "number",
+          "default": "0"
+        },
+        {
+          "name": "log",
+          "description": "`log`  true to show log",
+          "type": "boolean"
+        }
+      ],
+      "properties": [
+        {
+          "name": "selectedValues",
+          "attribute": "selectedValues",
+          "description": "Returns an array of currently selected items.",
+          "type": "array",
+          "default": "[]"
+        },
+        {
+          "name": "xScale",
+          "attribute": "xScale"
+        },
+        {
+          "name": "yScale",
+          "attribute": "yScale"
+        },
+        {
+          "name": "brush",
+          "attribute": "brush",
+          "description": "`brush` brushing for mouse or touch event implementation [d3-brush](https://github.com/d3/d3-brush)"
+        },
+        {
+          "name": "extent",
+          "attribute": "extent",
+          "description": "extent of the brush  as per https://github.com/d3/d3-brush#brush_extent",
+          "type": "array"
+        },
+        {
+          "name": "isSelecting",
+          "attribute": "isSelecting",
+          "description": "`isSelection` is true when a selection is being done (e.g. by brushing). The attribute is used for css rules.\nThis property is aimed at being bound to a multi-container-svg",
+          "type": "boolean",
+          "default": "false"
+        },
+        {
+          "name": "hasSelection",
+          "attribute": "hasSelection",
+          "description": "`hasSelection`  is true when a selection exists. The attribute is used for css rules.\nThis property is aimed at being bound to a multi-container-svg",
+          "type": "boolean"
+        },
+        {
+          "name": "isRange",
+          "attribute": "isRange",
+          "description": "true when brush is implemented with a range scale",
+          "type": "Object"
+        },
+        {
+          "name": "xContinuous",
+          "attribute": "x-continuous",
+          "description": "`xContinuous` indicate true if we have a `continuous` scale on X when the xScale is `ordinal` (e.g. a scaleBand for bar charts). If true a `xContinuousScale` is computed",
+          "type": "boolean"
+        },
+        {
+          "name": "xContinuousScale",
+          "attribute": "xContinuousScale",
+          "description": "`xContinuousScale` the continuous scale to use when selecting ranges"
+        },
+        {
+          "name": "targetElement"
+        },
+        {
+          "name": "effectiveScale",
+          "type": "{ x: any; y: any; }"
+        },
+        {
+          "name": "svgHost",
+          "attribute": "svg-host",
+          "description": "`svgHost` the host to which [slog-svg] nodes must be stamped",
+          "type": "object"
+        },
+        {
+          "name": "registerEventDispatch",
+          "description": "`registerEventDispatch`  the name of the event to be fired when connected.\nA container with multi-register-mixin applied\nwill listen to this event to register the component.\n",
+          "type": "string"
+        },
+        {
+          "name": "group",
+          "attribute": "group",
+          "description": "`group` against which the drawable object is registered.\nA chart can have multiple group (e.g. one displayed against right axis,\nthe other against the left axis).\nSet another group name for objects belonging to alternate chart settings.",
+          "type": "string",
+          "default": "\"default\""
+        },
+        {
+          "name": "multiPosition",
+          "attribute": "multi-position",
+          "description": "`multiPosition` position used to re-order items when appended by dispatch-svg\nnodePosition larger than 0 will render on top.",
+          "type": "number",
+          "default": "0"
+        },
+        {
+          "name": "registerOrder",
+          "description": "`registerOrder` - registerable elements are sorted on the basis of this property.",
+          "type": "number"
+        },
+        {
+          "name": "log",
+          "attribute": "log",
+          "description": "`log`  true to show log",
+          "type": "boolean"
+        }
+      ],
+      "events": [
+        {
+          "name": "selected-values-changed",
+          "description": "Event fired when selectedValues changes"
+        },
+        {
+          "name": "is-range-changed",
+          "description": "Event fired when isRange changes"
+        },
+        {
+          "name": "has-selection-changed",
+          "description": "Event fired when selection changes"
+        },
+        {
+          "name": "multi-select"
+        }
+      ]
+    }
+  ]
+}

@@ -33,6 +33,7 @@
     "lit-element": "./lit-element.js",
     "lit-html/directives/cache": "./lit-html/directives/cache.js",
     "lit-html/directives/unsafe-html": "./lit-html/directives/unsafe-html.js",
+    "lit-html/directives/until": "./lit-html/directives/until.js",
     "lit-html/directives/style-map": "./lit-html/directives/style-map.js",
     "lit-html": "./lit-html.js"
   }

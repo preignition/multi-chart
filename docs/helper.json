@@ -74,15 +74,15 @@
       "events": [
         {
           "name": "loading-changed",
-          "description": "fired when loading property changes"
+          "description": "Event fired when loading property changes"
         },
         {
           "name": "data-changed",
-          "description": "fired when data is set"
+          "description": "Event fired when data is set"
         },
         {
           "name": "error-changed",
-          "description": "fired when there is an error"
+          "description": "Event fired when there is an error"
         }
       ]
     },
@@ -140,71 +140,71 @@
       ]
     },
     {
-      "name": "",
+      "name": "multi-accessor",
       "path": "./../src/helper/multi-accessor.js",
-      "description": "## MultiAccessor\n\n`<multi-accessor>` creates an accessor function from a String path",
+      "description": "## MultiAccessor\n\n`<multi-accessor>` creates an accessor function from a String path. This element is mostly for internal use.\n\n### Eample\n```html\n   <multi-accessor path=\"+count\"></multi-accessor>\n```",
       "attributes": [
         {
           "name": "accessor",
-          "description": "`accessor` the accessor function \nexample function : `d => {return +d.count}`"
+          "description": "the accessor function\nexample function : `d => {return +d.count}`"
         },
         {
           "name": "path",
-          "description": "`path` the path from which tha accessor function is built\nFor instance `+count` will create `d => {return +d.count}` function.",
+          "description": "path from which tha accessor function is built\nFor instance `+count` will create `d => {return +d.count}` function.",
           "type": "string"
         },
         {
           "name": "sub-path",
-          "type": "boolean"
+          "description": "when set, will generate an accessor function that includes a subpath\n\nFor example `<multi-accessor path=\"+count\" sub-path=\"sub\"></multi-accessor>`\nwill create `d => {return +d.count.sub}`",
+          "type": "Object"
         }
       ],
       "properties": [
         {
           "name": "accessor",
           "attribute": "accessor",
-          "description": "`accessor` the accessor function \nexample function : `d => {return +d.count}`"
+          "description": "the accessor function\nexample function : `d => {return +d.count}`"
         },
         {
           "name": "path",
           "attribute": "path",
-          "description": "`path` the path from which tha accessor function is built\nFor instance `+count` will create `d => {return +d.count}` function.",
+          "description": "path from which tha accessor function is built\nFor instance `+count` will create `d => {return +d.count}` function.",
           "type": "string"
         },
         {
           "name": "subPath",
           "attribute": "sub-path",
-          "type": "boolean"
+          "description": "when set, will generate an accessor function that includes a subpath\n\nFor example `<multi-accessor path=\"+count\" sub-path=\"sub\"></multi-accessor>`\nwill create `d => {return +d.count.sub}`",
+          "type": "Object"
         }
       ],
       "events": [
         {
-          "name": "accessor-changed"
+          "name": "accessor-changed",
+          "description": "Event fired when the accessor function changes"
         }
       ]
     },
     {
-      "name": "",
+      "name": "multi-legend",
       "path": "./../src/helper/multi-legend.js",
-      "description": "## MultiLegend\n\n`<multi-legend>` a element for displaying chart legends\nRelying on [d3-legend](https://d3-legend.susielu.com/), A library to make legends in svg-land easy as pie.\n\n### Styling\n`<multi-drawable-feature>` provides the following custom properties and mixins\nfor styling:\n\nCustom property | Description | Default\n----------------|-------------|----------\n`--multi-legend-color` | text color for legends | `#292929`\n`--multi-legend-background` | background color for legenx box | `#efefef`\n`--multi-legend-stroke` | stroke color for legend box | `none`\n`--multi-legend-opacity` | opacity for legend box | `0.6`\n`--multi-legend` | Mixin applied to legend | `{}`",
+      "description": "## MultiLegend\n\n`<multi-legend>` a element for displaying chart legends\nRelying on [d3-legend](https://d3-legend.susielu.com/), A library to make legends in svg-land easy as pie.",
       "attributes": [
         {
           "name": "type",
-          "description": "legend `type` the type of legend (`color`, `size`, `symbol`)\nfor instantiating the legend ([d3-legend](http://d3-legend.susielu.com/).",
-          "type": "string",
+          "description": "legend `type` the type of legend",
+          "type": "'color'|'size'|'symbol'",
           "default": "\"color\""
         },
         {
           "name": "width",
+          "description": "legend width",
           "type": "number"
         },
         {
           "name": "height",
+          "description": "legend height",
           "type": "number"
-        },
-        {
-          "name": "opacity",
-          "type": "number",
-          "default": "0"
         },
         {
           "name": "rect-offset",
@@ -214,6 +214,7 @@
         },
         {
           "name": "scale-factor",
+          "description": "factor between 0 to 1 to help make legend smaller",
           "type": "number",
           "default": "0.7"
         },
@@ -231,11 +232,13 @@
         },
         {
           "name": "x",
+          "description": "x position",
           "type": "number",
           "default": "0"
         },
         {
           "name": "y",
+          "description": "y position",
           "type": "number",
           "default": "0"
         },
@@ -245,7 +248,7 @@
           "type": "object"
         },
         {
-          "name": "track-hover",
+          "name": "trackHover",
           "description": "`trackHover` set true if selector listen to mouseenter/mouseleave events and set hoveredItem accordingly.\nWhen true, this element also and fires `multi-mouseenter` and multi-mouseleave.",
           "type": "boolean",
           "default": "false"
@@ -277,25 +280,21 @@
         {
           "name": "type",
           "attribute": "type",
-          "description": "legend `type` the type of legend (`color`, `size`, `symbol`)\nfor instantiating the legend ([d3-legend](http://d3-legend.susielu.com/).",
-          "type": "string",
+          "description": "legend `type` the type of legend",
+          "type": "'color'|'size'|'symbol'",
           "default": "\"color\""
         },
         {
           "name": "width",
           "attribute": "width",
+          "description": "legend width",
           "type": "number"
         },
         {
           "name": "height",
           "attribute": "height",
+          "description": "legend height",
           "type": "number"
-        },
-        {
-          "name": "opacity",
-          "attribute": "opacity",
-          "type": "number",
-          "default": "0"
         },
         {
           "name": "rectOffset",
@@ -307,6 +306,7 @@
         {
           "name": "scaleFactor",
           "attribute": "scale-factor",
+          "description": "factor between 0 to 1 to help make legend smaller",
           "type": "number",
           "default": "0.7"
         },
@@ -327,12 +327,14 @@
         {
           "name": "x",
           "attribute": "x",
+          "description": "x position",
           "type": "number",
           "default": "0"
         },
         {
           "name": "y",
           "attribute": "y",
+          "description": "y position",
           "type": "number",
           "default": "0"
         },
@@ -344,7 +346,7 @@
         },
         {
           "name": "trackHover",
-          "attribute": "track-hover",
+          "attribute": "trackHover",
           "description": "`trackHover` set true if selector listen to mouseenter/mouseleave events and set hoveredItem accordingly.\nWhen true, this element also and fires `multi-mouseenter` and multi-mouseleave.",
           "type": "boolean",
           "default": "false"
@@ -388,6 +390,14 @@
       ],
       "events": [
         {
+          "name": "width-changed",
+          "description": "Event fired when width changes"
+        },
+        {
+          "name": "height-changed",
+          "description": "Event fired when height changes"
+        },
+        {
           "name": "multi-cell-click"
         },
         {
@@ -395,6 +405,24 @@
         },
         {
           "name": "multi-mouseleave"
+        }
+      ],
+      "cssProperties": [
+        {
+          "name": "--multi-legend-color",
+          "description": "text color for legends (#292929)"
+        },
+        {
+          "name": "--multi-legend-background",
+          "description": "background color for legenx box (`#efefef`)"
+        },
+        {
+          "name": "--multi-legend-stroke",
+          "description": "stroke color for legend box"
+        },
+        {
+          "name": "--multi-legend-opacity",
+          "description": "opacity for legend box  (`0.6`)"
         }
       ]
     },
@@ -433,7 +461,7 @@
           "default": "0"
         },
         {
-          "name": "track-hover",
+          "name": "trackHover",
           "description": "`trackHover` set true if selector listen to mouseenter/mouseleave events and set hoveredItem accordingly.\nWhen true, this element also and fires `multi-mouseenter` and multi-mouseleave.",
           "type": "boolean",
           "default": "false"
@@ -499,7 +527,7 @@
         },
         {
           "name": "trackHover",
-          "attribute": "track-hover",
+          "attribute": "trackHover",
           "description": "`trackHover` set true if selector listen to mouseenter/mouseleave events and set hoveredItem accordingly.\nWhen true, this element also and fires `multi-mouseenter` and multi-mouseleave.",
           "type": "boolean",
           "default": "false"
@@ -533,21 +561,21 @@
       ]
     },
     {
-      "name": "",
+      "name": "multi-brush",
       "path": "./../src/helper/multi-brush.js",
       "description": "## MultiBrush\n\n`<multi-brush>` implements a brush selection as in  [d3-brush](https://github.com/d3/d3-brush)",
       "attributes": [
         {
-          "name": "selected-values",
+          "name": "selectedValues",
           "description": "Returns an array of currently selected items.",
           "type": "array",
           "default": "[]"
         },
         {
-          "name": "x-scale"
+          "name": "xScale"
         },
         {
-          "name": "y-scale"
+          "name": "yScale"
         },
         {
           "name": "brush",
@@ -555,23 +583,24 @@
         },
         {
           "name": "extent",
-          "description": "`extent` extent of the brush",
+          "description": "extent of the brush  as per https://github.com/d3/d3-brush#brush_extent",
           "type": "array"
         },
         {
-          "name": "is-selecting",
+          "name": "isSelecting",
           "description": "`isSelection` is true when a selection is being done (e.g. by brushing). The attribute is used for css rules.\nThis property is aimed at being bound to a multi-container-svg",
           "type": "boolean",
           "default": "false"
         },
         {
-          "name": "has-selection",
+          "name": "hasSelection",
           "description": "`hasSelection`  is true when a selection exists. The attribute is used for css rules.\nThis property is aimed at being bound to a multi-container-svg",
           "type": "boolean"
         },
         {
-          "name": "is-range",
-          "type": "boolean"
+          "name": "isRange",
+          "description": "true when brush is implemented with a range scale",
+          "type": "Object"
         },
         {
           "name": "x-continuous",
@@ -579,7 +608,7 @@
           "type": "boolean"
         },
         {
-          "name": "x-continuous-scale",
+          "name": "xContinuousScale",
           "description": "`xContinuousScale` the continuous scale to use when selecting ranges"
         },
         {
@@ -608,18 +637,18 @@
       "properties": [
         {
           "name": "selectedValues",
-          "attribute": "selected-values",
+          "attribute": "selectedValues",
           "description": "Returns an array of currently selected items.",
           "type": "array",
           "default": "[]"
         },
         {
           "name": "xScale",
-          "attribute": "x-scale"
+          "attribute": "xScale"
         },
         {
           "name": "yScale",
-          "attribute": "y-scale"
+          "attribute": "yScale"
         },
         {
           "name": "brush",
@@ -629,26 +658,27 @@
         {
           "name": "extent",
           "attribute": "extent",
-          "description": "`extent` extent of the brush",
+          "description": "extent of the brush  as per https://github.com/d3/d3-brush#brush_extent",
           "type": "array"
         },
         {
           "name": "isSelecting",
-          "attribute": "is-selecting",
+          "attribute": "isSelecting",
           "description": "`isSelection` is true when a selection is being done (e.g. by brushing). The attribute is used for css rules.\nThis property is aimed at being bound to a multi-container-svg",
           "type": "boolean",
           "default": "false"
         },
         {
           "name": "hasSelection",
-          "attribute": "has-selection",
+          "attribute": "hasSelection",
           "description": "`hasSelection`  is true when a selection exists. The attribute is used for css rules.\nThis property is aimed at being bound to a multi-container-svg",
           "type": "boolean"
         },
         {
           "name": "isRange",
-          "attribute": "is-range",
-          "type": "boolean"
+          "attribute": "isRange",
+          "description": "true when brush is implemented with a range scale",
+          "type": "Object"
         },
         {
           "name": "xContinuous",
@@ -658,7 +688,7 @@
         },
         {
           "name": "xContinuousScale",
-          "attribute": "x-continuous-scale",
+          "attribute": "xContinuousScale",
           "description": "`xContinuousScale` the continuous scale to use when selecting ranges"
         },
         {
@@ -706,6 +736,18 @@
         }
       ],
       "events": [
+        {
+          "name": "selected-values-changed",
+          "description": "Event fired when selectedValues changes"
+        },
+        {
+          "name": "is-range-changed",
+          "description": "Event fired when isRange changes"
+        },
+        {
+          "name": "has-selection-changed",
+          "description": "Event fired when selection changes"
+        },
         {
           "name": "multi-select"
         }

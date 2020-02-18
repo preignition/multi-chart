@@ -1,0 +1,115 @@
+{
+  "version": "experimental",
+  "tags": [
+    {
+      "name": "multi-drawable-chart",
+      "path": "./../src/drawable/multi-drawable-pie.js",
+      "description": "## MultiDrawablePie\n\n`<multi-drawable-pie>` draws a pie",
+      "attributes": [
+        {
+          "name": "pie-width",
+          "description": "`pieWidth` a way to indicate the width of the radius (either in % or absolute value).\nIf set, inner radius will be inferred.",
+          "type": "string"
+        },
+        {
+          "name": "arc"
+        },
+        {
+          "name": "value-path",
+          "description": "`valuePath` path for creating value accessor",
+          "type": "string"
+        },
+        {
+          "name": "shaper",
+          "description": "`shaper`  shaper function for generating path ([for instance, pie](https://github.com/d3/d3-shape#lines)"
+        },
+        {
+          "name": "key",
+          "description": "`key`  some drawable need to have a key (for example lines in a line chart, to as to apply a colorScale)",
+          "type": "string"
+        },
+        {
+          "name": "color-scale",
+          "description": "`colorScale` colorScale to use for the chart (example d3.scaleOrdinal().range(d3.schemeCategory10);)"
+        },
+        {
+          "name": "width",
+          "type": "number"
+        },
+        {
+          "name": "height",
+          "type": "number"
+        }
+      ],
+      "properties": [
+        {
+          "name": "pieWidth",
+          "attribute": "pie-width",
+          "description": "`pieWidth` a way to indicate the width of the radius (either in % or absolute value).\nIf set, inner radius will be inferred.",
+          "type": "string"
+        },
+        {
+          "name": "arc",
+          "attribute": "arc"
+        },
+        {
+          "name": "valuePath",
+          "attribute": "value-path",
+          "description": "`valuePath` path for creating value accessor",
+          "type": "string"
+        },
+        {
+          "name": "shapeClass",
+          "type": "string"
+        },
+        {
+          "name": "shapeName",
+          "type": "string"
+        },
+        {
+          "name": "shaper",
+          "attribute": "shaper",
+          "description": "`shaper`  shaper function for generating path ([for instance, pie](https://github.com/d3/d3-shape#lines)"
+        },
+        {
+          "name": "html",
+          "type": "(strings: TemplateStringsArray, ...values: unknown[]) => TemplateResult"
+        },
+        {
+          "name": "key",
+          "attribute": "key",
+          "description": "`key`  some drawable need to have a key (for example lines in a line chart, to as to apply a colorScale)",
+          "type": "string"
+        },
+        {
+          "name": "colorScale",
+          "attribute": "color-scale",
+          "description": "`colorScale` colorScale to use for the chart (example d3.scaleOrdinal().range(d3.schemeCategory10);)"
+        },
+        {
+          "name": "width",
+          "attribute": "width",
+          "type": "number"
+        },
+        {
+          "name": "height",
+          "attribute": "height",
+          "type": "number"
+        },
+        {
+          "name": "dataProcessType",
+          "description": "`dataProcessType` the type of data processing. Stacked data (e.g. for bar chart) will be stacked",
+          "type": "string"
+        },
+        {
+          "name": "targetElement",
+          "description": "`targetElement` getter override lifecycle Behavior and called during attached"
+        },
+        {
+          "name": "minSize",
+          "type": "number | null"
+        }
+      ]
+    }
+  ]
+}

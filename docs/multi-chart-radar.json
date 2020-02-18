@@ -58,7 +58,7 @@
           "default": "\"default\""
         },
         {
-          "name": "colorScale",
+          "name": "color-scale",
           "description": "colorScale for the chart"
         },
         {
@@ -175,7 +175,7 @@
         },
         {
           "name": "colorScale",
-          "attribute": "colorScale",
+          "attribute": "color-scale",
           "description": "colorScale for the chart"
         },
         {

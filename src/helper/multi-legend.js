@@ -6,7 +6,6 @@ import { default as DispatchSVG } from './dispatch-svg-mixin.js';
 import { default as Legend } from '../d3-wrapper/d3-legend.js';
 import { RelayTo, CacheId } from '@preignition/preignition-mixin';
 import { MultiChartBase } from '../base-class.js';
-// import { Resizable } from './resizable-mixin.js';
 import { default as TrackHover } from './track-hover-mixin.js';
 import { select } from 'd3-selection';
 
@@ -16,29 +15,16 @@ import { select } from 'd3-selection';
  * `<multi-legend>` a element for displaying chart legends
  * Relying on [d3-legend](https://d3-legend.susielu.com/), A library to make legends in svg-land easy as pie.
  *
- * ### Styling
- * `<multi-drawable-feature>` provides the following custom properties and mixins
- * for styling:
+ * @element multi-legend
  *
- * Custom property | Description | Default
- * ----------------|-------------|----------
- * `--multi-legend-color` | text color for legends | `#292929`
- * `--multi-legend-background` | background color for legenx box | `#efefef`
- * `--multi-legend-stroke` | stroke color for legend box | `none`
- * `--multi-legend-opacity` | opacity for legend box | `0.6`
- * `--multi-legend` | Mixin applied to legend | `{}`
-
+ * @cssprop --multi-legend-color -  text color for legends (#292929)
+ * @cssprop --multi-legend-background -  background color for legenx box (`#efefef`)
+ * @cssprop --multi-legend-stroke -  stroke color for legend box
+ * @cssprop --multi-legend-opacity -  opacity for legend box  (`0.6`)
  *
- * @memberof MultiChart
- * @customElement
- * @polymer
- * @appliesMixin MultiChart.mixin.SVGHelper
- * @appliesMixin MultiChart.mixin.MultiRegisterable
- * @appliesMixin MultiChart.mixin.DispatchSVG
- * @appliesMixin MultiChart.mixin.Resizable
- * @appliesMixin MultiChart.mixin.TrackHover
- * @appliesMixin MultiChart.mixin.Draw
- * @demo
+ * @fires width-changed - Event fired when width changes
+ * @fires height-changed - Event fired when height changes
+ *
  **/
 class MultiLegend extends
 DispatchSVG(
@@ -77,8 +63,8 @@ DispatchSVG(
      ></d3-legend>
 
     <svg>
-      <rect id="legendRect" opacity="${this.opacity}"  slot-svg="slot-legend" class="legend-rect"></rect>
-      <g id="legend" part="legend" opacity="${this.opacity}" slot-svg="slot-legend" transform="translate(${this.x || 0},${this.y || 0})scale(${this.scaleFactor || 1})" class="legend"></g>
+      <rect id="legendRect" opacity="${this._opacity}"  slot-svg="slot-legend" class="legend-rect"></rect>
+      <g id="legend" part="legend" opacity="${this._opacity}" slot-svg="slot-legend" transform="translate(${this._x || 0},${this._y || 0})scale(${this.scaleFactor || 1})" class="legend"></g>
     </svg>
 `;
   }
@@ -90,8 +76,10 @@ DispatchSVG(
       ...super.properties,
 
       ...Legend.properties,
+
       /**
-       * legend `type` the type of legend (`color`, `size`, `symbol`)
+       * legend `type` the type of legend 
+       * @type {'color'|'size'|'symbol'}
        * for instantiating the legend ([d3-legend](http://d3-legend.susielu.com/).
        */
       type: {
@@ -99,17 +87,27 @@ DispatchSVG(
         value: 'color'
       },
 
+      /**
+       * legend width
+       */
       width: {
         type: Number,
         notify: true
       },
 
+      /**
+       * legend height
+       */
       height: {
         type: Number,
         notify: true
       },
 
-      opacity: {
+      /**
+       * opacity used to hide legend before its size is 
+       * computed 
+       */
+      _opacity: {
         type: Number,
         value: 0
       },
@@ -119,11 +117,16 @@ DispatchSVG(
        */
       rectOffset: {
         type: Number,
+        attribute: 'rect-offset',
         value: 5
       },
 
+      /**
+       * factor between 0 to 1 to help make legend smaller
+       */
       scaleFactor: {
         type: Number,
+        attribute: 'scale-factor',
         value: 0.7
       },
 
@@ -144,12 +147,18 @@ DispatchSVG(
         value: 10
       },
 
-      x: {
+      /**
+       * x position
+       */
+      _x: {
         type: Number,
         value: 0
       },
 
-      y: {
+      /**
+       * y position
+       */
+      _y: {
         type: Number,
         value: 0
       },
@@ -226,7 +235,8 @@ DispatchSVG(
     // const legendEl = this.queryShadow('#legend');
     const legendEl = this.$.legend;
     const size = legendEl.getBoundingClientRect();
-    if (!size.width || !size.height || !this.svgHost) {
+    //if (!size.width || !size.height || !this.svgHost) {
+    if (!size.width || !size.height) {
       return;
     }
 
@@ -236,22 +246,22 @@ DispatchSVG(
 
     const chartSize = legendEl.ownerSVGElement.getBoundingClientRect();
 
-    this.y = this.rectOffset + this.padding;
-    this.x = this.rectOffset + this.padding;
+    this._y = this.rectOffset + this.padding;
+    this._x = this.rectOffset + this.padding;
 
     if (isRight) {
       // console.info('SIZE: ', size,chartWidth, padding )
-      this.x = chartSize.width - size.width - this.padding + this.rectOffset;
+      this._x = chartSize.width - size.width - this.padding + this.rectOffset;
     }
 
 
     if (isBottom) {
-      this.y = chartSize.height - size.height - this.padding + this.rectOffset;
+      this._y = chartSize.height - size.height - this.padding + this.rectOffset;
     }
     this._isDrawn = true;
-    this.opacity = 1;
+    this._opacity = 1;
     select(this.$.legendRect)
-      .attr('transform', `translate(${this.x - this.rectOffset}, ${this.y - this.rectOffset})`)
+      .attr('transform', `translate(${this._x - this.rectOffset}, ${this._y - this.rectOffset})`)
       .attr('width', size.width + 2 * this.rectOffset)
       .attr('height', size.height + 2 * this.rectOffset - 3);
 

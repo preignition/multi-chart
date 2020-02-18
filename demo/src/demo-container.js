@@ -4,7 +4,7 @@ import { LitElement, html, css } from 'lit-element';
 // import './demo-api-viewer.js';
 
 
-class HelperDemos extends LitElement {
+class DemoContainer extends LitElement {
   static get styles() {
     return css `
       :host {
@@ -17,6 +17,7 @@ class HelperDemos extends LitElement {
       #main {
         display: flex;
         flex: 1;
+        margin: 10px 30px;
         box-sizing: border-box;
       }
 
@@ -25,7 +26,7 @@ class HelperDemos extends LitElement {
       }
       
       header {
-        margin: 20px auto;
+        margin: 20px 30px;
         width: 70vw;
         min-width: 600px;
       }
@@ -79,4 +80,4 @@ class HelperDemos extends LitElement {
 
 }
 
-customElements.define('demos-container', HelperDemos);
+customElements.define('demo-container', DemoContainer);

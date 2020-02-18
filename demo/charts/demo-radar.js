@@ -1,18 +1,18 @@
-import { LitElement, html, css} from '/web_modules/lit-element.js';
-import * as scales from '/web_modules/d3-scale.js';
-import {default as demoStyle } from '../demo-style.js';
-import {multipleRnd}  from '../demo-utils.js';
+import { LitElement, html, css} from 'lit-element';
+import * as scales from 'd3-scale';
+import {default as chartStyle } from '../src/demo-chart-style.js';
+import {multipleRnd}  from '../src/demo-utils.js';
 import {default as Base } from './demo-chart-base.js';
 
 class Chart extends Base {
 
   static get styles() {
-    return css `
+    return [...super.styles, css `
       multi-chart-radar {
           height: 600px;
         }
-    `;
-  }  
+    `];
+  }
 
   render() {
     return html`

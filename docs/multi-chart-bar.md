@@ -31,7 +31,7 @@
 |-------------------------|---------------------------|-----------|--------------------------------------------------|-----------|--------------------------------------------------|
 | `bottomMargin`          | `bottom-margin`           |           | `number`                                         |           |                                                  |
 | `bottomScaleType`       | `bottom-scale-type`       |           | `string`                                         | "band"    |                                                  |
-| `colorScale`            | `colorScale`              |           |                                                  |           | colorScale for the chart                         |
+| `colorScale`            | `color-scale`             |           |                                                  |           | colorScale for the chart                         |
 | `data`                  | `data`                    |           | `array`                                          |           | `data` to display the chart                      |
 | `enableZoom`            | `enable-zoom`             |           | `boolean`                                        |           | `enableZoom` set true to enable zoom behaviors   |
 | `group`                 | `group`                   |           | `string`                                         |           | `group` the name of the group (used when to registering this element under a multi-verse) |

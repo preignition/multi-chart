@@ -1,0 +1,51 @@
+{
+  "version": "experimental",
+  "tags": [
+    {
+      "name": "multi-accessor",
+      "path": "./../src/helper/multi-accessor.js",
+      "description": "## MultiAccessor\n\n`<multi-accessor>` creates an accessor function from a String path. This element is mostly for internal use.\n\n### Eample\n```html\n   <multi-accessor path=\"+count\"></multi-accessor>\n```",
+      "attributes": [
+        {
+          "name": "accessor",
+          "description": "the accessor function\nexample function : `d => {return +d.count}`"
+        },
+        {
+          "name": "path",
+          "description": "path from which tha accessor function is built\nFor instance `+count` will create `d => {return +d.count}` function.",
+          "type": "string"
+        },
+        {
+          "name": "sub-path",
+          "description": "when set, will generate an accessor function that includes a subpath\n\nFor example `<multi-accessor path=\"+count\" sub-path=\"sub\"></multi-accessor>`\nwill create `d => {return +d.count.sub}`",
+          "type": "Object"
+        }
+      ],
+      "properties": [
+        {
+          "name": "accessor",
+          "attribute": "accessor",
+          "description": "the accessor function\nexample function : `d => {return +d.count}`"
+        },
+        {
+          "name": "path",
+          "attribute": "path",
+          "description": "path from which tha accessor function is built\nFor instance `+count` will create `d => {return +d.count}` function.",
+          "type": "string"
+        },
+        {
+          "name": "subPath",
+          "attribute": "sub-path",
+          "description": "when set, will generate an accessor function that includes a subpath\n\nFor example `<multi-accessor path=\"+count\" sub-path=\"sub\"></multi-accessor>`\nwill create `d => {return +d.count.sub}`",
+          "type": "Object"
+        }
+      ],
+      "events": [
+        {
+          "name": "accessor-changed",
+          "description": "Event fired when the accessor function changes"
+        }
+      ]
+    }
+  ]
+}

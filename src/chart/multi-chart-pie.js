@@ -5,15 +5,9 @@ import  { Pie, Arc }  from '../d3-wrapper/d3-shape.js';
 /**
  * ## MultiChartPie
  *
-
  *
- * @memberof MultiChart
- * @group App Elements
  * @element multi-chart-pie
- * appliesMixin MultiChart.mixin.MultiChartProperty
- * @appliesMixin MultiChart.mixin.D3PieProperty
- * @appliesMixin MultiChart.mixin.ColorScale
- * @demo index.html#multi-pie-demo
+ * 
  **/
 class MultiChartPie extends MultiContainer {
     
@@ -65,6 +59,5 @@ class MultiChartPie extends MultiContainer {
     };
   }
 }
-
 
 export default MultiChartPie;

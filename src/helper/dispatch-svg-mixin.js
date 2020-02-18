@@ -6,9 +6,6 @@ import { select } from 'd3-selection'
  * 
  * dispatch template elements marked as slot-svg="svgID" to svgHost
  * 
- * @memberof MultiChart.mixin
- * @polymer
- * @mixinFunction
  */
 
 const DispatchSVG = dedupingMixin(superClass => {

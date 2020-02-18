@@ -1,0 +1,246 @@
+{
+  "version": "experimental",
+  "tags": [
+    {
+      "name": "multi-legend",
+      "path": "./../src/helper/multi-legend.js",
+      "description": "## MultiLegend\n\n`<multi-legend>` a element for displaying chart legends\nRelying on [d3-legend](https://d3-legend.susielu.com/), A library to make legends in svg-land easy as pie.",
+      "attributes": [
+        {
+          "name": "type",
+          "description": "legend `type` the type of legend",
+          "type": "'color'|'size'|'symbol'",
+          "default": "\"color\""
+        },
+        {
+          "name": "width",
+          "description": "legend width",
+          "type": "number"
+        },
+        {
+          "name": "height",
+          "description": "legend height",
+          "type": "number"
+        },
+        {
+          "name": "rect-offset",
+          "description": "`retOffset` the offset for legend rect",
+          "type": "number",
+          "default": "5"
+        },
+        {
+          "name": "scale-factor",
+          "description": "factor between 0 to 1 to help make legend smaller",
+          "type": "number",
+          "default": "0.7"
+        },
+        {
+          "name": "position",
+          "description": "`position` this position within the chart. e.g. top-right, bottom-left\nposition is recalculated on resize.",
+          "type": "string",
+          "default": "\"top-right\""
+        },
+        {
+          "name": "padding",
+          "description": "`padding` the padding to be applied when calculation the position",
+          "type": "number",
+          "default": "10"
+        },
+        {
+          "name": "x",
+          "description": "x position",
+          "type": "number",
+          "default": "0"
+        },
+        {
+          "name": "y",
+          "description": "y position",
+          "type": "number",
+          "default": "0"
+        },
+        {
+          "name": "svg-host",
+          "description": "`svgHost` the host to which [slog-svg] nodes must be stamped",
+          "type": "object"
+        },
+        {
+          "name": "track-hover",
+          "description": "`trackHover` set true if selector listen to mouseenter/mouseleave events and set hoveredItem accordingly.\nWhen true, this element also and fires `multi-mouseenter` and multi-mouseleave.",
+          "type": "boolean",
+          "default": "false"
+        },
+        {
+          "name": "hovered",
+          "description": "`hovered` the hovered item, tracked when `trackHover` is set to true.\nThis is usefull for instance when we want to highlight the legend being hovered",
+          "type": "string"
+        },
+        {
+          "name": "group",
+          "description": "`group` against which the drawable object is registered.\nA chart can have multiple group (e.g. one displayed against right axis,\nthe other against the left axis).\nSet another group name for objects belonging to alternate chart settings.",
+          "type": "string",
+          "default": "\"default\""
+        },
+        {
+          "name": "multi-position",
+          "description": "`multiPosition` position used to re-order items when appended by dispatch-svg\nnodePosition larger than 0 will render on top.",
+          "type": "number",
+          "default": "0"
+        },
+        {
+          "name": "log",
+          "description": "`log`  true to show log",
+          "type": "boolean"
+        }
+      ],
+      "properties": [
+        {
+          "name": "type",
+          "attribute": "type",
+          "description": "legend `type` the type of legend",
+          "type": "'color'|'size'|'symbol'",
+          "default": "\"color\""
+        },
+        {
+          "name": "width",
+          "attribute": "width",
+          "description": "legend width",
+          "type": "number"
+        },
+        {
+          "name": "height",
+          "attribute": "height",
+          "description": "legend height",
+          "type": "number"
+        },
+        {
+          "name": "rectOffset",
+          "attribute": "rect-offset",
+          "description": "`retOffset` the offset for legend rect",
+          "type": "number",
+          "default": "5"
+        },
+        {
+          "name": "scaleFactor",
+          "attribute": "scale-factor",
+          "description": "factor between 0 to 1 to help make legend smaller",
+          "type": "number",
+          "default": "0.7"
+        },
+        {
+          "name": "position",
+          "attribute": "position",
+          "description": "`position` this position within the chart. e.g. top-right, bottom-left\nposition is recalculated on resize.",
+          "type": "string",
+          "default": "\"top-right\""
+        },
+        {
+          "name": "padding",
+          "attribute": "padding",
+          "description": "`padding` the padding to be applied when calculation the position",
+          "type": "number",
+          "default": "10"
+        },
+        {
+          "name": "x",
+          "attribute": "x",
+          "description": "x position",
+          "type": "number",
+          "default": "0"
+        },
+        {
+          "name": "y",
+          "attribute": "y",
+          "description": "y position",
+          "type": "number",
+          "default": "0"
+        },
+        {
+          "name": "svgHost",
+          "attribute": "svg-host",
+          "description": "`svgHost` the host to which [slog-svg] nodes must be stamped",
+          "type": "object"
+        },
+        {
+          "name": "trackHover",
+          "attribute": "track-hover",
+          "description": "`trackHover` set true if selector listen to mouseenter/mouseleave events and set hoveredItem accordingly.\nWhen true, this element also and fires `multi-mouseenter` and multi-mouseleave.",
+          "type": "boolean",
+          "default": "false"
+        },
+        {
+          "name": "hovered",
+          "attribute": "hovered",
+          "description": "`hovered` the hovered item, tracked when `trackHover` is set to true.\nThis is usefull for instance when we want to highlight the legend being hovered",
+          "type": "string"
+        },
+        {
+          "name": "registerEventDispatch",
+          "description": "`registerEventDispatch`  the name of the event to be fired when connected.\nA container with multi-register-mixin applied\nwill listen to this event to register the component.\n",
+          "type": "string"
+        },
+        {
+          "name": "group",
+          "attribute": "group",
+          "description": "`group` against which the drawable object is registered.\nA chart can have multiple group (e.g. one displayed against right axis,\nthe other against the left axis).\nSet another group name for objects belonging to alternate chart settings.",
+          "type": "string",
+          "default": "\"default\""
+        },
+        {
+          "name": "multiPosition",
+          "attribute": "multi-position",
+          "description": "`multiPosition` position used to re-order items when appended by dispatch-svg\nnodePosition larger than 0 will render on top.",
+          "type": "number",
+          "default": "0"
+        },
+        {
+          "name": "registerOrder",
+          "description": "`registerOrder` - registerable elements are sorted on the basis of this property.",
+          "type": "number"
+        },
+        {
+          "name": "log",
+          "attribute": "log",
+          "description": "`log`  true to show log",
+          "type": "boolean"
+        }
+      ],
+      "events": [
+        {
+          "name": "width-changed",
+          "description": "Event fired when width changes"
+        },
+        {
+          "name": "height-changed",
+          "description": "Event fired when height changes"
+        },
+        {
+          "name": "multi-cell-click"
+        },
+        {
+          "name": "multi-mouseenter"
+        },
+        {
+          "name": "multi-mouseleave"
+        }
+      ],
+      "cssProperties": [
+        {
+          "name": "--multi-legend-color",
+          "description": "text color for legends (#292929)"
+        },
+        {
+          "name": "--multi-legend-background",
+          "description": "background color for legenx box (`#efefef`)"
+        },
+        {
+          "name": "--multi-legend-stroke",
+          "description": "stroke color for legend box"
+        },
+        {
+          "name": "--multi-legend-opacity",
+          "description": "opacity for legend box  (`0.6`)"
+        }
+      ]
+    }
+  ]
+}

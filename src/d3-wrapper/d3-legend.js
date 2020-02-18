@@ -10,9 +10,15 @@ legendNames.forEach(name => {
   const instance = legend[`legend${capitalize(name)}`]()
   const keys = Object.keys(instance || {});
   shapeProperties(keys, props);
-  
-})
+});
 
+/**
+ * ## D3Legend
+ *
+ * a wrapper around  [`d3-svg-legend`](https://d3-legend.susielu.com/)
+ *
+ * @prop {Function} scale - d3.scale to use for the legend
+ */
 class D3Legend extends LitElement {
 
   static get properties() {
@@ -27,7 +33,7 @@ class D3Legend extends LitElement {
   }
 
   constructor() {
-    super()
+    super();
     this.__init = true;
   }
 
@@ -38,7 +44,7 @@ class D3Legend extends LitElement {
     }
 
     if (!this.legend || props.has('type')) {
-      this.legend = legend[`legend${capitalize(this.type)}`]()
+      this.legend = legend[`legend${capitalize(this.type)}`]();
     }
 
     if (this.legend) {

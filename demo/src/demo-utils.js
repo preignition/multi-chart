@@ -7,7 +7,8 @@ export const rnd = (keys, max) => {
   return keys.map(function(d, i) {
     return { key: d, value: { count: r() } };
   });
-}
+};
+
 export const multipleRnd = (keys, max, size = 7) => {
   return range(size).map(function(d, i) {
     var value = {};
@@ -17,10 +18,10 @@ export const multipleRnd = (keys, max, size = 7) => {
     });
     return { key: i, value: value };
   });
-}
+};
 
 export const timeData = (nbDays) => {
     const now = new Date();
     const range = timeDay.range(timeDay.offset(now, -nbDays), now, 1);
-    return rnd(range, 10)
-}
+    return rnd(range, 10);
+};

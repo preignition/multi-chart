@@ -1,20 +1,20 @@
-import { LitElement, html } from '/web_modules/lit-element.js';
-import {default as demoStyle } from '../demo-style.js';
-import {scaleOrdinal} from '/web_modules/d3-scale.js';
-import {schemeCategory10 } from '/web_modules/d3-scale-chromatic.js';
+import { LitElement, html } from 'lit-element';
+import {default as chartStyle } from '../src/demo-chart-style.js';
+import {scaleOrdinal} from 'd3-scale';
+import {schemeCategory10 } from 'd3-scale-chromatic';
 
 class Chart extends LitElement {
 
   static get styles() {
-    return demoStyle;
+    return chartStyle;
   }
 
   render() {
     return html`
     <d3-fetch url="/demo/data/data.json" @data-changed="${e => this.data = e.detail.value}"></d3-fetch>
     <p>Example of a pie chart with values :</p> <code>${JSON.stringify(this.data)}</code>
-    <label>inner radius</label><input  type="number" .value="${this.innerRadius}" @input=${(e) => {this.innerRadius = e.currentTarget.value;}}>  
-    <label>pad angle</label><input  type="number" step="0.01" .value="${this.padAngle}" @input=${(e) => {this.padAngle = e.currentTarget.value;}}>  
+    <label>inner radius<input  type="number" .value="${this.innerRadius}" @input=${(e) => {this.innerRadius = e.currentTarget.value;}}></label>  
+    <label>pad angle<input  type="number" step="0.01" .value="${this.padAngle}" @input=${(e) => {this.padAngle = e.currentTarget.value;}}></label>  
     <multi-chart-pie 
         id="chart" 
         value-path="+value.count" 
@@ -37,7 +37,7 @@ class Chart extends LitElement {
     return {
       ...super.properties,
 
-      data : {type: Array},
+      data: {type: Array},
       innerRadius: {type: Number},
       padAngle: {type: Number},
       colorScale: {type: Function},
@@ -45,9 +45,9 @@ class Chart extends LitElement {
     };
   }
 
-  constructor(){
+  constructor() {
     super();
-    this.colorScale = scaleOrdinal().range(schemeCategory10).domain(['a','b','c','d']);
+    this.colorScale = scaleOrdinal().range(schemeCategory10).domain(['a', 'b', 'c', 'd']);
     this.innerRadius = 30;
     this.padAngle = 0.07;
     this.selected = '';

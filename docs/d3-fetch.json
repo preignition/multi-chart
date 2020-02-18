@@ -4,16 +4,16 @@
     {
       "name": "d3-fetch",
       "path": "./../src/helper/d3-fetch.js",
-      "description": "## d3-fetch\n\nFetches data of different types and expose them in `data`.",
+      "description": "## d3-fetch\n\nA wrapper aroud [d3-fetch](https://github.com/d3/d3-fetch), a module providing convenient parsing on top of [Fetch](https://fetch.spec.whatwg.org/).",
       "attributes": [
         {
           "name": "type",
-          "description": "`type`  data type (json, xml, blob, ...)",
-          "type": "string"
+          "description": "expected data type",
+          "type": "'blob'|'buffer'|'csv'|'dsv'|'html'|'image'|'json'|'svg'|'text'|'tsv'|'xml'"
         },
         {
           "name": "url",
-          "description": "`url`  the url to fetch data from",
+          "description": "the url to fetch data from",
           "type": "string"
         },
         {
@@ -21,11 +21,6 @@
           "description": "`loading` true when loading",
           "type": "boolean",
           "default": "false"
-        },
-        {
-          "name": "data",
-          "description": "`data` fetched data",
-          "type": "array"
         },
         {
           "name": "error",
@@ -42,13 +37,13 @@
         {
           "name": "type",
           "attribute": "type",
-          "description": "`type`  data type (json, xml, blob, ...)",
-          "type": "string"
+          "description": "expected data type",
+          "type": "'blob'|'buffer'|'csv'|'dsv'|'html'|'image'|'json'|'svg'|'text'|'tsv'|'xml'"
         },
         {
           "name": "url",
           "attribute": "url",
-          "description": "`url`  the url to fetch data from",
+          "description": "the url to fetch data from",
           "type": "string"
         },
         {
@@ -60,7 +55,6 @@
         },
         {
           "name": "data",
-          "attribute": "data",
           "description": "`data` fetched data",
           "type": "array"
         },
@@ -80,7 +74,15 @@
       "events": [
         {
           "name": "loading-changed",
-          "description": "fired when loading property changes"
+          "description": "Event fired when loading property changes"
+        },
+        {
+          "name": "data-changed",
+          "description": "Event fired when data is set"
+        },
+        {
+          "name": "error-changed",
+          "description": "Event fired when there is an error"
         }
       ]
     }

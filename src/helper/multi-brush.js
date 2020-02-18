@@ -10,18 +10,18 @@ import { default as Registerable } from './multi-registerable-mixin.js';
 import { camelToDashCase } from '@polymer/polymer/lib/utils/case-map.js';
 import { microTask } from '@polymer/polymer/lib/utils/async.js';
 import { Debouncer } from '@polymer/polymer/lib/utils/debounce.js';
-// import { Resizable } from './resizable-mixin.js';
 
 
 /**
  * ## MultiBrush
  *
- * `<multi-brush>` implements a brush selection as in  [d3-brush](https://github.com/d3/d3-brush) 
+ * `<multi-brush>` implements a brush selection as in  [d3-brush](https://github.com/d3/d3-brush)
  *
- * @memberof MultiChart
- * @customElement
- * @polymer
- * @demo
+ * @element multi-brush
+ * @fires selected-values-changed - Event fired when selectedValues changes
+ * @fires is-range-changed - Event fired when isRange changes
+ * @fires has-selection-changed - Event fired when selection changes
+ * 
  **/
 class MultiBrush extends
 DispatchSVG(
@@ -89,7 +89,7 @@ DispatchSVG(
       brush: { type: Function, },
 
       /**
-       * `extent` extent of the brush
+       * extent of the brush  as per https://github.com/d3/d3-brush#brush_extent
        */
       extent: { type: Array },
 
@@ -111,6 +111,10 @@ DispatchSVG(
         notify: true
       },
 
+      /**
+       * true when brush is implemented with a range scale
+       * @type {Object}
+       */
       isRange: {
         type: Boolean,
         notify: true,

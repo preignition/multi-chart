@@ -39,8 +39,7 @@ class DemoLegend extends LitElement {
     return {
       position: { type: String },
       scale: { type: Function },
-      
-    }
+    };
   }
 
   constructor() {

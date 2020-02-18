@@ -1,10 +1,15 @@
-import { LitElement, html } from '/web_modules/lit-element.js';
+import { LitElement, html } from 'lit-element';
 import { default as Base } from './demo-chart-base.js';
-import * as scales from '/web_modules/d3-scale.js';
-import * as format from '/web_modules/d3-format.js';
+import {default as chartStyle } from '../src/demo-chart-style.js';
+import * as scales from 'd3-scale';
+import * as format from 'd3-format';
 
 class Chart extends LitElement {
-
+  
+  static get styles() {
+    return chartStyle;
+  }
+  
   render() {
     return html `
     <p>Example of a bar chart (inspired from <a href="https://bl.ocks.org/mbostock/3887051">https://bl.ocks.org/mbostock/3887051</a>)</p>
@@ -14,7 +19,7 @@ class Chart extends LitElement {
     <label>scale padding</label><input  type="number" step="0.1" .value="${this.padding}" @input=${(e) => {this.padding = e.currentTarget.value *1;}}>  
     <label>right margin</label><input  type="number" .value="${this.rightMargin}" @input=${(e) => {this.rightMargin = e.currentTarget.value *1;}}>  
 
-    <d3-fetch type="csv" url="./data/census.csv" @data-changed="${this.handleData}"></d3-fetch>
+    <d3-fetch type="csv" url="/demo/data/census.csv" @data-changed="${this.handleData}"></d3-fetch>
     <multi-chart-bar
         id="chart" 
         bottom-axis
@@ -66,7 +71,7 @@ class Chart extends LitElement {
     this.keys = data.columns.slice(1);
     this.data = data;
     this.padding = 0.1
-    this.format = format.format(".1s")
+    this.format = format.format('.1s')
     this.stacked = false;
     this.colorScale.domain(this.keys);
   }

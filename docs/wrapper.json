@@ -1,0 +1,49 @@
+{
+  "version": "experimental",
+  "tags": [
+    {
+      "name": "d3-axis",
+      "path": "./../src/d3-wrapper/d3-axis.js",
+      "description": "A litElement wrapper around [d3.axis](https://github.com/d3/d3-axis).",
+      "attributes": [
+        {
+          "name": "type",
+          "description": "type of axis",
+          "type": "'top'|'bottom'|'left'|'right'"
+        },
+        {
+          "name": "domain",
+          "type": "array"
+        },
+        {
+          "name": "range",
+          "type": "array"
+        }
+      ],
+      "properties": [
+        {
+          "name": "type",
+          "attribute": "type",
+          "description": "type of axis",
+          "type": "'top'|'bottom'|'left'|'right'"
+        },
+        {
+          "name": "domain",
+          "attribute": "domain",
+          "type": "array"
+        },
+        {
+          "name": "range",
+          "attribute": "range",
+          "type": "array"
+        }
+      ],
+      "events": [
+        {
+          "name": "axis-changed",
+          "description": "fires when axis value changes (and need to be re-rendered)"
+        }
+      ]
+    }
+  ]
+}

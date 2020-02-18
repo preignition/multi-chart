@@ -5,7 +5,7 @@ import {parse } from '@preignition/preignition-widget';
 import './fixtures/fancy-accordion.js';
 import './fixtures/expansion-panel.js';
 
-class DemosFancyList extends LitElement {
+class DemoFancyList extends LitElement {
   static get styles() {
     return css `
       :host {
@@ -87,7 +87,7 @@ class DemosFancyList extends LitElement {
     return html `
      <d3-fetch .url="${this.src}" @data-changed="${this.onDataChanged}"></d3-fetch>
      <fancy-accordion .openedIndex="${this.openedIndex}">
-       ${(this.list || []).filter(l => l.name).map((l,i) => {
+       ${(this.list || []).filter(l => l.name).map((l, i) => {
          return html `<expansion-panel .opened="${i === 0}" data-name="${l.name}">
            <div slot="header">${l.name}</div>
            <div class="md">${parse(l.description)}</div>
@@ -105,4 +105,4 @@ class DemosFancyList extends LitElement {
   }
 }
 
-customElements.define('demos-fancy-list', DemosFancyList);
+customElements.define('demo-fancy-list', DemoFancyList);

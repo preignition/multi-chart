@@ -1,0 +1,74 @@
+{
+  "version": "experimental",
+  "tags": [
+    {
+      "name": "",
+      "description": "",
+      "attributes": [
+        {
+          "name": "register-container-name",
+          "description": "`registerContainerName` the name of the container set to registered items. This is needed because\nsome items can be registered agains mutiple domain. For instance, multi-g : as an resizable svg item\nand against multi-verse.",
+          "type": "string",
+          "default": "\"svgHost\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "registerContainerName",
+          "attribute": "register-container-name",
+          "description": "`registerContainerName` the name of the container set to registered items. This is needed because\nsome items can be registered agains mutiple domain. For instance, multi-g : as an resizable svg item\nand against multi-verse.",
+          "type": "string",
+          "default": "\"svgHost\""
+        },
+        {
+          "name": "registerEventListen",
+          "description": "`registerEventListen` the name of the event that will trigger\na registration. This event is fired by an element applying\nResiterable Mixin\n",
+          "type": "string"
+        },
+        {
+          "name": "registeredItems"
+        }
+      ],
+      "slots": [
+        {
+          "name": ""
+        }
+      ]
+    },
+    {
+      "name": "",
+      "description": "",
+      "attributes": [
+        {
+          "name": "width",
+          "description": "`width`  of SVG host",
+          "type": "number"
+        },
+        {
+          "name": "height",
+          "description": "`height` of SVG host",
+          "type": "number"
+        }
+      ],
+      "properties": [
+        {
+          "name": "width",
+          "attribute": "width",
+          "description": "`width`  of SVG host",
+          "type": "number"
+        },
+        {
+          "name": "height",
+          "attribute": "height",
+          "description": "`height` of SVG host",
+          "type": "number"
+        }
+      ],
+      "slots": [
+        {
+          "name": ""
+        }
+      ]
+    }
+  ]
+}

@@ -8,11 +8,8 @@
   /**
    * ##  MultiData
    *
-   * Mixin for reacting to dataChange. User by multi-container-layer and multi-container-svg
-   *
-   * @memberof MultiChart.mixin
-   * @polymer
-   * @mixinFunction
+   * Mixin for reacting to dataChange. Used by multi-container-layer and multi-container-svg
+   * 
    */
   const MultiData = superClass => {
 
@@ -25,7 +22,7 @@
           ...super.properties,
 
           /*
-           * `data` to display the chart
+           * the data to display
            */
           data: {
             type: Array
@@ -90,6 +87,7 @@
       /**
        * `register-item` event callback. Register all item, in contrast
        * with the original function.
+       * 
        * @override MultiRegisterMixin because of multi-data-group
        * @param  {Event} e
        * @return {[type]}   [description]

@@ -1,5 +1,5 @@
-import { LitElement, html } from '/web_modules/lit-element.js';
-import * as scales from '/web_modules/d3-scale.js';
+import { LitElement, html } from 'lit-element';
+import * as scales from 'd3-scale';
 
 class Chart extends LitElement {
 

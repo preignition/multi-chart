@@ -1,5 +1,4 @@
 import { html } from 'lit-element';
-// import '../drawable/multi-drawable-line.js';
 import { default as MultiContainer } from '../container/multi-container-axis.js';
 import { Stack } from '../d3-wrapper/d3-shape.js';
 
@@ -8,11 +7,10 @@ import { Stack } from '../d3-wrapper/d3-shape.js';
  *
  * `<multi-chart-line>` an element for displaying data as a line chart. 
  * 
- * ### Example
+ * ### Example (Polymer)
  *
  * ```html
  *    <multi-chart-bar 
- *        id="chart"  
  *        color-scale="[[colorScale]]"
  *        data="[[data]]"
  *        left-tick-format="[[leftTickFormat]]">
@@ -64,11 +62,12 @@ class MultiBarLine extends MultiContainer {
 
   static get properties() {
     return {
+
       ...super.properties,
 
       ...Stack.properties,
 
-      /* 
+      /*
        * `stacked` if true, draw a stack chart, otherwise, default bar chart
        */
       stacked: {
@@ -82,7 +81,10 @@ class MultiBarLine extends MultiContainer {
         attribute: 'value-path'
       },
 
-      // Note(cg): set default bottom scale type as band
+      /**
+       * scale type for bottom axis. For a bar chart, it is 
+       * set as `band` as default.
+       */
       bottomScaleType: {
         type: String,
         value: 'band',

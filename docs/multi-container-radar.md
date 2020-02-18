@@ -1,7 +1,8 @@
-# multi-chart-radar
+# multi-container-radar
 
-## Radar Chart
-A radar chart is a graphical method of displaying multivariate data in the form of a two-dimensional chart of three or more quantitative variables represented on axes starting from the same point. The relative position and angle of the axes is typically uninformative, but various heuristics, such as algorithms that plot data as the maximal total area, can be applied to sort the variables (axes) into relative positions that reveal distinct correlations, trade-offs, and a multitude of other comparative measures.
+## MultiContainerRadat
+
+A container for radar chart. It is responsible for drawing axes.
 
 **Mixins:** RelayTo, ScaleRender, MultiData, ObserveResize, MultiRegister, CacheId, Zoomable, LitNotify, DefaultValueMixin, SelectMixin, DoNotSetUndefinedValue
 
@@ -27,7 +28,6 @@ A radar chart is a graphical method of displaying multivariate data in the form 
 | `registerEventListen`   |                           | readonly  | `string`                                         |           | `registerEventListen` the name of the event that will trigger<br />a registration. This event is fired by an element applying<br />Resiterable Mixin<br /> |
 | `registeredItems`       |                           | readonly  | `array`                                          |           |                                                  |
 | `rightMargin`           | `right-margin`            |           | `number`                                         |           |                                                  |
-| `tension`               | `tension`                 |           | `number`                                         | 0.6       | `tension` tension for [curveCardinalClosed](https://github.com/d3/d3-shape#curveCardinalClosed)<br />value between 0 an 1. |
 | `topMargin`             | `top-margin`              |           | `number`                                         |           |                                                  |
 | `transition`            | `transition`              |           |                                                  |           | `transition` to apply while drawing              |
 | `valuePosition`         | `value-position`          |           | `string`                                         | "radial"  | `valuePosition` position type for values.<br />this is used to calculate scale vor values in `multi-data-group` |
@@ -36,27 +36,26 @@ A radar chart is a graphical method of displaying multivariate data in the form 
 
 ## Methods
 
-| Method                | Type                                             | Description                                      |
-|-----------------------|--------------------------------------------------|--------------------------------------------------|
-| `assignSlottedSVG`    | `(): void`                                       |                                                  |
-| `callRegistered`      | `(methodName: any, ...args: any[]): void`        |                                                  |
-| `dataChanged`         | `(): void`                                       | `dataChanged` might be called by parents to reset the entied chart.<br />For instance, this is called by multi-verse, once a new filter is applies<br />and data to display have changed. |
-| `dispatch`            | `(name: any): void`                              |                                                  |
-| `get`                 | `(path: any): any`                               |                                                  |
-| `getAccessor`         | `(scale: d3Scale, accessor: Function): Function` | return a scaled accessor function<br /><br />**scale**: scale as<br />**accessor**: function (exampe: `(d,i) => d.value.x``) |
-| `getAxisRender`       | `(): TemplateResult`                             |                                                  |
-| `getContentRender`    | `(): TemplateResult`                             | used when subclassing `multi-container` and add content to the chart |
-| `getRange`            | `(type: any): any[]`                             |                                                  |
-| `getScaleRender`      | `(type: any, axis: any): TemplateResult`         |                                                  |
-| `getSize`             | `(): { width: any; height: any; }`               |                                                  |
-| `onDataGroupRescaled` | `(e: any): void`                                 |                                                  |
-| `onDrawn`             | `(): void`                                       |                                                  |
-| `onRegister`          | `(item: any): void`                              |                                                  |
-| `onResize`            | `(rect: any, entry: any): void`                  |                                                  |
-| `refresh`             | `(): void`                                       |                                                  |
-| `set`                 | `(path: any, value: any): any`                   |                                                  |
-| `shallRelayTo`        | `(key: any, name: any): boolean`                 |                                                  |
-| `unregister`          | `(registered: any): void`                        |                                                  |
+| Method             | Type                                             | Description                                      |
+|--------------------|--------------------------------------------------|--------------------------------------------------|
+| `assignSlottedSVG` | `(): void`                                       |                                                  |
+| `callRegistered`   | `(methodName: any, ...args: any[]): void`        |                                                  |
+| `dataChanged`      | `(): void`                                       | `dataChanged` might be called by parents to reset the entied chart.<br />For instance, this is called by multi-verse, once a new filter is applies<br />and data to display have changed. |
+| `dispatch`         | `(name: any): void`                              |                                                  |
+| `get`              | `(path: any): any`                               |                                                  |
+| `getAccessor`      | `(scale: d3Scale, accessor: Function): Function` | return a scaled accessor function<br /><br />**scale**: scale as<br />**accessor**: function (exampe: `(d,i) => d.value.x``) |
+| `getAxisRender`    | `(): TemplateResult`                             |                                                  |
+| `getContentRender` | `(): TemplateResult`                             | used when subclassing `multi-container` and add content to the chart |
+| `getRange`         | `(type: any): any[]`                             |                                                  |
+| `getScaleRender`   | `(type: any, axis: any): TemplateResult`         |                                                  |
+| `getSize`          | `(): { width: any; height: any; }`               |                                                  |
+| `onDrawn`          | `(): void`                                       |                                                  |
+| `onRegister`       | `(item: any): void`                              |                                                  |
+| `onResize`         | `(rect: any, entry: any): void`                  |                                                  |
+| `refresh`          | `(): void`                                       |                                                  |
+| `set`              | `(path: any, value: any): any`                   |                                                  |
+| `shallRelayTo`     | `(key: any, name: any): boolean`                 |                                                  |
+| `unregister`       | `(registered: any): void`                        |                                                  |
 
 ## Events
 

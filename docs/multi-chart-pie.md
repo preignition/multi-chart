@@ -15,7 +15,7 @@ index.html#multi-pie-demo
 | Property                | Attribute                 | Modifiers | Type                                             | Default   | Description                                      |
 |-------------------------|---------------------------|-----------|--------------------------------------------------|-----------|--------------------------------------------------|
 | `bottomMargin`          | `bottom-margin`           |           | `number`                                         |           |                                                  |
-| `colorScale`            | `colorScale`              |           |                                                  |           | colorScale for the chart                         |
+| `colorScale`            | `color-scale`             |           |                                                  |           | colorScale for the chart                         |
 | `data`                  | `data`                    |           | `array`                                          |           | `data` to display the chart                      |
 | `enableZoom`            | `enable-zoom`             |           | `boolean`                                        |           | `enableZoom` set true to enable zoom behaviors   |
 | `group`                 | `group`                   |           | `string`                                         |           | `group` the name of the group (used when to registering this element under a multi-verse) |

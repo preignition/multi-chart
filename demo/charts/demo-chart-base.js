@@ -1,7 +1,7 @@
-import { LitElement, html } from '/web_modules/lit-element.js';
-import * as scales from '/web_modules/d3-scale.js';
-import {multipleRnd}  from '../demo-utils.js';
-import {default as demoStyle } from '../demo-style.js';
+import { LitElement, html } from 'lit-element';
+import * as scales from 'd3-scale';
+import {multipleRnd}  from '../src/demo-utils.js';
+import {default as demoStyle } from '../src/demo-chart-style.js';
 
 const keys =  [{key: 'ananas'}, {key: 'banana'}, {key: 'apple'}, {key: 'orange'}];
 const d1 = multipleRnd(keys.map(k => k.key), 50);

@@ -2,10 +2,11 @@
 
 ## d3-format
 
-  a lit-element wrapper around [d3-format](https://github.com/d3/d3-format).
+  A lit-element wrapper around [d3-format](https://github.com/d3/d3-format).
+  d3-format helps format numbers for human consumption. See also https://observablehq.com/@d3/d3-format.
 
 ### Example
-`<d3-format specifier= ".1f" value="12.2135"></d3-format>` will display `12.2``
+`<d3-format specifier=".1f" value="12.2135"></d3-format>` will display `12.2`.
 
 ### Examples from [d3-format](https://github.com/d3/d3-format)
 ```js
