@@ -1,3 +1,3 @@
-# chart
+# Charts
 
-A collection of ready-to user charts. 
+A collection of ready-to-use charts. 
