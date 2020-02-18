@@ -67,19 +67,31 @@ class MultiDrawableRadar extends
 
   drawSerieElement(chart, data) {
 
-    chart
+    chart = chart
       .attr('class', `${this.shapeClass} selectable`)
       .attr('title', d => d.label)
       .attr('key', d => d.key)
       .attr('tabindex', 0)
       .attr('stroke', d => this.colorScale(d.key))
-      .attr('stroke-width', 2)
-      .append('path')
+      .attr('stroke-width', 2);
+      
+    // TODO(cg): improve handling of transition 
+    // char.append is when we don't have a transition.
+    if (chart.append) {
+      chart.append('path')
         .attr('fill',d => this.colorScale(d.key))
         .attr('fill-opacity', 0.1)
         .attr('d', d => {
           return this.shaper(d.data);
         });
+    } else {
+      chart.selectAll('path')
+        .attr('fill',d => this.colorScale(d.key))
+        .attr('fill-opacity', 0.1)
+        .attr('d', d => {
+          return this.shaper(d.data);
+        });
+    } 
 
     const {angle, radius } = this;
     if (!this.hideCircles) {
