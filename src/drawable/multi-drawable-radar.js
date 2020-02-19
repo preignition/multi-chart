@@ -33,7 +33,11 @@ class MultiDrawableRadar extends
       .curve="${this.curve}"
     ></d3-shape-line-radial>
     <svg>
-      <g id="drawable" slot-svg="slot-chart" part="drawable-line-radial"  class="drawable line-radial" transform="translate(${this.width / 2 || 0}, ${this.height / 2 || 0})"></g>
+      <g id="drawable" 
+        slot-svg="slot-chart" 
+        part="drawable-line-radial"  
+        class="drawable line-radial" 
+        transform="translate(${this.width / 2 || 0}, ${this.height / 2 || 0})"></g>
     </svg>
 `;
   }
@@ -79,14 +83,14 @@ class MultiDrawableRadar extends
     // char.append is when we don't have a transition.
     if (chart.append) {
       chart.append('path')
-        .attr('fill',d => this.colorScale(d.key))
+        .attr('fill', d => this.colorScale(d.key))
         .attr('fill-opacity', 0.1)
         .attr('d', d => {
           return this.shaper(d.data);
         });
     } else {
       chart.selectAll('path')
-        .attr('fill',d => this.colorScale(d.key))
+        .attr('fill', d => this.colorScale(d.key))
         .attr('fill-opacity', 0.1)
         .attr('d', d => {
           return this.shaper(d.data);
