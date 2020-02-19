@@ -3,8 +3,8 @@ import { h as html$2, c as nothing, N as NodePart } from './common/lit-html-a0bf
 import { customElement, LitElement, css, property } from './lit-element.js';
 import { unsafeHTML } from './lit-html/directives/unsafe-html.js';
 import { m as marked } from './common/marked.esm-37169351.js';
-import { __decorate, __assign } from './tslib.js';
 import { until } from './lit-html/directives/until.js';
+import { __decorate, __assign } from './tslib.js';
 import { cache } from './lit-html/directives/cache.js';
 
 const getSlotTitle = (name) => {

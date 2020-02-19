@@ -1,5 +1,6 @@
 import { html, css } from 'lit-element';
-import {default as Base } from './src/demo-base.js';
+// import {default as Base } from '@preignition/preignition-demo';
+import { DemoBase } from '@preignition/preignition-demo';
 
 import {scaleOrdinal} from 'd3-scale';
 import {schemeCategory10 } from 'd3-scale-chromatic';
@@ -14,7 +15,7 @@ const config = {
 };
 
 
-class HelperDemos extends Base {
+class HelperDemos extends DemoBase {
 
 
   static get properties() {

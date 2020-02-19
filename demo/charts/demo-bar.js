@@ -1,6 +1,7 @@
 import { LitElement, html } from 'lit-element';
 import { default as Base } from './demo-chart-base.js';
-import {default as chartStyle } from '../src/demo-chart-style.js';
+import {chartStyle } from '@preignition/preignition-demo';
+// import {default as chartStyle } from '../src/demo-chart-style.js';
 import * as scales from 'd3-scale';
 import * as format from 'd3-format';
 

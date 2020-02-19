@@ -1,6 +1,8 @@
 import { html, css } from 'lit-element';
-import { default as Base } from './src/demo-base.js';
-import { multipleRnd } from './src/demo-utils.js';
+import { DemoBase, multipleRnd } from '@preignition/preignition-demo';
+
+// import { default as Base } from './src/demo-base.js';
+// import { multipleRnd } from './src/demo-utils.js';
 
 import './charts/demo-pie.js';
 import './charts/demo-radar.js';
@@ -11,22 +13,22 @@ import './charts/demo-bubble.js';
 import { scaleOrdinal } from 'd3-scale';
 import { schemeCategory10 } from 'd3-scale-chromatic';
 
-const keys = ['tomato', 'banana', 'pear', 'apple'];
-const data = [{ 'key': 'a', 'value': { 'count': 22 } }, { 'key': 'b', 'value': { 'count': 22 } }, { 'key': 'c', 'value': { 'count': 10 } }, { 'key': 'd', 'value': { 'count': 43 } }, { 'key': 'e', 'value': { 'count': 35 } }, { 'key': 'f', 'value': { 'count': 29 } }]
+// const keys = ['tomato', 'banana', 'pear', 'apple'];
+// const data = [{ 'key': 'a', 'value': { 'count': 22 } }, { 'key': 'b', 'value': { 'count': 22 } }, { 'key': 'c', 'value': { 'count': 10 } }, { 'key': 'd', 'value': { 'count': 43 } }, { 'key': 'e', 'value': { 'count': 35 } }, { 'key': 'f', 'value': { 'count': 29 } }]
 
-// Note(cg): config to apply to components when they are rendered.
-const config = {
-  'multi-chart-pie': {
-    scale: scaleOrdinal().range(schemeCategory10).domain(['a', 'b', 'c', 'd']),
-    data: data,
-    valuePath: '+value.count',
-    innerRadius: 30,
-    padAngle: 0.07
-  }
-};
+// // Note(cg): config to apply to components when they are rendered.
+// const config = {
+//   'multi-chart-pie': {
+//     scale: scaleOrdinal().range(schemeCategory10).domain(['a', 'b', 'c', 'd']),
+//     data: data,
+//     valuePath: '+value.count',
+//     innerRadius: 30,
+//     padAngle: 0.07
+//   }
+// };
 
 
-class ChartDemo extends Base {
+class ChartDemo extends DemoBase {
 
   static get properties() {
     return {
@@ -146,7 +148,7 @@ class ChartDemo extends Base {
     this.tabs = ['intro', 'api', 'demo2'];
     this.activeTab = 'intro';
     // Note(cg): Base method applyConfig needs config.
-    this.config = config;
+    // this.config = config;
   }
 
 }

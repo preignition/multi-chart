@@ -80,7 +80,7 @@ class MultiDrawableRadar extends
       .attr('stroke-width', 2);
       
     // TODO(cg): improve handling of transition 
-    // char.append is when we don't have a transition.
+    // chart.append is when we don't have a transition.
     if (chart.append) {
       chart.append('path')
         .attr('fill', d => this.colorScale(d.key))

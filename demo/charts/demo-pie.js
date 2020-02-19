@@ -1,5 +1,5 @@
 import { LitElement, html } from 'lit-element';
-import {default as chartStyle } from '../src/demo-chart-style.js';
+import {chartStyle } from '@preignition/preignition-demo';
 import {scaleOrdinal} from 'd3-scale';
 import {schemeCategory10 } from 'd3-scale-chromatic';
 

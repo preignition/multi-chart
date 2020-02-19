@@ -4,17 +4,18 @@ import '@vaadin/vaadin-tabs';
 import 'api-viewer-element';
 import { Router } from '@vaadin/router';
 
-import { github } from './assets/github.js';
-import { preignition } from './assets/preignition.js';
 import { installMediaQueryWatcher } from 'pwa-helpers/media-query.js';
+
 
 import './helper-demo.js';
 import './chart-demo.js';
 
-import './src/demo-api-viewer.js';
-import './src/demo-container.js';
-import './src/demo-fancy-list.js';
-import './src/demo-readme.js';
+import {github, preignition} from '@preignition/preignition-demo';
+
+// import './src/demo-api-viewer.js';
+// import './src/demo-container.js';
+// import './src/demo-fancy-list.js';
+// import './src/demo-readme.js';
 
 /**
  * This component combines all the examples to be displayed. See the basic/intermediate/advanced folders for the actual examples.

@@ -1,6 +1,7 @@
 import { LitElement, html } from 'lit-element';
 import * as scales from 'd3-scale';
-import {multipleRnd}  from '../src/demo-utils.js';
+import {multipleRnd } from '@preignition/preignition-demo';
+// import {multipleRnd}  from '../src/demo-utils.js';
 import {default as Base } from './demo-chart-base.js';
 
 class Chart extends Base {
