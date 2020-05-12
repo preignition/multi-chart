@@ -11,7 +11,7 @@ A radar chart is a graphical method of displaying multivariate data in the form 
 |-------------------------|---------------------------|-----------|--------------------------------------------------|-----------|--------------------------------------------------|
 | `bottomMargin`          | `bottom-margin`           |           | `number`                                         |           |                                                  |
 | `colorScale`            | `color-scale`             |           |                                                  |           | colorScale for the chart                         |
-| `data`                  | `data`                    |           | `array`                                          |           | `data` to display the chart                      |
+| `data`                  | `data`                    |           | `array`                                          |           | the data to display                              |
 | `enableZoom`            | `enable-zoom`             |           | `boolean`                                        |           | `enableZoom` set true to enable zoom behaviors   |
 | `group`                 | `group`                   |           | `string`                                         |           | `group` the name of the group (used when to registering this element under a multi-verse) |
 | `height`                | `height`                  |           | `number`                                         |           | `height`  of the chart area. Equals actual height of component - margins |

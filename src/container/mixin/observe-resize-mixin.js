@@ -67,4 +67,4 @@ const Resizable = dedupingMixin(superClass => {
   return Mixin;
 });
 
-export default Resizable
+export default Resizable;

@@ -231,18 +231,6 @@
           "default": "10"
         },
         {
-          "name": "x",
-          "description": "x position",
-          "type": "number",
-          "default": "0"
-        },
-        {
-          "name": "y",
-          "description": "y position",
-          "type": "number",
-          "default": "0"
-        },
-        {
           "name": "svg-host",
           "description": "`svgHost` the host to which [slog-svg] nodes must be stamped",
           "type": "object"
@@ -323,20 +311,6 @@
           "description": "`padding` the padding to be applied when calculation the position",
           "type": "number",
           "default": "10"
-        },
-        {
-          "name": "x",
-          "attribute": "x",
-          "description": "x position",
-          "type": "number",
-          "default": "0"
-        },
-        {
-          "name": "y",
-          "attribute": "y",
-          "description": "y position",
-          "type": "number",
-          "default": "0"
         },
         {
           "name": "svgHost",

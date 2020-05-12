@@ -73,7 +73,7 @@
         },
         {
           "name": "data",
-          "description": "`data` to display the chart",
+          "description": "the data to display",
           "type": "array"
         },
         {
@@ -193,7 +193,7 @@
         {
           "name": "data",
           "attribute": "data",
-          "description": "`data` to display the chart",
+          "description": "the data to display",
           "type": "array"
         },
         {

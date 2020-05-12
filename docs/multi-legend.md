@@ -26,8 +26,6 @@ Relying on [d3-legend](https://d3-legend.susielu.com/), A library to make legend
 | `trackHover`            | `track-hover`    |           | `boolean`                   | false       | `trackHover` set true if selector listen to mouseenter/mouseleave events and set hoveredItem accordingly.<br />When true, this element also and fires `multi-mouseenter` and multi-mouseleave. |
 | `type`                  | `type`           |           | `'color'\|'size'\|'symbol'` | "color"     | legend `type` the type of legend                 |
 | `width`                 | `width`          |           | `number`                    |             | legend width                                     |
-| `x`                     | `x`              |           | `number`                    | 0           | x position                                       |
-| `y`                     | `y`              |           | `number`                    | 0           | y position                                       |
 
 ## Methods
 
