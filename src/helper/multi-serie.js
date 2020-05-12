@@ -99,8 +99,8 @@ Registerable(
       group: { type: String }
 
 
-    }
+    };
   }
 }
 
-export default MultiSerie
+export default MultiSerie;

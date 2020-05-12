@@ -86,9 +86,9 @@ render() {
 
 
   firstUpdated(props) {
-    super.firstUpdated(props)
     // Note(cg): chart container might be registered against multi-verse. We nee to notify their creation upwards.
     this.dispatchEvent(new CustomEvent('multi-verse-added', { detail: this.group, bubbles: true, composed: true }));
+    super.firstUpdated(props);
   }
   disconnectedCallback() {
     // TODO(cg): replace multi-removed -> multi-verse-remover

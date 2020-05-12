@@ -64,10 +64,10 @@ DoNotSetUndefinedValue(LitElement) {
   }
 
   update(props) {
-    super.update(props);
     if (props.has('path') || props.has('subPath')) {
       this._observePath(this.path, this.subPath);
     }
+    super.update(props);
   }
 
   _observePath(path, subPath) {

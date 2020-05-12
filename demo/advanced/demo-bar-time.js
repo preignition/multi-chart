@@ -1,9 +1,24 @@
-import { LitElement, html } from '/web_modules/lit-element.js';
-import { timeData } from '../demo-utils.js';
-import * as scales from '/web_modules/d3-scale.js';
-import * as format from '/web_modules/d3-format.js';
-import {timeFormat} from '/web_modules/d3-time-format.js';
-import * as time from '/web_modules/d3-time.js';
+import { LitElement, html } from 'lit-element';
+// import { timeData } from '../demo-utils.js';
+import { randomUniform } from 'd3-random';
+
+import * as scales from 'd3-scale';
+import * as format from 'd3-format';
+import {timeFormat} from 'd3-time-format';
+import * as time from 'd3-time';
+
+export const rnd = (keys, max) => {
+  var r = randomUniform(max);
+  return keys.map(function(d, i) {
+    return { key: d, value: { count: r() } };
+  });
+}
+
+const timeData = (nbDays) => {
+    const now = new Date();
+    const range = time.timeDay.range(time.timeDay.offset(now, -nbDays), now, 1);
+    return rnd(range, 10);
+}
 
 class Chart extends LitElement {
 

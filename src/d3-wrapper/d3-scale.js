@@ -73,7 +73,6 @@ class D3Scale extends LitElement {
   }
 
   update(props) {
-    super.update(props);
     if (!this.scaleType && !props.has('scaleType')) {
       this.scaleType = 'linear';
     }
@@ -88,6 +87,7 @@ class D3Scale extends LitElement {
     if (this.scale) {
       this.updateWrapper(props);
     }
+    super.update(props);
   }
 
   updateWrapper(props) {

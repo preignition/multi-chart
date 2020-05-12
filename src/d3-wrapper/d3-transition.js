@@ -23,7 +23,6 @@ class Transition extends LitElement {
   }
 
   update(props) {
-    super.update(props);
     this.log && console.info(`d3-transition ${this.type} update`, props)
     const value = (transition) => {
       Object.keys(this.constructor.properties).forEach(pr => {
@@ -32,6 +31,7 @@ class Transition extends LitElement {
         }
       })
     }
+    super.update(props);
     this.dispatchEvent(new CustomEvent(`transition-changed`, { detail: { value: value }, bubbles: true, composed: true }));
   }
 }

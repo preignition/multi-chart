@@ -181,10 +181,10 @@ DispatchSVG(
   }
 
   updated(props) {
-    super.updated(props);
     if (props.has('position')) {
       this.debounceDraw();
     }
+    super.updated(props);
   }
 
   resize() {

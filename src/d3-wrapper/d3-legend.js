@@ -38,7 +38,6 @@ class D3Legend extends LitElement {
   }
 
   update(props) {
-    super.update(props);
     if (!this.type && !props.has('type')) {
       this.type = 'color';
     }
@@ -50,6 +49,7 @@ class D3Legend extends LitElement {
     if (this.legend) {
       this.updateWrapper(props);
     }
+    super.update(props);
   }
 
   updateWrapper(props) {

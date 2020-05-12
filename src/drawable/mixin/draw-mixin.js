@@ -81,16 +81,16 @@ const Draw = superClass => {
 
     update(props) {
       this.log && console.info('update props', props, this)
-      super.update(props);
       if(props.has('data')) {
         this._shaped = this.shape(this.data);
       }
+      super.update(props);
     }
 
     updated(props) {
       this.log && console.info('updated props', props, this)
-      super.updated(props);
       this.debounceDraw();
+      super.updated(props);
     }
 
     /* 

@@ -28,6 +28,13 @@ const Registerable = superClass => {
       return 'multi-register'
     }
 
+    // Note(cg): some registerable (in particular multi-data-group) need to register before
+    // Othewise, multi-data-mixin_onMultiRegister fail to correctly proceed with onRegister 
+    // as seriGroup do not yet exist.
+    get registerAtConnected() {
+      return false;
+    }
+
     static get properties() {
 
       return {
@@ -67,8 +74,17 @@ const Registerable = superClass => {
     // Note(cg): we fire under first Updated and not connectedCallback so as to make sure nested slots have had time to 
     // be effective. .
     firstUpdated(props) {
+      if (!this.registerAtConnected) {
+        this.dispatchEvent(new CustomEvent(this.registerEventDispatch, { detail: this.group, bubbles: true, composed: true }));
+      }
       super.firstUpdated(props);
-      this.dispatchEvent(new CustomEvent(this.registerEventDispatch, { detail: this.group, bubbles: true, composed: true }));
+    }
+
+    connectedCallback() {
+      super.connectedCallback();
+      if (this.registerAtConnected) {
+        this.dispatchEvent(new CustomEvent(this.registerEventDispatch, { detail: this.group, bubbles: true, composed: true }));
+      }
     }
 
     disconnectedCallback() {

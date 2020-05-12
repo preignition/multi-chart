@@ -25,9 +25,9 @@ class WrapperBase extends LitElement {
   }
 
   update(props) {
-    super.update(props);
     this.log && console.info(`d3-shape ${this.name} update`, props);
     this.updateWrapper(props);
+    super.update(props);
   }
 
   updateWrapper(props) {

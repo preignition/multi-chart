@@ -234,18 +234,18 @@ MultiData(
   }
 
   updated(props) {
-    super.updated(props);
     if (props.has('topMargin') || props.has('rightMargin') || props.has('bottomMargin') || props.has('leftMargin')) {
       this.onResize();
     }
+    super.updated(props);
   }
 
   firstUpdated(changedProperties) {
-    super.firstUpdated(changedProperties);
     // Note(cg): chart container might be registered against multi-verse. We nee to notify their creation upwards.
     this.dispatchEvent(new CustomEvent('multi-verse-added', { detail: this.multiVerseGroup, bubbles: true, composed: true }));
     this.onResize();
     this.assignSlottedSVG();
+    super.firstUpdated(changedProperties);
   }
   
   disconnectedCallback() {

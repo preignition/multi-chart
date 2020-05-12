@@ -39,13 +39,13 @@ const DispatchSVG = dedupingMixin(superClass => {
     }
 
     update(props) {
-      super.update(props);
       if (props.has('svgHost')) {
         if (this.svgHost && this.resize) {
           this.resize(this.svgHost.width, this.svgHost.height);
         }
         this.observeSvgHost(this.svgHost, props.get('svgHost'));
       }
+      super.update(props);
     }
 
     observeSvgHost(host, old) {

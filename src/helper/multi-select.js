@@ -151,13 +151,13 @@ DispatchSVG(
   }
 
   update(props) {
-    super.update(props)
     if (props.has('selectedValues')) {
       this.updateSelectedValues();
     }
     if (props.has('selected')) {
       this.updateSelected();
     }
+    super.update(props)
   }
 
   dataChanged() {

@@ -41,6 +41,10 @@ Registerable(
   get registerEventDispatch() {
     return 'multi-data-group-register';
   }
+  
+  get registerAtConnected() {
+    return true;
+  }
 
   static get properties() {
 
@@ -87,11 +91,15 @@ Registerable(
         attribute: 'process-type'
       },
 
-    }
+    };
   }
+  
+  // connectedCallback() {
+  //   super.connectedCallback();
+  //   this.dispatchEvent(new CustomEvent(this.registerEventDispatch, { detail: this.group, bubbles: true, composed: true }));
+  // }
 
   updated(props) {
-    super.updated(props);
     if (props.has('data') || props.has('series')) {
       this._debouceDataChanged();
     }
@@ -101,6 +109,7 @@ Registerable(
     if (props.has('stacked')) {
       this._handleStackedChanged();
     }
+    super.updated(props);
   }
 
   _debouceDataChanged() {

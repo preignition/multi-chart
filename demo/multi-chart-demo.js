@@ -8,6 +8,7 @@ import { Router } from '@vaadin/router';
 
 import './helper-demo.js';
 import './chart-demo.js';
+import './advanced-demo.js';
 
 import {github, preignition, DemoRoot} from '@preignition/preignition-demo';
 

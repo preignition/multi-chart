@@ -29,7 +29,6 @@ class D3Brush extends LitElement {
   }
 
   update(props) {
-    super.update(props);
     this.log && console.info(`d3-brush${this.type} update`, props)
     if (!this.type && !props.has('type')) {
       this.type = 'brushX';
@@ -42,6 +41,7 @@ class D3Brush extends LitElement {
     if (this.brush) {
       this.updateWrapper(props);
     }
+    super.update(props);
   }
 
   updateWrapper(props) {

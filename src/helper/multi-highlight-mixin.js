@@ -64,10 +64,10 @@ const MultiHighlight = dedupingMixin(superClass => {
     }
 
     updated(props) {
-      super.updated(props);
       if(props.has('highlightedKeys')) {
         this._observeHighlightedKeys();
       }
+      super.updated(props);
     }
 
     // static get observers() {

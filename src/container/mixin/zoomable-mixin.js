@@ -38,7 +38,6 @@ const Zoomable = superClass => {
     }
 
     updated(props) {
-      super.updated(props);
       if (props.has('enableZoom')) {
         this._observeEnableZoom(this.enableZoom);
       }
@@ -50,6 +49,7 @@ const Zoomable = superClass => {
       if (props.has('scaleExtent') && this._zoom) {
         this._zoom.scaleExtent(this.scaleExtent);
       }
+      super.updated(props);
 
     }
 

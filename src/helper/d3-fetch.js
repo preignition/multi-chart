@@ -63,7 +63,6 @@ class Fetch extends MultiNotify {
 
   update(props) {
     this.log && console.info(`d3-fetch ${this.type} update`, props);
-    super.update(props);
     if (!this.type && !props.has('type')) {
       this.type = 'json';
     }
@@ -92,6 +91,7 @@ class Fetch extends MultiNotify {
         this.data = null;
       }
     }
+    super.update(props);
   }
 }
 

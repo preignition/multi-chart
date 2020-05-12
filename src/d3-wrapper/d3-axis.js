@@ -49,7 +49,6 @@ class D3Axis extends LitElement {
   }
 
   update(props) {
-    super.update(props);
     this.log && console.info(`d3-axis ${this.type} update`, props);
     if (!this.type && !props.has('type')) {
       this.type = 'bottom';
@@ -67,6 +66,7 @@ class D3Axis extends LitElement {
     if (this.axis) {
       this.updateWrapper(props);
     }
+    super.update(props);
   }
 
   updateWrapper(props) {
