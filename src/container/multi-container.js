@@ -339,7 +339,7 @@ MultiData(
             parent.insertBefore(node, n);
             return true;
           }
-        })
+        });
         if (!appended) {
           parent.appendChild(node);
         }

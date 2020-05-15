@@ -157,6 +157,7 @@
     "generate-docs": "npm run generate-docs-md && npm run generate-docs-json && npm run generate-docs:helper && npm run generate-docs:wrapper && npm run generate-docs:container && npm run generate-docs:chart",
     "prepublishOnly": "npm run generate-docs && pnpx snowpack i",
     "postpublish": "git push && git push --tags",
+    "snowpack": "pnpx snowpack -i",
     "test": "karma start --coverage",
     "test:compatibility": "karma start --compatibility all --coverage"
   },
