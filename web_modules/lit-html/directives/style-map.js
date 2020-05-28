@@ -1,5 +1,5 @@
 import { d as directive } from '../../common/directive-5915da03.js';
-import { k as AttributePart, q as PropertyPart } from '../../common/lit-html-ce2d8aeb.js';
+import { A as AttributePart, P as PropertyPart } from '../../common/lit-html-cd8ff2f3.js';
 
 /**
  * @license

@@ -19,6 +19,7 @@ Relying on [d3-legend](https://d3-legend.susielu.com/), A library to make legend
 | `padding`               | `padding`        |           | `number`                    | 10          | `padding` the padding to be applied when calculation the position |
 | `position`              | `position`       |           | `string`                    | "top-right" | `position` this position within the chart. e.g. top-right, bottom-left<br />position is recalculated on resize. |
 | `rectOffset`            | `rect-offset`    |           | `number`                    | 5           | `retOffset` the offset for legend rect           |
+| `registerAtConnected`   |                  | readonly  | `boolean`                   |             |                                                  |
 | `registerEventDispatch` |                  | readonly  | `string`                    |             | `registerEventDispatch`  the name of the event to be fired when connected.<br />A container with multi-register-mixin applied<br />will listen to this event to register the component.<br /> |
 | `registerOrder`         |                  | readonly  | `number`                    |             | `registerOrder` - registerable elements are sorted on the basis of this property. |
 | `scaleFactor`           | `scale-factor`   |           | `number`                    | 0.7         | factor between 0 to 1 to help make legend smaller |

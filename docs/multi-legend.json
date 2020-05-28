@@ -153,6 +153,10 @@
           "type": "string"
         },
         {
+          "name": "registerAtConnected",
+          "type": "boolean"
+        },
+        {
           "name": "group",
           "attribute": "group",
           "description": "`group` against which the drawable object is registered.\nA chart can have multiple group (e.g. one displayed against right axis,\nthe other against the left axis).\nSet another group name for objects belonging to alternate chart settings.",

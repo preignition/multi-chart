@@ -1,5 +1,5 @@
 import { d as directive } from '../../common/directive-5915da03.js';
-import { N as NodePart, o as isPrimitive } from '../../common/lit-html-ce2d8aeb.js';
+import { N as NodePart, d as isPrimitive } from '../../common/lit-html-cd8ff2f3.js';
 
 /**
  * @license

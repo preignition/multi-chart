@@ -19,6 +19,7 @@
 | `isSelecting`           | `isSelecting`      |           | `boolean`             | false     | `isSelection` is true when a selection is being done (e.g. by brushing). The attribute is used for css rules.<br />This property is aimed at being bound to a multi-container-svg |
 | `log`                   | `log`              |           | `boolean`             |           | `log`  true to show log                          |
 | `multiPosition`         | `multi-position`   |           | `number`              | 0         | `multiPosition` position used to re-order items when appended by dispatch-svg<br />nodePosition larger than 0 will render on top. |
+| `registerAtConnected`   |                    | readonly  | `boolean`             |           |                                                  |
 | `registerEventDispatch` |                    | readonly  | `string`              |           | `registerEventDispatch`  the name of the event to be fired when connected.<br />A container with multi-register-mixin applied<br />will listen to this event to register the component.<br /> |
 | `registerOrder`         |                    | readonly  | `number`              |           | `registerOrder` - registerable elements are sorted on the basis of this property. |
 | `selectedValues`        | `selectedValues`   |           | `array`               | []        | Returns an array of currently selected items.    |

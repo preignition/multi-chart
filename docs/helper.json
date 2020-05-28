@@ -337,6 +337,10 @@
           "type": "string"
         },
         {
+          "name": "registerAtConnected",
+          "type": "boolean"
+        },
+        {
           "name": "group",
           "attribute": "group",
           "description": "`group` against which the drawable object is registered.\nA chart can have multiple group (e.g. one displayed against right axis,\nthe other against the left axis).\nSet another group name for objects belonging to alternate chart settings.",
@@ -479,6 +483,10 @@
           "name": "registerEventDispatch",
           "description": "`registerEventDispatch`  the name of the event to be fired when connected.\nA container with multi-register-mixin applied\nwill listen to this event to register the component.\n",
           "type": "string"
+        },
+        {
+          "name": "registerAtConnected",
+          "type": "boolean"
         },
         {
           "name": "group",
@@ -682,6 +690,10 @@
           "name": "registerEventDispatch",
           "description": "`registerEventDispatch`  the name of the event to be fired when connected.\nA container with multi-register-mixin applied\nwill listen to this event to register the component.\n",
           "type": "string"
+        },
+        {
+          "name": "registerAtConnected",
+          "type": "boolean"
         },
         {
           "name": "group",
