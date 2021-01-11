@@ -1,4 +1,4 @@
-var pi = Math.PI,
+const pi = Math.PI,
     tau = 2 * pi,
     epsilon = 1e-6,
     tauEpsilon = tau - epsilon;
@@ -412,6 +412,14 @@ function arc() {
   return arc;
 }
 
+var slice = Array.prototype.slice;
+
+function array(x) {
+  return typeof x === "object" && "length" in x
+    ? x // Array, TypedArray, NodeList, array-like
+    : Array.from(x); // Map, Set, iterable, string, or anything else
+}
+
 function Linear(context) {
   this._context = context;
 }
@@ -452,17 +460,18 @@ function y(p) {
   return p[1];
 }
 
-function line() {
-  var x$1 = x,
-      y$1 = y,
-      defined = constant(true),
+function line(x$1, y$1) {
+  var defined = constant(true),
       context = null,
       curve = curveLinear,
       output = null;
 
+  x$1 = typeof x$1 === "function" ? x$1 : (x$1 === undefined) ? x : constant(x$1);
+  y$1 = typeof y$1 === "function" ? y$1 : (y$1 === undefined) ? y : constant(y$1);
+
   function line(data) {
     var i,
-        n = data.length,
+        n = (data = array(data)).length,
         d,
         defined0 = false,
         buffer;
@@ -503,21 +512,22 @@ function line() {
   return line;
 }
 
-function area() {
-  var x0 = x,
-      x1 = null,
-      y0 = constant(0),
-      y1 = y,
+function area(x0, y0, y1) {
+  var x1 = null,
       defined = constant(true),
       context = null,
       curve = curveLinear,
       output = null;
 
+  x0 = typeof x0 === "function" ? x0 : (x0 === undefined) ? x : constant(+x0);
+  y0 = typeof y0 === "function" ? y0 : (y0 === undefined) ? constant(0) : constant(+y0);
+  y1 = typeof y1 === "function" ? y1 : (y1 === undefined) ? y : constant(+y1);
+
   function area(data) {
     var i,
         j,
         k,
-        n = data.length,
+        n = (data = array(data)).length,
         d,
         defined0 = false,
         buffer,
@@ -625,7 +635,7 @@ function pie() {
 
   function pie(data) {
     var i,
-        n = data.length,
+        n = (data = array(data)).length,
         j,
         k,
         sum = 0,
@@ -771,8 +781,6 @@ function areaRadial() {
 function pointRadial(x, y) {
   return [(y = +y) * Math.cos(x -= Math.PI / 2), y * Math.sin(x)];
 }
-
-var slice = Array.prototype.slice;
 
 function linkSource(d) {
   return d.source;
@@ -975,10 +983,10 @@ var symbols = [
   wye
 ];
 
-function symbol() {
-  var type = constant(circle),
-      size = constant(64),
-      context = null;
+function symbol(type, size) {
+  var context = null;
+  type = typeof type === "function" ? type : constant(type || circle);
+  size = typeof size === "function" ? size : constant(size === undefined ? 64 : +size);
 
   function symbol() {
     var buffer;
@@ -1854,6 +1862,12 @@ function stackValue(d, key) {
   return d[key];
 }
 
+function stackSeries(key) {
+  const series = [];
+  series.key = key;
+  return series;
+}
+
 function stack() {
   var keys = constant([]),
       order = none$1,
@@ -1861,22 +1875,17 @@ function stack() {
       value = stackValue;
 
   function stack(data) {
-    var kz = keys.apply(this, arguments),
-        i,
-        m = data.length,
-        n = kz.length,
-        sz = new Array(n),
+    var sz = Array.from(keys.apply(this, arguments), stackSeries),
+        i, n = sz.length, j = -1,
         oz;
 
-    for (i = 0; i < n; ++i) {
-      for (var ki = kz[i], si = sz[i] = new Array(m), j = 0, sij; j < m; ++j) {
-        si[j] = sij = [0, +value(data[j], ki, j, data)];
-        sij.data = data[j];
+    for (const d of data) {
+      for (i = 0, ++j; i < n; ++i) {
+        (sz[i][j] = [0, +value(d, sz[i].key, j, data)]).data = d;
       }
-      si.key = ki;
     }
 
-    for (i = 0, oz = order(sz); i < n; ++i) {
+    for (i = 0, oz = array(order(sz)); i < n; ++i) {
       sz[oz[i]].index = i;
     }
 
@@ -1885,7 +1894,7 @@ function stack() {
   }
 
   stack.keys = function(_) {
-    return arguments.length ? (keys = typeof _ === "function" ? _ : constant(slice.call(_)), stack) : keys;
+    return arguments.length ? (keys = typeof _ === "function" ? _ : constant(Array.from(_)), stack) : keys;
   };
 
   stack.value = function(_) {
@@ -1893,7 +1902,7 @@ function stack() {
   };
 
   stack.order = function(_) {
-    return arguments.length ? (order = _ == null ? none$1 : typeof _ === "function" ? _ : constant(slice.call(_)), stack) : order;
+    return arguments.length ? (order = _ == null ? none$1 : typeof _ === "function" ? _ : constant(Array.from(_)), stack) : order;
   };
 
   stack.offset = function(_) {

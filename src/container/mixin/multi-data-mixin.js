@@ -54,6 +54,11 @@
         }
       }
 
+      disconnectedCallback() {
+        this._wasDisconnected = true;
+        super.disconnectedCallback()
+      }
+
       _onMultiSerieGroupRegister(e) {
         e.stopPropagation();
         const serieGroup = e.composedPath()[0];
@@ -62,9 +67,12 @@
         if (!group) {
           throw new Error(`serieGroup must have a group`);
         }
-        if (this._serieGroup[group]) {
-          throw new Error(`serieGroup with group name ${group } has already been registered. Choose another group name.`);
+
+        // Note(cg): we cn only register once.
+        if (this._serieGroup[group] && !this._wasDisconnected) {
+          throw new Error(`serieGroup with group name ${group} has already been registered. Choose another group name.`);
         }
+        delete this._wasDisconnected;
 
         if (!this[`_series.${group}`]) {
           this[`_series.${group}`] = [];
@@ -73,6 +81,8 @@
           this[`_registeredItems.${group}`] = [];
         }
         serieGroup.series = this[`_series.${group}`];
+        // XXX(cg): the consequence of this is that all registered items for a chart
+        // ends up being registered for the serieGroup (multi-data-group).
         serieGroup._registeredItems = this[`_registeredItems.${group}`];
         this._serieGroup[group] = serieGroup;
 
@@ -95,6 +105,9 @@
       _onMultiRegister(e) {
         // Note(cg): only react if groupName is not set or is the same.
         const group = e.detail || 'default';
+
+        // XXX(cg): we should only register proper group. 
+
         // Note(cg): make sure we are not self-registering
         // (this can be the case for elements that are registerable and also register like multi-container-layer).
         const target = e.composedPath()[0];

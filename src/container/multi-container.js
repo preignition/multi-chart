@@ -1,7 +1,8 @@
 import { html, css } from 'lit-element';
 import { CacheId } from '@preignition/preignition-mixin';
+import { Resizable } from '@preignition/preignition-util';
 // import { SVGHelper } from '../helper/svg-helper-mixin.js';
-import { default as ObserveResize } from './mixin/observe-resize-mixin.js';
+// import { default as ObserveResize } from './mixin/observe-resize-mixin.js';
 import { default as MultiRegister } from './mixin/multi-register-mixin.js';
 import { default as MultiData } from './mixin/multi-data-mixin.js';
 import { Zoomable } from './mixin/zoomable-mixin.js';
@@ -41,7 +42,7 @@ import { valueProperties as dataGroupValueProperties } from './properties/data-g
 
 class MultiContainer extends
 MultiData(
-  ObserveResize(
+  Resizable(
     MultiRegister(
       CacheId(
         Zoomable(
@@ -114,6 +115,8 @@ MultiData(
           .valueAccessor="${this.valueAccessor}"
           .keyAccessor="${this.keyAccessor}"
           .stacked="${this.stacked}"
+          .adjustOrdinalDomain="${this.adjustOrdinalDomain}"
+          .ordinalScaleInterval="${this.ordinalScaleInterval}"
           .min="${this.min}"
           .max="${this.max}"
           .data="${this.data}"
@@ -226,6 +229,7 @@ MultiData(
     super();
     // Note(cg): allow drawble elements to be registered in this container.
     this.addEventListener('multi-drawn', this.onDrawn);
+    this.addEventListener('multi-refresh', this.refresh);
 
     // Note(cg): multi-data-group notify value-position. We need to make sure
     // a scale exist for used position (left, bottom,...)
@@ -248,12 +252,12 @@ MultiData(
     super.firstUpdated(changedProperties);
   }
   
-  disconnectedCallback() {
-    // TODO(cg): replace multi-removed -> multi-verse-remover
-    // XXX(cg): this event will never be caught! unregister from host instead like for drawablse
-    this.dispatchEvent(new CustomEvent('multi-verse-removed', { detail: this.multiVerseGroup, bubbles: true, composed: true }));
-    super.disconnectedCallback();
-  }
+  // disconnectedCallback() {
+  //   // TODO(cg): replace multi-removed -> multi-verse-remover
+  //   // XXX(cg): this event will never be caught! unregister from host instead like for drawablse
+  //   this.dispatchEvent(new CustomEvent('multi-verse-removed', { detail: this.multiVerseGroup, bubbles: true, composed: true }));
+  //   super.disconnectedCallback();
+  // }
 
   // Note(cg): refresh drawable components for the chart.
   refresh() {
@@ -261,7 +265,7 @@ MultiData(
   }
 
   getSize() {
-    const svg = this.selectShadow('#svg').node();
+    const svg = this.renderRoot.querySelector('#svg');
     return {
       width: svg && svg.width.baseVal.value,
       height: svg && svg.height.baseVal.value

@@ -10,7 +10,6 @@
     "@preignition/preignition-widget": "./@preignition/preignition-widget.js",
     "@vaadin/router": "./@vaadin/router.js",
     "@vaadin/vaadin-tabs": "./@vaadin/vaadin-tabs.js",
-    "api-viewer-element": "./api-viewer-element.js",
     "d3-array": "./d3-array.js",
     "d3-axis": "./d3-axis.js",
     "d3-brush": "./d3-brush.js",

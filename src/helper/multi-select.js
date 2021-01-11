@@ -53,7 +53,7 @@ const properties = {
    * Otherwise, default behavior is 'select'
    */
   selectType: {
-    attribute: 'select-tpye',
+    attribute: 'select-type',
     type: String,
     value: ''
   }

@@ -23,7 +23,7 @@ class Chart extends LitElement {
         .colorScale="${this.colorScale}"
         .data="${this.data}">
         <!-- add a legend -->
-        <multi-legend .scale="${this.colorScale}" position="top-right"></multi-legend>
+        <multi-legend .scale="${this.colorScale}" position="top-right" ></multi-legend>
         <!-- make it selectable -->
         <multi-select @selected-changed="${e => this.selected = e.detail.value}" track-hover></multi-select>
         <h4 slot="header">This is a pie</h4>

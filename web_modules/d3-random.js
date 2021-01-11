@@ -317,4 +317,14 @@ var poisson = (function sourceRandomPoisson(source) {
   return randomPoisson;
 })(defaultSource);
 
-export { bates as randomBates, bernoulli as randomBernoulli, beta as randomBeta, binomial as randomBinomial, cauchy as randomCauchy, exponential as randomExponential, gamma as randomGamma, geometric as randomGeometric, int as randomInt, irwinHall as randomIrwinHall, logNormal as randomLogNormal, logistic as randomLogistic, normal as randomNormal, pareto as randomPareto, poisson as randomPoisson, uniform as randomUniform, weibull as randomWeibull };
+// https://en.wikipedia.org/wiki/Linear_congruential_generator#Parameters_in_common_use
+const mul = 0x19660D;
+const inc = 0x3C6EF35F;
+const eps = 1 / 0x100000000;
+
+function lcg(seed = Math.random()) {
+  let state = (0 <= seed && seed < 1 ? seed / eps : Math.abs(seed)) | 0;
+  return () => (state = mul * state + inc | 0, eps * (state >>> 0));
+}
+
+export { bates as randomBates, bernoulli as randomBernoulli, beta as randomBeta, binomial as randomBinomial, cauchy as randomCauchy, exponential as randomExponential, gamma as randomGamma, geometric as randomGeometric, int as randomInt, irwinHall as randomIrwinHall, lcg as randomLcg, logNormal as randomLogNormal, logistic as randomLogistic, normal as randomNormal, pareto as randomPareto, poisson as randomPoisson, uniform as randomUniform, weibull as randomWeibull };

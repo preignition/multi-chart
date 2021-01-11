@@ -7,7 +7,7 @@ const legendNames = ['color', 'size', 'symbol'];
 
 const props = {};
 legendNames.forEach(name => {
-  const instance = legend[`legend${capitalize(name)}`]()
+  const instance = legend[`legend${capitalize(name)}`]();
   const keys = Object.keys(instance || {});
   shapeProperties(keys, props);
 });

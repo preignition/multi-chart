@@ -1,9 +1,9 @@
-import { f as creator, S as Selection, r as root } from './common/index-7aa57c77.js';
-export { f as creator, d as customEvent, e as event, m as matcher, n as namespace, g as namespaces, b as selection, s as selector, a as selectorAll, c as style, h as window } from './common/index-7aa57c77.js';
-import { s as select } from './common/select-83157f23.js';
-export { s as select } from './common/select-83157f23.js';
-import { s as sourceEvent, p as point } from './common/touch-7b99ad4f.js';
-export { p as clientPoint, m as mouse, t as touch } from './common/touch-7b99ad4f.js';
+import { d as creator, S as Selection, e as array, r as root } from './common/index-eb5ccfed.js';
+export { d as creator, m as matcher, n as namespace, f as namespaces, b as selection, s as selector, a as selectorAll, c as style, g as window } from './common/index-eb5ccfed.js';
+import { s as select } from './common/select-2cd9107d.js';
+export { s as select } from './common/select-2cd9107d.js';
+import { s as sourceEvent, p as pointer } from './common/pointer-8013620e.js';
+export { p as pointer } from './common/pointer-8013620e.js';
 
 function create(name) {
   return select(creator(name).call(document.documentElement));
@@ -37,20 +37,19 @@ Local.prototype = local.prototype = {
   }
 };
 
+function pointers(events, node) {
+  if (events.target) { // i.e., instanceof Event, not TouchList or iterable
+    events = sourceEvent(events);
+    if (node === undefined) node = events.currentTarget;
+    events = events.touches || [events];
+  }
+  return Array.from(events, event => pointer(event, node));
+}
+
 function selectAll(selector) {
   return typeof selector === "string"
       ? new Selection([document.querySelectorAll(selector)], [document.documentElement])
-      : new Selection([selector == null ? [] : selector], root);
+      : new Selection([selector == null ? [] : array(selector)], root);
 }
 
-function touches(node, touches) {
-  if (touches == null) touches = sourceEvent().touches;
-
-  for (var i = 0, n = touches ? touches.length : 0, points = new Array(n); i < n; ++i) {
-    points[i] = point(node, touches[i]);
-  }
-
-  return points;
-}
-
-export { create, local, selectAll, touches };
+export { create, local, pointers, selectAll };

@@ -35,7 +35,16 @@ const MultiRegister = dedupingMixin(superClass => {
           type: String,
           attribute: 'register-container-name',
           value: 'svgHost'
-        }
+        },
+
+        /*
+         * `subGroup` needed when we want to register child element under a separate group,
+         * needed for instance for  multi-container-layer
+         */
+        subGroup: {
+          type: String,
+          attribute: 'sub-group'
+        },
 
       };
     }
@@ -50,14 +59,28 @@ const MultiRegister = dedupingMixin(superClass => {
       return 'multi-register'
     }
 
+    /* 
+     * `unregisterEventListen` the name of the event that will trigger 
+     * a unregistration.
+     *
+     */
+    // get unregisterEventListen() {
+    //   return 'multi-unregister'
+    // }
+
     constructor() {
       super();
       this.addEventListener(this.registerEventListen, this._onMultiRegister);
-
     }
 
     _registerItem(name, item) {
-      if (!this[name]) { this[name] = [] }
+      if (!this[name]) { this[name] = []; }
+      // Note(cg): we remove all elements that have been removed from the dom.
+      // we need to have a non mutable fitler
+      for (let i = this[name].length - 1; i > -1; i--) {
+        if (!this[name][i].isConnected) {this[name].splice(i, 1);}
+      }
+
       if (!this[name].includes(item)) {
         this[name].push(item);
         if (this.onRegister) {
@@ -70,10 +93,13 @@ const MultiRegister = dedupingMixin(superClass => {
     }
 
     _onMultiRegister(e) {
-      this.log && console.info('Register', e, e.composedPath()[0])
+      this.log && console.info('Register', e, e.composedPath()[0]);
       // Note(cg): only react if group is not set or is the same.
-      if (e.detail === this.group) {
-        // Note(cg): make sure we are not self-registering 
+      // 
+      // Note(cg): multi-container-layer can register sub-groups.
+      const group = this.subGroup || this.group;
+      if (e.detail === group) {
+        // Note(cg): make sure we are not self-registering
         // (this can be the case for elements that are registerable and also register like multi-container-layer).
         const target = e.composedPath()[0];
         if (target !== this) {
@@ -84,6 +110,10 @@ const MultiRegister = dedupingMixin(superClass => {
         }
       }
     }
+
+    // _onMultiUnregister(e) {
+    //   this.log && console.info('Unregister', e, e.composedPath()[0]);
+    // }
 
 
     unregister(registered) {
@@ -111,7 +141,7 @@ const MultiRegister = dedupingMixin(superClass => {
 
       (this.registeredItems || [])
         .filter(el => {
-          return el[methodName];
+          return el.isConnected && el[methodName];
         })
         // Note(cg): we make sure that some registered elements (for instance `multi-select`) are called later.
         .sort((a, b) => {

@@ -13,7 +13,7 @@ import { dedupingMixin } from '@polymer/polymer/lib/utils/mixin.js';
  */
 
 // const ResizeObserver = window.ResizeObserver || Polyfill;
-const ResizeObserver = window.ResizeObserver ;
+const ResizeObserver = window.ResizeObserver;
 const ro = new ResizeObserver((entries, observer) => {
   entries.forEach((entry, index) => entry.target.onResize(entry, index));
 });

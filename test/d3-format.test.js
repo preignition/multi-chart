@@ -1,6 +1,6 @@
 import { html, fixture, expect } from '@open-wc/testing';
 
-import '../src/helper/component-index.js';
+import '../src/helper/index.js';
 
 describe('Test d3-format', () => {
   it('format 1 to 1.0 by default', async () => {

@@ -9182,7 +9182,7 @@ class TabElement extends ElementMixin$1(ThemableMixin(ItemMixin(PolymerElement))
   }
 
   static get version() {
-    return '3.2.0-alpha1';
+    return '3.2.0';
   }
 
   ready() {
@@ -18855,7 +18855,7 @@ class TabsElement extends
   }
 
   static get version() {
-    return '3.2.0-alpha1';
+    return '3.2.0';
   }
 
   static get properties() {
@@ -18871,7 +18871,6 @@ class TabsElement extends
 
       /**
        * The index of the selected tab.
-       * @type {number}
        */
       selected: {
         value: 0,

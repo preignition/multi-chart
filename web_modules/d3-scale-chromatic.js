@@ -1,5 +1,5 @@
-import { j as rgbBasis, o as rgb } from './common/rgb-784c3fe6.js';
-import { a as cubehelixLong, b as cubehelix$1 } from './common/cubehelix-7c1e0943.js';
+import { j as rgbBasis, o as rgb } from './common/rgb-33c8dfa4.js';
+import { a as cubehelixLong, b as cubehelix$1 } from './common/cubehelix-9882d89c.js';
 
 function colors(specifier) {
   var n = specifier.length / 6 | 0, colors = new Array(n), i = 0;
@@ -27,9 +27,7 @@ var Set3 = colors("8dd3c7ffffb3bebadafb807280b1d3fdb462b3de69fccde5d9d9d9bc80bdc
 
 var Tableau10 = colors("4e79a7f28e2ce1575976b7b259a14fedc949af7aa1ff9da79c755fbab0ab");
 
-function ramp(scheme) {
-  return rgbBasis(scheme[scheme.length - 1]);
-}
+var ramp = scheme => rgbBasis(scheme[scheme.length - 1]);
 
 var scheme = new Array(3).concat(
   "d8b365f5f5f55ab4ac",

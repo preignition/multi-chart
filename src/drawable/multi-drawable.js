@@ -14,15 +14,6 @@ import { css, html } from 'lit-element';
  *
  * `<multi-drawable>` it a base Class for chart element that can be drawn (e.g. line, circle ...)
  *
- * @memberof MultiChart
- * @customElement
- * @polymer
- * @appliesMixin MultiChart.mixin.SVGHelper
- * @appliesMixin MultiChart.mixin.MultiRegisterable
- * @appliesMixin MultiChart.mixin.DispatchSVG
- * @appliesMixin MultiChart.mixin.Resizable
- * @appliesMixin MultiChart.mixin.Draw
- * @appliesMixin MultiChart.mixin.Accessor
  **/
 class MultiDrawable extends(
     DispatchSVG(
@@ -35,21 +26,14 @@ class MultiDrawable extends(
     return css`
      :host {
         display: none;
-      }`
+      }`;
     }
     
     // Note(cg): Hack allowing extend multi-container
-    // in other libraries 
+    // in other libraries
     get html() {
-      return html
+      return html;
     }
-
-  // Note(cg): Hack allowing extend multi-drawable
-  // in other libraries 
-  // get css() {
-  //   return css;
-  // } 
-
 
   static get properties() {
 
@@ -117,4 +101,4 @@ class MultiDrawable extends(
 
 }
 
-export default MultiDrawable ;
+export default MultiDrawable;

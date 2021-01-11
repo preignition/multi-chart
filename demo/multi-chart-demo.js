@@ -1,7 +1,7 @@
 import { LitElement, html, css } from 'lit-element';
 
 import '@vaadin/vaadin-tabs';
-import 'api-viewer-element';
+// import 'api-viewer-element';
 import { Router } from '@vaadin/router';
 
 
@@ -23,16 +23,14 @@ import {github, preignition, DemoRoot} from '@preignition/preignition-demo';
 
 class DemoChart extends DemoRoot {
 
-
-
   constructor() {
     super();
     this.activeTab = location.pathname === '/' ? 'intro' : location.pathname.replace('/', '');
     this.tabs = ['intro', 'charts', 'container', 'helper', 'advanced'];
-
   }
 
   firstUpdated() {
+
     const router = new Router(this.shadowRoot.getElementById('outlet'));
     router.setRoutes([
       { path: '/', component: 'demo-readme' },
@@ -51,10 +49,9 @@ class DemoChart extends DemoRoot {
     ]);
   }
 
-
-
+  
   render() {
-    return html `
+    return html`
       <div id="header">
         <span class="logo"><a href="https://preignition.org">${preignition}</a></span>
         <h1>Multi chart - ${this.capitalize(this.activeTab)} API and demos</h1>

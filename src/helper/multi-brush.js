@@ -1,5 +1,6 @@
 import { html, css } from 'lit-element';
-import { select, event as d3Event } from 'd3-selection';
+import { select } from 'd3-selection';
+import { brushSelection } from 'd3-brush';
 import { extent } from 'd3-array';
 import { scaleLinear } from 'd3-scale';
 import { MultiChartBase } from '../base-class.js';
@@ -229,17 +230,16 @@ DispatchSVG(
   }
 
   onMultiBrush() {
-    if (!d3Event.sourceEvent || this._clearing) {
+    if (this._clearing) {
       return;
     }
-    const selection = d3Event.selection;
+    const selection = brushSelection(this.targetElement);
 
     if (!selection) {
       return this.clearSelection();
     }
 
     let scale = this.effectiveScale;
-    // var isRange = false;
 
     const xScale = this.xScale;
     let sel;
@@ -275,7 +275,7 @@ DispatchSVG(
   }
 
   onMultiBrushEnd() {
-    if (!d3Event.selection && !this._clearing) {
+    if (brushSelection(this.targetElement) && !this._clearing) {
       this._clearing = true;
       this.clearSelection();
     }

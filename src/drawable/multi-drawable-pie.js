@@ -47,7 +47,7 @@ class MultiDrawablePie extends
           <g id="drawable" 
             slot-svg="slot-chart" 
             class="drawable pie" 
-            transform="translate(${this.width / 2 || 0}, ${this.height /2 || 0})"></g>
+            transform="translate(${this.width / 2 || 0}, ${this.height / 2 || 0})"></g>
         </svg>
     `;
   }

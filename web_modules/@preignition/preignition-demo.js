@@ -1,2572 +1,11 @@
-/**
- * @license
- * Copyright (c) 2017 The Polymer Project Authors. All rights reserved.
- * This code may only be used under the BSD style license found at
- * http://polymer.github.io/LICENSE.txt
- * The complete set of authors may be found at
- * http://polymer.github.io/AUTHORS.txt
- * The complete set of contributors may be found at
- * http://polymer.github.io/CONTRIBUTORS.txt
- * Code distributed by Google as part of the polymer project is also
- * subject to an additional IP rights grant found at
- * http://polymer.github.io/PATENTS.txt
- */
-const directives = new WeakMap();
-/**
- * Brands a function as a directive factory function so that lit-html will call
- * the function during template rendering, rather than passing as a value.
- *
- * A _directive_ is a function that takes a Part as an argument. It has the
- * signature: `(part: Part) => void`.
- *
- * A directive _factory_ is a function that takes arguments for data and
- * configuration and returns a directive. Users of directive usually refer to
- * the directive factory as the directive. For example, "The repeat directive".
- *
- * Usually a template author will invoke a directive factory in their template
- * with relevant arguments, which will then return a directive function.
- *
- * Here's an example of using the `repeat()` directive factory that takes an
- * array and a function to render an item:
- *
- * ```js
- * html`<ul><${repeat(items, (item) => html`<li>${item}</li>`)}</ul>`
- * ```
- *
- * When `repeat` is invoked, it returns a directive function that closes over
- * `items` and the template function. When the outer template is rendered, the
- * return directive function is called with the Part for the expression.
- * `repeat` then performs it's custom logic to render multiple items.
- *
- * @param f The directive factory function. Must be a function that returns a
- * function of the signature `(part: Part) => void`. The returned function will
- * be called with the part object.
- *
- * @example
- *
- * import {directive, html} from 'lit-html';
- *
- * const immutable = directive((v) => (part) => {
- *   if (part.value !== v) {
- *     part.setValue(v)
- *   }
- * });
- */
-const directive = (f) => ((...args) => {
-    const d = f(...args);
-    directives.set(d, true);
-    return d;
-});
-const isDirective = (o) => {
-    return typeof o === 'function' && directives.has(o);
-};
-
-/**
- * @license
- * Copyright (c) 2017 The Polymer Project Authors. All rights reserved.
- * This code may only be used under the BSD style license found at
- * http://polymer.github.io/LICENSE.txt
- * The complete set of authors may be found at
- * http://polymer.github.io/AUTHORS.txt
- * The complete set of contributors may be found at
- * http://polymer.github.io/CONTRIBUTORS.txt
- * Code distributed by Google as part of the polymer project is also
- * subject to an additional IP rights grant found at
- * http://polymer.github.io/PATENTS.txt
- */
-/**
- * True if the custom elements polyfill is in use.
- */
-const isCEPolyfill = window.customElements !== undefined &&
-    window.customElements.polyfillWrapFlushCallback !==
-        undefined;
-/**
- * Reparents nodes, starting from `start` (inclusive) to `end` (exclusive),
- * into another container (could be the same container), before `before`. If
- * `before` is null, it appends the nodes to the container.
- */
-const reparentNodes = (container, start, end = null, before = null) => {
-    while (start !== end) {
-        const n = start.nextSibling;
-        container.insertBefore(start, before);
-        start = n;
-    }
-};
-/**
- * Removes nodes, starting from `start` (inclusive) to `end` (exclusive), from
- * `container`.
- */
-const removeNodes = (container, start, end = null) => {
-    while (start !== end) {
-        const n = start.nextSibling;
-        container.removeChild(start);
-        start = n;
-    }
-};
-
-/**
- * @license
- * Copyright (c) 2018 The Polymer Project Authors. All rights reserved.
- * This code may only be used under the BSD style license found at
- * http://polymer.github.io/LICENSE.txt
- * The complete set of authors may be found at
- * http://polymer.github.io/AUTHORS.txt
- * The complete set of contributors may be found at
- * http://polymer.github.io/CONTRIBUTORS.txt
- * Code distributed by Google as part of the polymer project is also
- * subject to an additional IP rights grant found at
- * http://polymer.github.io/PATENTS.txt
- */
-/**
- * A sentinel value that signals that a value was handled by a directive and
- * should not be written to the DOM.
- */
-const noChange = {};
-/**
- * A sentinel value that signals a NodePart to fully clear its content.
- */
-const nothing = {};
-
-/**
- * @license
- * Copyright (c) 2017 The Polymer Project Authors. All rights reserved.
- * This code may only be used under the BSD style license found at
- * http://polymer.github.io/LICENSE.txt
- * The complete set of authors may be found at
- * http://polymer.github.io/AUTHORS.txt
- * The complete set of contributors may be found at
- * http://polymer.github.io/CONTRIBUTORS.txt
- * Code distributed by Google as part of the polymer project is also
- * subject to an additional IP rights grant found at
- * http://polymer.github.io/PATENTS.txt
- */
-/**
- * An expression marker with embedded unique key to avoid collision with
- * possible text in templates.
- */
-const marker = `{{lit-${String(Math.random()).slice(2)}}}`;
-/**
- * An expression marker used text-positions, multi-binding attributes, and
- * attributes with markup-like text values.
- */
-const nodeMarker = `<!--${marker}-->`;
-const markerRegex = new RegExp(`${marker}|${nodeMarker}`);
-/**
- * Suffix appended to all bound attribute names.
- */
-const boundAttributeSuffix = '$lit$';
-/**
- * An updateable Template that tracks the location of dynamic parts.
- */
-class Template {
-    constructor(result, element) {
-        this.parts = [];
-        this.element = element;
-        const nodesToRemove = [];
-        const stack = [];
-        // Edge needs all 4 parameters present; IE11 needs 3rd parameter to be null
-        const walker = document.createTreeWalker(element.content, 133 /* NodeFilter.SHOW_{ELEMENT|COMMENT|TEXT} */, null, false);
-        // Keeps track of the last index associated with a part. We try to delete
-        // unnecessary nodes, but we never want to associate two different parts
-        // to the same index. They must have a constant node between.
-        let lastPartIndex = 0;
-        let index = -1;
-        let partIndex = 0;
-        const { strings, values: { length } } = result;
-        while (partIndex < length) {
-            const node = walker.nextNode();
-            if (node === null) {
-                // We've exhausted the content inside a nested template element.
-                // Because we still have parts (the outer for-loop), we know:
-                // - There is a template in the stack
-                // - The walker will find a nextNode outside the template
-                walker.currentNode = stack.pop();
-                continue;
-            }
-            index++;
-            if (node.nodeType === 1 /* Node.ELEMENT_NODE */) {
-                if (node.hasAttributes()) {
-                    const attributes = node.attributes;
-                    const { length } = attributes;
-                    // Per
-                    // https://developer.mozilla.org/en-US/docs/Web/API/NamedNodeMap,
-                    // attributes are not guaranteed to be returned in document order.
-                    // In particular, Edge/IE can return them out of order, so we cannot
-                    // assume a correspondence between part index and attribute index.
-                    let count = 0;
-                    for (let i = 0; i < length; i++) {
-                        if (endsWith(attributes[i].name, boundAttributeSuffix)) {
-                            count++;
-                        }
-                    }
-                    while (count-- > 0) {
-                        // Get the template literal section leading up to the first
-                        // expression in this attribute
-                        const stringForPart = strings[partIndex];
-                        // Find the attribute name
-                        const name = lastAttributeNameRegex.exec(stringForPart)[2];
-                        // Find the corresponding attribute
-                        // All bound attributes have had a suffix added in
-                        // TemplateResult#getHTML to opt out of special attribute
-                        // handling. To look up the attribute value we also need to add
-                        // the suffix.
-                        const attributeLookupName = name.toLowerCase() + boundAttributeSuffix;
-                        const attributeValue = node.getAttribute(attributeLookupName);
-                        node.removeAttribute(attributeLookupName);
-                        const statics = attributeValue.split(markerRegex);
-                        this.parts.push({ type: 'attribute', index, name, strings: statics });
-                        partIndex += statics.length - 1;
-                    }
-                }
-                if (node.tagName === 'TEMPLATE') {
-                    stack.push(node);
-                    walker.currentNode = node.content;
-                }
-            }
-            else if (node.nodeType === 3 /* Node.TEXT_NODE */) {
-                const data = node.data;
-                if (data.indexOf(marker) >= 0) {
-                    const parent = node.parentNode;
-                    const strings = data.split(markerRegex);
-                    const lastIndex = strings.length - 1;
-                    // Generate a new text node for each literal section
-                    // These nodes are also used as the markers for node parts
-                    for (let i = 0; i < lastIndex; i++) {
-                        let insert;
-                        let s = strings[i];
-                        if (s === '') {
-                            insert = createMarker();
-                        }
-                        else {
-                            const match = lastAttributeNameRegex.exec(s);
-                            if (match !== null && endsWith(match[2], boundAttributeSuffix)) {
-                                s = s.slice(0, match.index) + match[1] +
-                                    match[2].slice(0, -boundAttributeSuffix.length) + match[3];
-                            }
-                            insert = document.createTextNode(s);
-                        }
-                        parent.insertBefore(insert, node);
-                        this.parts.push({ type: 'node', index: ++index });
-                    }
-                    // If there's no text, we must insert a comment to mark our place.
-                    // Else, we can trust it will stick around after cloning.
-                    if (strings[lastIndex] === '') {
-                        parent.insertBefore(createMarker(), node);
-                        nodesToRemove.push(node);
-                    }
-                    else {
-                        node.data = strings[lastIndex];
-                    }
-                    // We have a part for each match found
-                    partIndex += lastIndex;
-                }
-            }
-            else if (node.nodeType === 8 /* Node.COMMENT_NODE */) {
-                if (node.data === marker) {
-                    const parent = node.parentNode;
-                    // Add a new marker node to be the startNode of the Part if any of
-                    // the following are true:
-                    //  * We don't have a previousSibling
-                    //  * The previousSibling is already the start of a previous part
-                    if (node.previousSibling === null || index === lastPartIndex) {
-                        index++;
-                        parent.insertBefore(createMarker(), node);
-                    }
-                    lastPartIndex = index;
-                    this.parts.push({ type: 'node', index });
-                    // If we don't have a nextSibling, keep this node so we have an end.
-                    // Else, we can remove it to save future costs.
-                    if (node.nextSibling === null) {
-                        node.data = '';
-                    }
-                    else {
-                        nodesToRemove.push(node);
-                        index--;
-                    }
-                    partIndex++;
-                }
-                else {
-                    let i = -1;
-                    while ((i = node.data.indexOf(marker, i + 1)) !== -1) {
-                        // Comment node has a binding marker inside, make an inactive part
-                        // The binding won't work, but subsequent bindings will
-                        // TODO (justinfagnani): consider whether it's even worth it to
-                        // make bindings in comments work
-                        this.parts.push({ type: 'node', index: -1 });
-                        partIndex++;
-                    }
-                }
-            }
-        }
-        // Remove text binding nodes after the walk to not disturb the TreeWalker
-        for (const n of nodesToRemove) {
-            n.parentNode.removeChild(n);
-        }
-    }
-}
-const endsWith = (str, suffix) => {
-    const index = str.length - suffix.length;
-    return index >= 0 && str.slice(index) === suffix;
-};
-const isTemplatePartActive = (part) => part.index !== -1;
-// Allows `document.createComment('')` to be renamed for a
-// small manual size-savings.
-const createMarker = () => document.createComment('');
-/**
- * This regex extracts the attribute name preceding an attribute-position
- * expression. It does this by matching the syntax allowed for attributes
- * against the string literal directly preceding the expression, assuming that
- * the expression is in an attribute-value position.
- *
- * See attributes in the HTML spec:
- * https://www.w3.org/TR/html5/syntax.html#elements-attributes
- *
- * " \x09\x0a\x0c\x0d" are HTML space characters:
- * https://www.w3.org/TR/html5/infrastructure.html#space-characters
- *
- * "\0-\x1F\x7F-\x9F" are Unicode control characters, which includes every
- * space character except " ".
- *
- * So an attribute is:
- *  * The name: any character except a control character, space character, ('),
- *    ("), ">", "=", or "/"
- *  * Followed by zero or more space characters
- *  * Followed by "="
- *  * Followed by zero or more space characters
- *  * Followed by:
- *    * Any character except space, ('), ("), "<", ">", "=", (`), or
- *    * (") then any non-("), or
- *    * (') then any non-(')
- */
-const lastAttributeNameRegex = /([ \x09\x0a\x0c\x0d])([^\0-\x1F\x7F-\x9F "'>=/]+)([ \x09\x0a\x0c\x0d]*=[ \x09\x0a\x0c\x0d]*(?:[^ \x09\x0a\x0c\x0d"'`<>=]*|"[^"]*|'[^']*))$/;
-
-/**
- * @license
- * Copyright (c) 2017 The Polymer Project Authors. All rights reserved.
- * This code may only be used under the BSD style license found at
- * http://polymer.github.io/LICENSE.txt
- * The complete set of authors may be found at
- * http://polymer.github.io/AUTHORS.txt
- * The complete set of contributors may be found at
- * http://polymer.github.io/CONTRIBUTORS.txt
- * Code distributed by Google as part of the polymer project is also
- * subject to an additional IP rights grant found at
- * http://polymer.github.io/PATENTS.txt
- */
-/**
- * An instance of a `Template` that can be attached to the DOM and updated
- * with new values.
- */
-class TemplateInstance {
-    constructor(template, processor, options) {
-        this.__parts = [];
-        this.template = template;
-        this.processor = processor;
-        this.options = options;
-    }
-    update(values) {
-        let i = 0;
-        for (const part of this.__parts) {
-            if (part !== undefined) {
-                part.setValue(values[i]);
-            }
-            i++;
-        }
-        for (const part of this.__parts) {
-            if (part !== undefined) {
-                part.commit();
-            }
-        }
-    }
-    _clone() {
-        // There are a number of steps in the lifecycle of a template instance's
-        // DOM fragment:
-        //  1. Clone - create the instance fragment
-        //  2. Adopt - adopt into the main document
-        //  3. Process - find part markers and create parts
-        //  4. Upgrade - upgrade custom elements
-        //  5. Update - set node, attribute, property, etc., values
-        //  6. Connect - connect to the document. Optional and outside of this
-        //     method.
-        //
-        // We have a few constraints on the ordering of these steps:
-        //  * We need to upgrade before updating, so that property values will pass
-        //    through any property setters.
-        //  * We would like to process before upgrading so that we're sure that the
-        //    cloned fragment is inert and not disturbed by self-modifying DOM.
-        //  * We want custom elements to upgrade even in disconnected fragments.
-        //
-        // Given these constraints, with full custom elements support we would
-        // prefer the order: Clone, Process, Adopt, Upgrade, Update, Connect
-        //
-        // But Safari dooes not implement CustomElementRegistry#upgrade, so we
-        // can not implement that order and still have upgrade-before-update and
-        // upgrade disconnected fragments. So we instead sacrifice the
-        // process-before-upgrade constraint, since in Custom Elements v1 elements
-        // must not modify their light DOM in the constructor. We still have issues
-        // when co-existing with CEv0 elements like Polymer 1, and with polyfills
-        // that don't strictly adhere to the no-modification rule because shadow
-        // DOM, which may be created in the constructor, is emulated by being placed
-        // in the light DOM.
-        //
-        // The resulting order is on native is: Clone, Adopt, Upgrade, Process,
-        // Update, Connect. document.importNode() performs Clone, Adopt, and Upgrade
-        // in one step.
-        //
-        // The Custom Elements v1 polyfill supports upgrade(), so the order when
-        // polyfilled is the more ideal: Clone, Process, Adopt, Upgrade, Update,
-        // Connect.
-        const fragment = isCEPolyfill ?
-            this.template.element.content.cloneNode(true) :
-            document.importNode(this.template.element.content, true);
-        const stack = [];
-        const parts = this.template.parts;
-        // Edge needs all 4 parameters present; IE11 needs 3rd parameter to be null
-        const walker = document.createTreeWalker(fragment, 133 /* NodeFilter.SHOW_{ELEMENT|COMMENT|TEXT} */, null, false);
-        let partIndex = 0;
-        let nodeIndex = 0;
-        let part;
-        let node = walker.nextNode();
-        // Loop through all the nodes and parts of a template
-        while (partIndex < parts.length) {
-            part = parts[partIndex];
-            if (!isTemplatePartActive(part)) {
-                this.__parts.push(undefined);
-                partIndex++;
-                continue;
-            }
-            // Progress the tree walker until we find our next part's node.
-            // Note that multiple parts may share the same node (attribute parts
-            // on a single element), so this loop may not run at all.
-            while (nodeIndex < part.index) {
-                nodeIndex++;
-                if (node.nodeName === 'TEMPLATE') {
-                    stack.push(node);
-                    walker.currentNode = node.content;
-                }
-                if ((node = walker.nextNode()) === null) {
-                    // We've exhausted the content inside a nested template element.
-                    // Because we still have parts (the outer for-loop), we know:
-                    // - There is a template in the stack
-                    // - The walker will find a nextNode outside the template
-                    walker.currentNode = stack.pop();
-                    node = walker.nextNode();
-                }
-            }
-            // We've arrived at our part's node.
-            if (part.type === 'node') {
-                const part = this.processor.handleTextExpression(this.options);
-                part.insertAfterNode(node.previousSibling);
-                this.__parts.push(part);
-            }
-            else {
-                this.__parts.push(...this.processor.handleAttributeExpressions(node, part.name, part.strings, this.options));
-            }
-            partIndex++;
-        }
-        if (isCEPolyfill) {
-            document.adoptNode(fragment);
-            customElements.upgrade(fragment);
-        }
-        return fragment;
-    }
-}
-
-/**
- * @license
- * Copyright (c) 2017 The Polymer Project Authors. All rights reserved.
- * This code may only be used under the BSD style license found at
- * http://polymer.github.io/LICENSE.txt
- * The complete set of authors may be found at
- * http://polymer.github.io/AUTHORS.txt
- * The complete set of contributors may be found at
- * http://polymer.github.io/CONTRIBUTORS.txt
- * Code distributed by Google as part of the polymer project is also
- * subject to an additional IP rights grant found at
- * http://polymer.github.io/PATENTS.txt
- */
-const commentMarker = ` ${marker} `;
-/**
- * The return type of `html`, which holds a Template and the values from
- * interpolated expressions.
- */
-class TemplateResult {
-    constructor(strings, values, type, processor) {
-        this.strings = strings;
-        this.values = values;
-        this.type = type;
-        this.processor = processor;
-    }
-    /**
-     * Returns a string of HTML used to create a `<template>` element.
-     */
-    getHTML() {
-        const l = this.strings.length - 1;
-        let html = '';
-        let isCommentBinding = false;
-        for (let i = 0; i < l; i++) {
-            const s = this.strings[i];
-            // For each binding we want to determine the kind of marker to insert
-            // into the template source before it's parsed by the browser's HTML
-            // parser. The marker type is based on whether the expression is in an
-            // attribute, text, or comment poisition.
-            //   * For node-position bindings we insert a comment with the marker
-            //     sentinel as its text content, like <!--{{lit-guid}}-->.
-            //   * For attribute bindings we insert just the marker sentinel for the
-            //     first binding, so that we support unquoted attribute bindings.
-            //     Subsequent bindings can use a comment marker because multi-binding
-            //     attributes must be quoted.
-            //   * For comment bindings we insert just the marker sentinel so we don't
-            //     close the comment.
-            //
-            // The following code scans the template source, but is *not* an HTML
-            // parser. We don't need to track the tree structure of the HTML, only
-            // whether a binding is inside a comment, and if not, if it appears to be
-            // the first binding in an attribute.
-            const commentOpen = s.lastIndexOf('<!--');
-            // We're in comment position if we have a comment open with no following
-            // comment close. Because <-- can appear in an attribute value there can
-            // be false positives.
-            isCommentBinding = (commentOpen > -1 || isCommentBinding) &&
-                s.indexOf('-->', commentOpen + 1) === -1;
-            // Check to see if we have an attribute-like sequence preceeding the
-            // expression. This can match "name=value" like structures in text,
-            // comments, and attribute values, so there can be false-positives.
-            const attributeMatch = lastAttributeNameRegex.exec(s);
-            if (attributeMatch === null) {
-                // We're only in this branch if we don't have a attribute-like
-                // preceeding sequence. For comments, this guards against unusual
-                // attribute values like <div foo="<!--${'bar'}">. Cases like
-                // <!-- foo=${'bar'}--> are handled correctly in the attribute branch
-                // below.
-                html += s + (isCommentBinding ? commentMarker : nodeMarker);
-            }
-            else {
-                // For attributes we use just a marker sentinel, and also append a
-                // $lit$ suffix to the name to opt-out of attribute-specific parsing
-                // that IE and Edge do for style and certain SVG attributes.
-                html += s.substr(0, attributeMatch.index) + attributeMatch[1] +
-                    attributeMatch[2] + boundAttributeSuffix + attributeMatch[3] +
-                    marker;
-            }
-        }
-        html += this.strings[l];
-        return html;
-    }
-    getTemplateElement() {
-        const template = document.createElement('template');
-        template.innerHTML = this.getHTML();
-        return template;
-    }
-}
-
-/**
- * @license
- * Copyright (c) 2017 The Polymer Project Authors. All rights reserved.
- * This code may only be used under the BSD style license found at
- * http://polymer.github.io/LICENSE.txt
- * The complete set of authors may be found at
- * http://polymer.github.io/AUTHORS.txt
- * The complete set of contributors may be found at
- * http://polymer.github.io/CONTRIBUTORS.txt
- * Code distributed by Google as part of the polymer project is also
- * subject to an additional IP rights grant found at
- * http://polymer.github.io/PATENTS.txt
- */
-const isPrimitive = (value) => {
-    return (value === null ||
-        !(typeof value === 'object' || typeof value === 'function'));
-};
-const isIterable = (value) => {
-    return Array.isArray(value) ||
-        // tslint:disable-next-line:no-any
-        !!(value && value[Symbol.iterator]);
-};
-/**
- * Writes attribute values to the DOM for a group of AttributeParts bound to a
- * single attibute. The value is only set once even if there are multiple parts
- * for an attribute.
- */
-class AttributeCommitter {
-    constructor(element, name, strings) {
-        this.dirty = true;
-        this.element = element;
-        this.name = name;
-        this.strings = strings;
-        this.parts = [];
-        for (let i = 0; i < strings.length - 1; i++) {
-            this.parts[i] = this._createPart();
-        }
-    }
-    /**
-     * Creates a single part. Override this to create a differnt type of part.
-     */
-    _createPart() {
-        return new AttributePart(this);
-    }
-    _getValue() {
-        const strings = this.strings;
-        const l = strings.length - 1;
-        let text = '';
-        for (let i = 0; i < l; i++) {
-            text += strings[i];
-            const part = this.parts[i];
-            if (part !== undefined) {
-                const v = part.value;
-                if (isPrimitive(v) || !isIterable(v)) {
-                    text += typeof v === 'string' ? v : String(v);
-                }
-                else {
-                    for (const t of v) {
-                        text += typeof t === 'string' ? t : String(t);
-                    }
-                }
-            }
-        }
-        text += strings[l];
-        return text;
-    }
-    commit() {
-        if (this.dirty) {
-            this.dirty = false;
-            this.element.setAttribute(this.name, this._getValue());
-        }
-    }
-}
-/**
- * A Part that controls all or part of an attribute value.
- */
-class AttributePart {
-    constructor(committer) {
-        this.value = undefined;
-        this.committer = committer;
-    }
-    setValue(value) {
-        if (value !== noChange && (!isPrimitive(value) || value !== this.value)) {
-            this.value = value;
-            // If the value is a not a directive, dirty the committer so that it'll
-            // call setAttribute. If the value is a directive, it'll dirty the
-            // committer if it calls setValue().
-            if (!isDirective(value)) {
-                this.committer.dirty = true;
-            }
-        }
-    }
-    commit() {
-        while (isDirective(this.value)) {
-            const directive = this.value;
-            this.value = noChange;
-            directive(this);
-        }
-        if (this.value === noChange) {
-            return;
-        }
-        this.committer.commit();
-    }
-}
-/**
- * A Part that controls a location within a Node tree. Like a Range, NodePart
- * has start and end locations and can set and update the Nodes between those
- * locations.
- *
- * NodeParts support several value types: primitives, Nodes, TemplateResults,
- * as well as arrays and iterables of those types.
- */
-class NodePart {
-    constructor(options) {
-        this.value = undefined;
-        this.__pendingValue = undefined;
-        this.options = options;
-    }
-    /**
-     * Appends this part into a container.
-     *
-     * This part must be empty, as its contents are not automatically moved.
-     */
-    appendInto(container) {
-        this.startNode = container.appendChild(createMarker());
-        this.endNode = container.appendChild(createMarker());
-    }
-    /**
-     * Inserts this part after the `ref` node (between `ref` and `ref`'s next
-     * sibling). Both `ref` and its next sibling must be static, unchanging nodes
-     * such as those that appear in a literal section of a template.
-     *
-     * This part must be empty, as its contents are not automatically moved.
-     */
-    insertAfterNode(ref) {
-        this.startNode = ref;
-        this.endNode = ref.nextSibling;
-    }
-    /**
-     * Appends this part into a parent part.
-     *
-     * This part must be empty, as its contents are not automatically moved.
-     */
-    appendIntoPart(part) {
-        part.__insert(this.startNode = createMarker());
-        part.__insert(this.endNode = createMarker());
-    }
-    /**
-     * Inserts this part after the `ref` part.
-     *
-     * This part must be empty, as its contents are not automatically moved.
-     */
-    insertAfterPart(ref) {
-        ref.__insert(this.startNode = createMarker());
-        this.endNode = ref.endNode;
-        ref.endNode = this.startNode;
-    }
-    setValue(value) {
-        this.__pendingValue = value;
-    }
-    commit() {
-        while (isDirective(this.__pendingValue)) {
-            const directive = this.__pendingValue;
-            this.__pendingValue = noChange;
-            directive(this);
-        }
-        const value = this.__pendingValue;
-        if (value === noChange) {
-            return;
-        }
-        if (isPrimitive(value)) {
-            if (value !== this.value) {
-                this.__commitText(value);
-            }
-        }
-        else if (value instanceof TemplateResult) {
-            this.__commitTemplateResult(value);
-        }
-        else if (value instanceof Node) {
-            this.__commitNode(value);
-        }
-        else if (isIterable(value)) {
-            this.__commitIterable(value);
-        }
-        else if (value === nothing) {
-            this.value = nothing;
-            this.clear();
-        }
-        else {
-            // Fallback, will render the string representation
-            this.__commitText(value);
-        }
-    }
-    __insert(node) {
-        this.endNode.parentNode.insertBefore(node, this.endNode);
-    }
-    __commitNode(value) {
-        if (this.value === value) {
-            return;
-        }
-        this.clear();
-        this.__insert(value);
-        this.value = value;
-    }
-    __commitText(value) {
-        const node = this.startNode.nextSibling;
-        value = value == null ? '' : value;
-        // If `value` isn't already a string, we explicitly convert it here in case
-        // it can't be implicitly converted - i.e. it's a symbol.
-        const valueAsString = typeof value === 'string' ? value : String(value);
-        if (node === this.endNode.previousSibling &&
-            node.nodeType === 3 /* Node.TEXT_NODE */) {
-            // If we only have a single text node between the markers, we can just
-            // set its value, rather than replacing it.
-            // TODO(justinfagnani): Can we just check if this.value is primitive?
-            node.data = valueAsString;
-        }
-        else {
-            this.__commitNode(document.createTextNode(valueAsString));
-        }
-        this.value = value;
-    }
-    __commitTemplateResult(value) {
-        const template = this.options.templateFactory(value);
-        if (this.value instanceof TemplateInstance &&
-            this.value.template === template) {
-            this.value.update(value.values);
-        }
-        else {
-            // Make sure we propagate the template processor from the TemplateResult
-            // so that we use its syntax extension, etc. The template factory comes
-            // from the render function options so that it can control template
-            // caching and preprocessing.
-            const instance = new TemplateInstance(template, value.processor, this.options);
-            const fragment = instance._clone();
-            instance.update(value.values);
-            this.__commitNode(fragment);
-            this.value = instance;
-        }
-    }
-    __commitIterable(value) {
-        // For an Iterable, we create a new InstancePart per item, then set its
-        // value to the item. This is a little bit of overhead for every item in
-        // an Iterable, but it lets us recurse easily and efficiently update Arrays
-        // of TemplateResults that will be commonly returned from expressions like:
-        // array.map((i) => html`${i}`), by reusing existing TemplateInstances.
-        // If _value is an array, then the previous render was of an
-        // iterable and _value will contain the NodeParts from the previous
-        // render. If _value is not an array, clear this part and make a new
-        // array for NodeParts.
-        if (!Array.isArray(this.value)) {
-            this.value = [];
-            this.clear();
-        }
-        // Lets us keep track of how many items we stamped so we can clear leftover
-        // items from a previous render
-        const itemParts = this.value;
-        let partIndex = 0;
-        let itemPart;
-        for (const item of value) {
-            // Try to reuse an existing part
-            itemPart = itemParts[partIndex];
-            // If no existing part, create a new one
-            if (itemPart === undefined) {
-                itemPart = new NodePart(this.options);
-                itemParts.push(itemPart);
-                if (partIndex === 0) {
-                    itemPart.appendIntoPart(this);
-                }
-                else {
-                    itemPart.insertAfterPart(itemParts[partIndex - 1]);
-                }
-            }
-            itemPart.setValue(item);
-            itemPart.commit();
-            partIndex++;
-        }
-        if (partIndex < itemParts.length) {
-            // Truncate the parts array so _value reflects the current state
-            itemParts.length = partIndex;
-            this.clear(itemPart && itemPart.endNode);
-        }
-    }
-    clear(startNode = this.startNode) {
-        removeNodes(this.startNode.parentNode, startNode.nextSibling, this.endNode);
-    }
-}
-/**
- * Implements a boolean attribute, roughly as defined in the HTML
- * specification.
- *
- * If the value is truthy, then the attribute is present with a value of
- * ''. If the value is falsey, the attribute is removed.
- */
-class BooleanAttributePart {
-    constructor(element, name, strings) {
-        this.value = undefined;
-        this.__pendingValue = undefined;
-        if (strings.length !== 2 || strings[0] !== '' || strings[1] !== '') {
-            throw new Error('Boolean attributes can only contain a single expression');
-        }
-        this.element = element;
-        this.name = name;
-        this.strings = strings;
-    }
-    setValue(value) {
-        this.__pendingValue = value;
-    }
-    commit() {
-        while (isDirective(this.__pendingValue)) {
-            const directive = this.__pendingValue;
-            this.__pendingValue = noChange;
-            directive(this);
-        }
-        if (this.__pendingValue === noChange) {
-            return;
-        }
-        const value = !!this.__pendingValue;
-        if (this.value !== value) {
-            if (value) {
-                this.element.setAttribute(this.name, '');
-            }
-            else {
-                this.element.removeAttribute(this.name);
-            }
-            this.value = value;
-        }
-        this.__pendingValue = noChange;
-    }
-}
-/**
- * Sets attribute values for PropertyParts, so that the value is only set once
- * even if there are multiple parts for a property.
- *
- * If an expression controls the whole property value, then the value is simply
- * assigned to the property under control. If there are string literals or
- * multiple expressions, then the strings are expressions are interpolated into
- * a string first.
- */
-class PropertyCommitter extends AttributeCommitter {
-    constructor(element, name, strings) {
-        super(element, name, strings);
-        this.single =
-            (strings.length === 2 && strings[0] === '' && strings[1] === '');
-    }
-    _createPart() {
-        return new PropertyPart(this);
-    }
-    _getValue() {
-        if (this.single) {
-            return this.parts[0].value;
-        }
-        return super._getValue();
-    }
-    commit() {
-        if (this.dirty) {
-            this.dirty = false;
-            // tslint:disable-next-line:no-any
-            this.element[this.name] = this._getValue();
-        }
-    }
-}
-class PropertyPart extends AttributePart {
-}
-// Detect event listener options support. If the `capture` property is read
-// from the options object, then options are supported. If not, then the thrid
-// argument to add/removeEventListener is interpreted as the boolean capture
-// value so we should only pass the `capture` property.
-let eventOptionsSupported = false;
-try {
-    const options = {
-        get capture() {
-            eventOptionsSupported = true;
-            return false;
-        }
-    };
-    // tslint:disable-next-line:no-any
-    window.addEventListener('test', options, options);
-    // tslint:disable-next-line:no-any
-    window.removeEventListener('test', options, options);
-}
-catch (_e) {
-}
-class EventPart {
-    constructor(element, eventName, eventContext) {
-        this.value = undefined;
-        this.__pendingValue = undefined;
-        this.element = element;
-        this.eventName = eventName;
-        this.eventContext = eventContext;
-        this.__boundHandleEvent = (e) => this.handleEvent(e);
-    }
-    setValue(value) {
-        this.__pendingValue = value;
-    }
-    commit() {
-        while (isDirective(this.__pendingValue)) {
-            const directive = this.__pendingValue;
-            this.__pendingValue = noChange;
-            directive(this);
-        }
-        if (this.__pendingValue === noChange) {
-            return;
-        }
-        const newListener = this.__pendingValue;
-        const oldListener = this.value;
-        const shouldRemoveListener = newListener == null ||
-            oldListener != null &&
-                (newListener.capture !== oldListener.capture ||
-                    newListener.once !== oldListener.once ||
-                    newListener.passive !== oldListener.passive);
-        const shouldAddListener = newListener != null && (oldListener == null || shouldRemoveListener);
-        if (shouldRemoveListener) {
-            this.element.removeEventListener(this.eventName, this.__boundHandleEvent, this.__options);
-        }
-        if (shouldAddListener) {
-            this.__options = getOptions(newListener);
-            this.element.addEventListener(this.eventName, this.__boundHandleEvent, this.__options);
-        }
-        this.value = newListener;
-        this.__pendingValue = noChange;
-    }
-    handleEvent(event) {
-        if (typeof this.value === 'function') {
-            this.value.call(this.eventContext || this.element, event);
-        }
-        else {
-            this.value.handleEvent(event);
-        }
-    }
-}
-// We copy options because of the inconsistent behavior of browsers when reading
-// the third argument of add/removeEventListener. IE11 doesn't support options
-// at all. Chrome 41 only reads `capture` if the argument is an object.
-const getOptions = (o) => o &&
-    (eventOptionsSupported ?
-        { capture: o.capture, passive: o.passive, once: o.once } :
-        o.capture);
-
-/**
- * @license
- * Copyright (c) 2017 The Polymer Project Authors. All rights reserved.
- * This code may only be used under the BSD style license found at
- * http://polymer.github.io/LICENSE.txt
- * The complete set of authors may be found at
- * http://polymer.github.io/AUTHORS.txt
- * The complete set of contributors may be found at
- * http://polymer.github.io/CONTRIBUTORS.txt
- * Code distributed by Google as part of the polymer project is also
- * subject to an additional IP rights grant found at
- * http://polymer.github.io/PATENTS.txt
- */
-/**
- * Creates Parts when a template is instantiated.
- */
-class DefaultTemplateProcessor {
-    /**
-     * Create parts for an attribute-position binding, given the event, attribute
-     * name, and string literals.
-     *
-     * @param element The element containing the binding
-     * @param name  The attribute name
-     * @param strings The string literals. There are always at least two strings,
-     *   event for fully-controlled bindings with a single expression.
-     */
-    handleAttributeExpressions(element, name, strings, options) {
-        const prefix = name[0];
-        if (prefix === '.') {
-            const committer = new PropertyCommitter(element, name.slice(1), strings);
-            return committer.parts;
-        }
-        if (prefix === '@') {
-            return [new EventPart(element, name.slice(1), options.eventContext)];
-        }
-        if (prefix === '?') {
-            return [new BooleanAttributePart(element, name.slice(1), strings)];
-        }
-        const committer = new AttributeCommitter(element, name, strings);
-        return committer.parts;
-    }
-    /**
-     * Create parts for a text-position binding.
-     * @param templateFactory
-     */
-    handleTextExpression(options) {
-        return new NodePart(options);
-    }
-}
-const defaultTemplateProcessor = new DefaultTemplateProcessor();
-
-/**
- * @license
- * Copyright (c) 2017 The Polymer Project Authors. All rights reserved.
- * This code may only be used under the BSD style license found at
- * http://polymer.github.io/LICENSE.txt
- * The complete set of authors may be found at
- * http://polymer.github.io/AUTHORS.txt
- * The complete set of contributors may be found at
- * http://polymer.github.io/CONTRIBUTORS.txt
- * Code distributed by Google as part of the polymer project is also
- * subject to an additional IP rights grant found at
- * http://polymer.github.io/PATENTS.txt
- */
-/**
- * The default TemplateFactory which caches Templates keyed on
- * result.type and result.strings.
- */
-function templateFactory(result) {
-    let templateCache = templateCaches.get(result.type);
-    if (templateCache === undefined) {
-        templateCache = {
-            stringsArray: new WeakMap(),
-            keyString: new Map()
-        };
-        templateCaches.set(result.type, templateCache);
-    }
-    let template = templateCache.stringsArray.get(result.strings);
-    if (template !== undefined) {
-        return template;
-    }
-    // If the TemplateStringsArray is new, generate a key from the strings
-    // This key is shared between all templates with identical content
-    const key = result.strings.join(marker);
-    // Check if we already have a Template for this key
-    template = templateCache.keyString.get(key);
-    if (template === undefined) {
-        // If we have not seen this key before, create a new Template
-        template = new Template(result, result.getTemplateElement());
-        // Cache the Template for this key
-        templateCache.keyString.set(key, template);
-    }
-    // Cache all future queries for this TemplateStringsArray
-    templateCache.stringsArray.set(result.strings, template);
-    return template;
-}
-const templateCaches = new Map();
-
-/**
- * @license
- * Copyright (c) 2017 The Polymer Project Authors. All rights reserved.
- * This code may only be used under the BSD style license found at
- * http://polymer.github.io/LICENSE.txt
- * The complete set of authors may be found at
- * http://polymer.github.io/AUTHORS.txt
- * The complete set of contributors may be found at
- * http://polymer.github.io/CONTRIBUTORS.txt
- * Code distributed by Google as part of the polymer project is also
- * subject to an additional IP rights grant found at
- * http://polymer.github.io/PATENTS.txt
- */
-const parts = new WeakMap();
-/**
- * Renders a template result or other value to a container.
- *
- * To update a container with new values, reevaluate the template literal and
- * call `render` with the new result.
- *
- * @param result Any value renderable by NodePart - typically a TemplateResult
- *     created by evaluating a template tag like `html` or `svg`.
- * @param container A DOM parent to render to. The entire contents are either
- *     replaced, or efficiently updated if the same result type was previous
- *     rendered there.
- * @param options RenderOptions for the entire render tree rendered to this
- *     container. Render options must *not* change between renders to the same
- *     container, as those changes will not effect previously rendered DOM.
- */
-const render = (result, container, options) => {
-    let part = parts.get(container);
-    if (part === undefined) {
-        removeNodes(container, container.firstChild);
-        parts.set(container, part = new NodePart(Object.assign({ templateFactory }, options)));
-        part.appendInto(container);
-    }
-    part.setValue(result);
-    part.commit();
-};
-
-/**
- * @license
- * Copyright (c) 2017 The Polymer Project Authors. All rights reserved.
- * This code may only be used under the BSD style license found at
- * http://polymer.github.io/LICENSE.txt
- * The complete set of authors may be found at
- * http://polymer.github.io/AUTHORS.txt
- * The complete set of contributors may be found at
- * http://polymer.github.io/CONTRIBUTORS.txt
- * Code distributed by Google as part of the polymer project is also
- * subject to an additional IP rights grant found at
- * http://polymer.github.io/PATENTS.txt
- */
-// IMPORTANT: do not change the property name or the assignment expression.
-// This line will be used in regexes to search for lit-html usage.
-// TODO(justinfagnani): inject version number at build time
-(window['litHtmlVersions'] || (window['litHtmlVersions'] = [])).push('1.1.2');
-/**
- * Interprets a template literal as an HTML template that can efficiently
- * render to and update a container.
- */
-const html = (strings, ...values) => new TemplateResult(strings, values, 'html', defaultTemplateProcessor);
-
-/**
- * @license
- * Copyright (c) 2017 The Polymer Project Authors. All rights reserved.
- * This code may only be used under the BSD style license found at
- * http://polymer.github.io/LICENSE.txt
- * The complete set of authors may be found at
- * http://polymer.github.io/AUTHORS.txt
- * The complete set of contributors may be found at
- * http://polymer.github.io/CONTRIBUTORS.txt
- * Code distributed by Google as part of the polymer project is also
- * subject to an additional IP rights grant found at
- * http://polymer.github.io/PATENTS.txt
- */
-const walkerNodeFilter = 133 /* NodeFilter.SHOW_{ELEMENT|COMMENT|TEXT} */;
-/**
- * Removes the list of nodes from a Template safely. In addition to removing
- * nodes from the Template, the Template part indices are updated to match
- * the mutated Template DOM.
- *
- * As the template is walked the removal state is tracked and
- * part indices are adjusted as needed.
- *
- * div
- *   div#1 (remove) <-- start removing (removing node is div#1)
- *     div
- *       div#2 (remove)  <-- continue removing (removing node is still div#1)
- *         div
- * div <-- stop removing since previous sibling is the removing node (div#1,
- * removed 4 nodes)
- */
-function removeNodesFromTemplate(template, nodesToRemove) {
-    const { element: { content }, parts } = template;
-    const walker = document.createTreeWalker(content, walkerNodeFilter, null, false);
-    let partIndex = nextActiveIndexInTemplateParts(parts);
-    let part = parts[partIndex];
-    let nodeIndex = -1;
-    let removeCount = 0;
-    const nodesToRemoveInTemplate = [];
-    let currentRemovingNode = null;
-    while (walker.nextNode()) {
-        nodeIndex++;
-        const node = walker.currentNode;
-        // End removal if stepped past the removing node
-        if (node.previousSibling === currentRemovingNode) {
-            currentRemovingNode = null;
-        }
-        // A node to remove was found in the template
-        if (nodesToRemove.has(node)) {
-            nodesToRemoveInTemplate.push(node);
-            // Track node we're removing
-            if (currentRemovingNode === null) {
-                currentRemovingNode = node;
-            }
-        }
-        // When removing, increment count by which to adjust subsequent part indices
-        if (currentRemovingNode !== null) {
-            removeCount++;
-        }
-        while (part !== undefined && part.index === nodeIndex) {
-            // If part is in a removed node deactivate it by setting index to -1 or
-            // adjust the index as needed.
-            part.index = currentRemovingNode !== null ? -1 : part.index - removeCount;
-            // go to the next active part.
-            partIndex = nextActiveIndexInTemplateParts(parts, partIndex);
-            part = parts[partIndex];
-        }
-    }
-    nodesToRemoveInTemplate.forEach((n) => n.parentNode.removeChild(n));
-}
-const countNodes = (node) => {
-    let count = (node.nodeType === 11 /* Node.DOCUMENT_FRAGMENT_NODE */) ? 0 : 1;
-    const walker = document.createTreeWalker(node, walkerNodeFilter, null, false);
-    while (walker.nextNode()) {
-        count++;
-    }
-    return count;
-};
-const nextActiveIndexInTemplateParts = (parts, startIndex = -1) => {
-    for (let i = startIndex + 1; i < parts.length; i++) {
-        const part = parts[i];
-        if (isTemplatePartActive(part)) {
-            return i;
-        }
-    }
-    return -1;
-};
-/**
- * Inserts the given node into the Template, optionally before the given
- * refNode. In addition to inserting the node into the Template, the Template
- * part indices are updated to match the mutated Template DOM.
- */
-function insertNodeIntoTemplate(template, node, refNode = null) {
-    const { element: { content }, parts } = template;
-    // If there's no refNode, then put node at end of template.
-    // No part indices need to be shifted in this case.
-    if (refNode === null || refNode === undefined) {
-        content.appendChild(node);
-        return;
-    }
-    const walker = document.createTreeWalker(content, walkerNodeFilter, null, false);
-    let partIndex = nextActiveIndexInTemplateParts(parts);
-    let insertCount = 0;
-    let walkerIndex = -1;
-    while (walker.nextNode()) {
-        walkerIndex++;
-        const walkerNode = walker.currentNode;
-        if (walkerNode === refNode) {
-            insertCount = countNodes(node);
-            refNode.parentNode.insertBefore(node, refNode);
-        }
-        while (partIndex !== -1 && parts[partIndex].index === walkerIndex) {
-            // If we've inserted the node, simply adjust all subsequent parts
-            if (insertCount > 0) {
-                while (partIndex !== -1) {
-                    parts[partIndex].index += insertCount;
-                    partIndex = nextActiveIndexInTemplateParts(parts, partIndex);
-                }
-                return;
-            }
-            partIndex = nextActiveIndexInTemplateParts(parts, partIndex);
-        }
-    }
-}
-
-/**
- * @license
- * Copyright (c) 2017 The Polymer Project Authors. All rights reserved.
- * This code may only be used under the BSD style license found at
- * http://polymer.github.io/LICENSE.txt
- * The complete set of authors may be found at
- * http://polymer.github.io/AUTHORS.txt
- * The complete set of contributors may be found at
- * http://polymer.github.io/CONTRIBUTORS.txt
- * Code distributed by Google as part of the polymer project is also
- * subject to an additional IP rights grant found at
- * http://polymer.github.io/PATENTS.txt
- */
-// Get a key to lookup in `templateCaches`.
-const getTemplateCacheKey = (type, scopeName) => `${type}--${scopeName}`;
-let compatibleShadyCSSVersion = true;
-if (typeof window.ShadyCSS === 'undefined') {
-    compatibleShadyCSSVersion = false;
-}
-else if (typeof window.ShadyCSS.prepareTemplateDom === 'undefined') {
-    console.warn(`Incompatible ShadyCSS version detected. ` +
-        `Please update to at least @webcomponents/webcomponentsjs@2.0.2 and ` +
-        `@webcomponents/shadycss@1.3.1.`);
-    compatibleShadyCSSVersion = false;
-}
-/**
- * Template factory which scopes template DOM using ShadyCSS.
- * @param scopeName {string}
- */
-const shadyTemplateFactory = (scopeName) => (result) => {
-    const cacheKey = getTemplateCacheKey(result.type, scopeName);
-    let templateCache = templateCaches.get(cacheKey);
-    if (templateCache === undefined) {
-        templateCache = {
-            stringsArray: new WeakMap(),
-            keyString: new Map()
-        };
-        templateCaches.set(cacheKey, templateCache);
-    }
-    let template = templateCache.stringsArray.get(result.strings);
-    if (template !== undefined) {
-        return template;
-    }
-    const key = result.strings.join(marker);
-    template = templateCache.keyString.get(key);
-    if (template === undefined) {
-        const element = result.getTemplateElement();
-        if (compatibleShadyCSSVersion) {
-            window.ShadyCSS.prepareTemplateDom(element, scopeName);
-        }
-        template = new Template(result, element);
-        templateCache.keyString.set(key, template);
-    }
-    templateCache.stringsArray.set(result.strings, template);
-    return template;
-};
-const TEMPLATE_TYPES = ['html', 'svg'];
-/**
- * Removes all style elements from Templates for the given scopeName.
- */
-const removeStylesFromLitTemplates = (scopeName) => {
-    TEMPLATE_TYPES.forEach((type) => {
-        const templates = templateCaches.get(getTemplateCacheKey(type, scopeName));
-        if (templates !== undefined) {
-            templates.keyString.forEach((template) => {
-                const { element: { content } } = template;
-                // IE 11 doesn't support the iterable param Set constructor
-                const styles = new Set();
-                Array.from(content.querySelectorAll('style')).forEach((s) => {
-                    styles.add(s);
-                });
-                removeNodesFromTemplate(template, styles);
-            });
-        }
-    });
-};
-const shadyRenderSet = new Set();
-/**
- * For the given scope name, ensures that ShadyCSS style scoping is performed.
- * This is done just once per scope name so the fragment and template cannot
- * be modified.
- * (1) extracts styles from the rendered fragment and hands them to ShadyCSS
- * to be scoped and appended to the document
- * (2) removes style elements from all lit-html Templates for this scope name.
- *
- * Note, <style> elements can only be placed into templates for the
- * initial rendering of the scope. If <style> elements are included in templates
- * dynamically rendered to the scope (after the first scope render), they will
- * not be scoped and the <style> will be left in the template and rendered
- * output.
- */
-const prepareTemplateStyles = (scopeName, renderedDOM, template) => {
-    shadyRenderSet.add(scopeName);
-    // If `renderedDOM` is stamped from a Template, then we need to edit that
-    // Template's underlying template element. Otherwise, we create one here
-    // to give to ShadyCSS, which still requires one while scoping.
-    const templateElement = !!template ? template.element : document.createElement('template');
-    // Move styles out of rendered DOM and store.
-    const styles = renderedDOM.querySelectorAll('style');
-    const { length } = styles;
-    // If there are no styles, skip unnecessary work
-    if (length === 0) {
-        // Ensure prepareTemplateStyles is called to support adding
-        // styles via `prepareAdoptedCssText` since that requires that
-        // `prepareTemplateStyles` is called.
-        //
-        // ShadyCSS will only update styles containing @apply in the template
-        // given to `prepareTemplateStyles`. If no lit Template was given,
-        // ShadyCSS will not be able to update uses of @apply in any relevant
-        // template. However, this is not a problem because we only create the
-        // template for the purpose of supporting `prepareAdoptedCssText`,
-        // which doesn't support @apply at all.
-        window.ShadyCSS.prepareTemplateStyles(templateElement, scopeName);
-        return;
-    }
-    const condensedStyle = document.createElement('style');
-    // Collect styles into a single style. This helps us make sure ShadyCSS
-    // manipulations will not prevent us from being able to fix up template
-    // part indices.
-    // NOTE: collecting styles is inefficient for browsers but ShadyCSS
-    // currently does this anyway. When it does not, this should be changed.
-    for (let i = 0; i < length; i++) {
-        const style = styles[i];
-        style.parentNode.removeChild(style);
-        condensedStyle.textContent += style.textContent;
-    }
-    // Remove styles from nested templates in this scope.
-    removeStylesFromLitTemplates(scopeName);
-    // And then put the condensed style into the "root" template passed in as
-    // `template`.
-    const content = templateElement.content;
-    if (!!template) {
-        insertNodeIntoTemplate(template, condensedStyle, content.firstChild);
-    }
-    else {
-        content.insertBefore(condensedStyle, content.firstChild);
-    }
-    // Note, it's important that ShadyCSS gets the template that `lit-html`
-    // will actually render so that it can update the style inside when
-    // needed (e.g. @apply native Shadow DOM case).
-    window.ShadyCSS.prepareTemplateStyles(templateElement, scopeName);
-    const style = content.querySelector('style');
-    if (window.ShadyCSS.nativeShadow && style !== null) {
-        // When in native Shadow DOM, ensure the style created by ShadyCSS is
-        // included in initially rendered output (`renderedDOM`).
-        renderedDOM.insertBefore(style.cloneNode(true), renderedDOM.firstChild);
-    }
-    else if (!!template) {
-        // When no style is left in the template, parts will be broken as a
-        // result. To fix this, we put back the style node ShadyCSS removed
-        // and then tell lit to remove that node from the template.
-        // There can be no style in the template in 2 cases (1) when Shady DOM
-        // is in use, ShadyCSS removes all styles, (2) when native Shadow DOM
-        // is in use ShadyCSS removes the style if it contains no content.
-        // NOTE, ShadyCSS creates its own style so we can safely add/remove
-        // `condensedStyle` here.
-        content.insertBefore(condensedStyle, content.firstChild);
-        const removes = new Set();
-        removes.add(condensedStyle);
-        removeNodesFromTemplate(template, removes);
-    }
-};
-/**
- * Extension to the standard `render` method which supports rendering
- * to ShadowRoots when the ShadyDOM (https://github.com/webcomponents/shadydom)
- * and ShadyCSS (https://github.com/webcomponents/shadycss) polyfills are used
- * or when the webcomponentsjs
- * (https://github.com/webcomponents/webcomponentsjs) polyfill is used.
- *
- * Adds a `scopeName` option which is used to scope element DOM and stylesheets
- * when native ShadowDOM is unavailable. The `scopeName` will be added to
- * the class attribute of all rendered DOM. In addition, any style elements will
- * be automatically re-written with this `scopeName` selector and moved out
- * of the rendered DOM and into the document `<head>`.
- *
- * It is common to use this render method in conjunction with a custom element
- * which renders a shadowRoot. When this is done, typically the element's
- * `localName` should be used as the `scopeName`.
- *
- * In addition to DOM scoping, ShadyCSS also supports a basic shim for css
- * custom properties (needed only on older browsers like IE11) and a shim for
- * a deprecated feature called `@apply` that supports applying a set of css
- * custom properties to a given location.
- *
- * Usage considerations:
- *
- * * Part values in `<style>` elements are only applied the first time a given
- * `scopeName` renders. Subsequent changes to parts in style elements will have
- * no effect. Because of this, parts in style elements should only be used for
- * values that will never change, for example parts that set scope-wide theme
- * values or parts which render shared style elements.
- *
- * * Note, due to a limitation of the ShadyDOM polyfill, rendering in a
- * custom element's `constructor` is not supported. Instead rendering should
- * either done asynchronously, for example at microtask timing (for example
- * `Promise.resolve()`), or be deferred until the first time the element's
- * `connectedCallback` runs.
- *
- * Usage considerations when using shimmed custom properties or `@apply`:
- *
- * * Whenever any dynamic changes are made which affect
- * css custom properties, `ShadyCSS.styleElement(element)` must be called
- * to update the element. There are two cases when this is needed:
- * (1) the element is connected to a new parent, (2) a class is added to the
- * element that causes it to match different custom properties.
- * To address the first case when rendering a custom element, `styleElement`
- * should be called in the element's `connectedCallback`.
- *
- * * Shimmed custom properties may only be defined either for an entire
- * shadowRoot (for example, in a `:host` rule) or via a rule that directly
- * matches an element with a shadowRoot. In other words, instead of flowing from
- * parent to child as do native css custom properties, shimmed custom properties
- * flow only from shadowRoots to nested shadowRoots.
- *
- * * When using `@apply` mixing css shorthand property names with
- * non-shorthand names (for example `border` and `border-width`) is not
- * supported.
- */
-const render$1 = (result, container, options) => {
-    if (!options || typeof options !== 'object' || !options.scopeName) {
-        throw new Error('The `scopeName` option is required.');
-    }
-    const scopeName = options.scopeName;
-    const hasRendered = parts.has(container);
-    const needsScoping = compatibleShadyCSSVersion &&
-        container.nodeType === 11 /* Node.DOCUMENT_FRAGMENT_NODE */ &&
-        !!container.host;
-    // Handle first render to a scope specially...
-    const firstScopeRender = needsScoping && !shadyRenderSet.has(scopeName);
-    // On first scope render, render into a fragment; this cannot be a single
-    // fragment that is reused since nested renders can occur synchronously.
-    const renderContainer = firstScopeRender ? document.createDocumentFragment() : container;
-    render(result, renderContainer, Object.assign({ templateFactory: shadyTemplateFactory(scopeName) }, options));
-    // When performing first scope render,
-    // (1) We've rendered into a fragment so that there's a chance to
-    // `prepareTemplateStyles` before sub-elements hit the DOM
-    // (which might cause them to render based on a common pattern of
-    // rendering in a custom element's `connectedCallback`);
-    // (2) Scope the template with ShadyCSS one time only for this scope.
-    // (3) Render the fragment into the container and make sure the
-    // container knows its `part` is the one we just rendered. This ensures
-    // DOM will be re-used on subsequent renders.
-    if (firstScopeRender) {
-        const part = parts.get(renderContainer);
-        parts.delete(renderContainer);
-        // ShadyCSS might have style sheets (e.g. from `prepareAdoptedCssText`)
-        // that should apply to `renderContainer` even if the rendered value is
-        // not a TemplateInstance. However, it will only insert scoped styles
-        // into the document if `prepareTemplateStyles` has already been called
-        // for the given scope name.
-        const template = part.value instanceof TemplateInstance ?
-            part.value.template :
-            undefined;
-        prepareTemplateStyles(scopeName, renderContainer, template);
-        removeNodes(container, container.firstChild);
-        container.appendChild(renderContainer);
-        parts.set(container, part);
-    }
-    // After elements have hit the DOM, update styling if this is the
-    // initial render to this container.
-    // This is needed whenever dynamic changes are made so it would be
-    // safest to do every render; however, this would regress performance
-    // so we leave it up to the user to call `ShadyCSS.styleElement`
-    // for dynamic changes.
-    if (!hasRendered && needsScoping) {
-        window.ShadyCSS.styleElement(container.host);
-    }
-};
-
-/**
- * @license
- * Copyright (c) 2017 The Polymer Project Authors. All rights reserved.
- * This code may only be used under the BSD style license found at
- * http://polymer.github.io/LICENSE.txt
- * The complete set of authors may be found at
- * http://polymer.github.io/AUTHORS.txt
- * The complete set of contributors may be found at
- * http://polymer.github.io/CONTRIBUTORS.txt
- * Code distributed by Google as part of the polymer project is also
- * subject to an additional IP rights grant found at
- * http://polymer.github.io/PATENTS.txt
- */
-var _a;
-/**
- * When using Closure Compiler, JSCompiler_renameProperty(property, object) is
- * replaced at compile time by the munged name for object[property]. We cannot
- * alias this function, so we have to use a small shim that has the same
- * behavior when not compiling.
- */
-window.JSCompiler_renameProperty =
-    (prop, _obj) => prop;
-const defaultConverter = {
-    toAttribute(value, type) {
-        switch (type) {
-            case Boolean:
-                return value ? '' : null;
-            case Object:
-            case Array:
-                // if the value is `null` or `undefined` pass this through
-                // to allow removing/no change behavior.
-                return value == null ? value : JSON.stringify(value);
-        }
-        return value;
-    },
-    fromAttribute(value, type) {
-        switch (type) {
-            case Boolean:
-                return value !== null;
-            case Number:
-                return value === null ? null : Number(value);
-            case Object:
-            case Array:
-                return JSON.parse(value);
-        }
-        return value;
-    }
-};
-/**
- * Change function that returns true if `value` is different from `oldValue`.
- * This method is used as the default for a property's `hasChanged` function.
- */
-const notEqual = (value, old) => {
-    // This ensures (old==NaN, value==NaN) always returns false
-    return old !== value && (old === old || value === value);
-};
-const defaultPropertyDeclaration = {
-    attribute: true,
-    type: String,
-    converter: defaultConverter,
-    reflect: false,
-    hasChanged: notEqual
-};
-const microtaskPromise = Promise.resolve(true);
-const STATE_HAS_UPDATED = 1;
-const STATE_UPDATE_REQUESTED = 1 << 2;
-const STATE_IS_REFLECTING_TO_ATTRIBUTE = 1 << 3;
-const STATE_IS_REFLECTING_TO_PROPERTY = 1 << 4;
-const STATE_HAS_CONNECTED = 1 << 5;
-/**
- * The Closure JS Compiler doesn't currently have good support for static
- * property semantics where "this" is dynamic (e.g.
- * https://github.com/google/closure-compiler/issues/3177 and others) so we use
- * this hack to bypass any rewriting by the compiler.
- */
-const finalized = 'finalized';
-/**
- * Base element class which manages element properties and attributes. When
- * properties change, the `update` method is asynchronously called. This method
- * should be supplied by subclassers to render updates as desired.
- */
-class UpdatingElement extends HTMLElement {
-    constructor() {
-        super();
-        this._updateState = 0;
-        this._instanceProperties = undefined;
-        this._updatePromise = microtaskPromise;
-        this._hasConnectedResolver = undefined;
-        /**
-         * Map with keys for any properties that have changed since the last
-         * update cycle with previous values.
-         */
-        this._changedProperties = new Map();
-        /**
-         * Map with keys of properties that should be reflected when updated.
-         */
-        this._reflectingProperties = undefined;
-        this.initialize();
-    }
-    /**
-     * Returns a list of attributes corresponding to the registered properties.
-     * @nocollapse
-     */
-    static get observedAttributes() {
-        // note: piggy backing on this to ensure we're finalized.
-        this.finalize();
-        const attributes = [];
-        // Use forEach so this works even if for/of loops are compiled to for loops
-        // expecting arrays
-        this._classProperties.forEach((v, p) => {
-            const attr = this._attributeNameForProperty(p, v);
-            if (attr !== undefined) {
-                this._attributeToPropertyMap.set(attr, p);
-                attributes.push(attr);
-            }
-        });
-        return attributes;
-    }
-    /**
-     * Ensures the private `_classProperties` property metadata is created.
-     * In addition to `finalize` this is also called in `createProperty` to
-     * ensure the `@property` decorator can add property metadata.
-     */
-    /** @nocollapse */
-    static _ensureClassProperties() {
-        // ensure private storage for property declarations.
-        if (!this.hasOwnProperty(JSCompiler_renameProperty('_classProperties', this))) {
-            this._classProperties = new Map();
-            // NOTE: Workaround IE11 not supporting Map constructor argument.
-            const superProperties = Object.getPrototypeOf(this)._classProperties;
-            if (superProperties !== undefined) {
-                superProperties.forEach((v, k) => this._classProperties.set(k, v));
-            }
-        }
-    }
-    /**
-     * Creates a property accessor on the element prototype if one does not exist.
-     * The property setter calls the property's `hasChanged` property option
-     * or uses a strict identity check to determine whether or not to request
-     * an update.
-     * @nocollapse
-     */
-    static createProperty(name, options = defaultPropertyDeclaration) {
-        // Note, since this can be called by the `@property` decorator which
-        // is called before `finalize`, we ensure storage exists for property
-        // metadata.
-        this._ensureClassProperties();
-        this._classProperties.set(name, options);
-        // Do not generate an accessor if the prototype already has one, since
-        // it would be lost otherwise and that would never be the user's intention;
-        // Instead, we expect users to call `requestUpdate` themselves from
-        // user-defined accessors. Note that if the super has an accessor we will
-        // still overwrite it
-        if (options.noAccessor || this.prototype.hasOwnProperty(name)) {
-            return;
-        }
-        const key = typeof name === 'symbol' ? Symbol() : `__${name}`;
-        Object.defineProperty(this.prototype, name, {
-            // tslint:disable-next-line:no-any no symbol in index
-            get() {
-                return this[key];
-            },
-            set(value) {
-                const oldValue = this[name];
-                this[key] = value;
-                this._requestUpdate(name, oldValue);
-            },
-            configurable: true,
-            enumerable: true
-        });
-    }
-    /**
-     * Creates property accessors for registered properties and ensures
-     * any superclasses are also finalized.
-     * @nocollapse
-     */
-    static finalize() {
-        // finalize any superclasses
-        const superCtor = Object.getPrototypeOf(this);
-        if (!superCtor.hasOwnProperty(finalized)) {
-            superCtor.finalize();
-        }
-        this[finalized] = true;
-        this._ensureClassProperties();
-        // initialize Map populated in observedAttributes
-        this._attributeToPropertyMap = new Map();
-        // make any properties
-        // Note, only process "own" properties since this element will inherit
-        // any properties defined on the superClass, and finalization ensures
-        // the entire prototype chain is finalized.
-        if (this.hasOwnProperty(JSCompiler_renameProperty('properties', this))) {
-            const props = this.properties;
-            // support symbols in properties (IE11 does not support this)
-            const propKeys = [
-                ...Object.getOwnPropertyNames(props),
-                ...(typeof Object.getOwnPropertySymbols === 'function') ?
-                    Object.getOwnPropertySymbols(props) :
-                    []
-            ];
-            // This for/of is ok because propKeys is an array
-            for (const p of propKeys) {
-                // note, use of `any` is due to TypeSript lack of support for symbol in
-                // index types
-                // tslint:disable-next-line:no-any no symbol in index
-                this.createProperty(p, props[p]);
-            }
-        }
-    }
-    /**
-     * Returns the property name for the given attribute `name`.
-     * @nocollapse
-     */
-    static _attributeNameForProperty(name, options) {
-        const attribute = options.attribute;
-        return attribute === false ?
-            undefined :
-            (typeof attribute === 'string' ?
-                attribute :
-                (typeof name === 'string' ? name.toLowerCase() : undefined));
-    }
-    /**
-     * Returns true if a property should request an update.
-     * Called when a property value is set and uses the `hasChanged`
-     * option for the property if present or a strict identity check.
-     * @nocollapse
-     */
-    static _valueHasChanged(value, old, hasChanged = notEqual) {
-        return hasChanged(value, old);
-    }
-    /**
-     * Returns the property value for the given attribute value.
-     * Called via the `attributeChangedCallback` and uses the property's
-     * `converter` or `converter.fromAttribute` property option.
-     * @nocollapse
-     */
-    static _propertyValueFromAttribute(value, options) {
-        const type = options.type;
-        const converter = options.converter || defaultConverter;
-        const fromAttribute = (typeof converter === 'function' ? converter : converter.fromAttribute);
-        return fromAttribute ? fromAttribute(value, type) : value;
-    }
-    /**
-     * Returns the attribute value for the given property value. If this
-     * returns undefined, the property will *not* be reflected to an attribute.
-     * If this returns null, the attribute will be removed, otherwise the
-     * attribute will be set to the value.
-     * This uses the property's `reflect` and `type.toAttribute` property options.
-     * @nocollapse
-     */
-    static _propertyValueToAttribute(value, options) {
-        if (options.reflect === undefined) {
-            return;
-        }
-        const type = options.type;
-        const converter = options.converter;
-        const toAttribute = converter && converter.toAttribute ||
-            defaultConverter.toAttribute;
-        return toAttribute(value, type);
-    }
-    /**
-     * Performs element initialization. By default captures any pre-set values for
-     * registered properties.
-     */
-    initialize() {
-        this._saveInstanceProperties();
-        // ensures first update will be caught by an early access of
-        // `updateComplete`
-        this._requestUpdate();
-    }
-    /**
-     * Fixes any properties set on the instance before upgrade time.
-     * Otherwise these would shadow the accessor and break these properties.
-     * The properties are stored in a Map which is played back after the
-     * constructor runs. Note, on very old versions of Safari (<=9) or Chrome
-     * (<=41), properties created for native platform properties like (`id` or
-     * `name`) may not have default values set in the element constructor. On
-     * these browsers native properties appear on instances and therefore their
-     * default value will overwrite any element default (e.g. if the element sets
-     * this.id = 'id' in the constructor, the 'id' will become '' since this is
-     * the native platform default).
-     */
-    _saveInstanceProperties() {
-        // Use forEach so this works even if for/of loops are compiled to for loops
-        // expecting arrays
-        this.constructor
-            ._classProperties.forEach((_v, p) => {
-            if (this.hasOwnProperty(p)) {
-                const value = this[p];
-                delete this[p];
-                if (!this._instanceProperties) {
-                    this._instanceProperties = new Map();
-                }
-                this._instanceProperties.set(p, value);
-            }
-        });
-    }
-    /**
-     * Applies previously saved instance properties.
-     */
-    _applyInstanceProperties() {
-        // Use forEach so this works even if for/of loops are compiled to for loops
-        // expecting arrays
-        // tslint:disable-next-line:no-any
-        this._instanceProperties.forEach((v, p) => this[p] = v);
-        this._instanceProperties = undefined;
-    }
-    connectedCallback() {
-        this._updateState = this._updateState | STATE_HAS_CONNECTED;
-        // Ensure first connection completes an update. Updates cannot complete
-        // before connection and if one is pending connection the
-        // `_hasConnectionResolver` will exist. If so, resolve it to complete the
-        // update, otherwise requestUpdate.
-        if (this._hasConnectedResolver) {
-            this._hasConnectedResolver();
-            this._hasConnectedResolver = undefined;
-        }
-    }
-    /**
-     * Allows for `super.disconnectedCallback()` in extensions while
-     * reserving the possibility of making non-breaking feature additions
-     * when disconnecting at some point in the future.
-     */
-    disconnectedCallback() {
-    }
-    /**
-     * Synchronizes property values when attributes change.
-     */
-    attributeChangedCallback(name, old, value) {
-        if (old !== value) {
-            this._attributeToProperty(name, value);
-        }
-    }
-    _propertyToAttribute(name, value, options = defaultPropertyDeclaration) {
-        const ctor = this.constructor;
-        const attr = ctor._attributeNameForProperty(name, options);
-        if (attr !== undefined) {
-            const attrValue = ctor._propertyValueToAttribute(value, options);
-            // an undefined value does not change the attribute.
-            if (attrValue === undefined) {
-                return;
-            }
-            // Track if the property is being reflected to avoid
-            // setting the property again via `attributeChangedCallback`. Note:
-            // 1. this takes advantage of the fact that the callback is synchronous.
-            // 2. will behave incorrectly if multiple attributes are in the reaction
-            // stack at time of calling. However, since we process attributes
-            // in `update` this should not be possible (or an extreme corner case
-            // that we'd like to discover).
-            // mark state reflecting
-            this._updateState = this._updateState | STATE_IS_REFLECTING_TO_ATTRIBUTE;
-            if (attrValue == null) {
-                this.removeAttribute(attr);
-            }
-            else {
-                this.setAttribute(attr, attrValue);
-            }
-            // mark state not reflecting
-            this._updateState = this._updateState & ~STATE_IS_REFLECTING_TO_ATTRIBUTE;
-        }
-    }
-    _attributeToProperty(name, value) {
-        // Use tracking info to avoid deserializing attribute value if it was
-        // just set from a property setter.
-        if (this._updateState & STATE_IS_REFLECTING_TO_ATTRIBUTE) {
-            return;
-        }
-        const ctor = this.constructor;
-        const propName = ctor._attributeToPropertyMap.get(name);
-        if (propName !== undefined) {
-            const options = ctor._classProperties.get(propName) || defaultPropertyDeclaration;
-            // mark state reflecting
-            this._updateState = this._updateState | STATE_IS_REFLECTING_TO_PROPERTY;
-            this[propName] =
-                // tslint:disable-next-line:no-any
-                ctor._propertyValueFromAttribute(value, options);
-            // mark state not reflecting
-            this._updateState = this._updateState & ~STATE_IS_REFLECTING_TO_PROPERTY;
-        }
-    }
-    /**
-     * This private version of `requestUpdate` does not access or return the
-     * `updateComplete` promise. This promise can be overridden and is therefore
-     * not free to access.
-     */
-    _requestUpdate(name, oldValue) {
-        let shouldRequestUpdate = true;
-        // If we have a property key, perform property update steps.
-        if (name !== undefined) {
-            const ctor = this.constructor;
-            const options = ctor._classProperties.get(name) || defaultPropertyDeclaration;
-            if (ctor._valueHasChanged(this[name], oldValue, options.hasChanged)) {
-                if (!this._changedProperties.has(name)) {
-                    this._changedProperties.set(name, oldValue);
-                }
-                // Add to reflecting properties set.
-                // Note, it's important that every change has a chance to add the
-                // property to `_reflectingProperties`. This ensures setting
-                // attribute + property reflects correctly.
-                if (options.reflect === true &&
-                    !(this._updateState & STATE_IS_REFLECTING_TO_PROPERTY)) {
-                    if (this._reflectingProperties === undefined) {
-                        this._reflectingProperties = new Map();
-                    }
-                    this._reflectingProperties.set(name, options);
-                }
-            }
-            else {
-                // Abort the request if the property should not be considered changed.
-                shouldRequestUpdate = false;
-            }
-        }
-        if (!this._hasRequestedUpdate && shouldRequestUpdate) {
-            this._enqueueUpdate();
-        }
-    }
-    /**
-     * Requests an update which is processed asynchronously. This should
-     * be called when an element should update based on some state not triggered
-     * by setting a property. In this case, pass no arguments. It should also be
-     * called when manually implementing a property setter. In this case, pass the
-     * property `name` and `oldValue` to ensure that any configured property
-     * options are honored. Returns the `updateComplete` Promise which is resolved
-     * when the update completes.
-     *
-     * @param name {PropertyKey} (optional) name of requesting property
-     * @param oldValue {any} (optional) old value of requesting property
-     * @returns {Promise} A Promise that is resolved when the update completes.
-     */
-    requestUpdate(name, oldValue) {
-        this._requestUpdate(name, oldValue);
-        return this.updateComplete;
-    }
-    /**
-     * Sets up the element to asynchronously update.
-     */
-    async _enqueueUpdate() {
-        // Mark state updating...
-        this._updateState = this._updateState | STATE_UPDATE_REQUESTED;
-        let resolve;
-        let reject;
-        const previousUpdatePromise = this._updatePromise;
-        this._updatePromise = new Promise((res, rej) => {
-            resolve = res;
-            reject = rej;
-        });
-        try {
-            // Ensure any previous update has resolved before updating.
-            // This `await` also ensures that property changes are batched.
-            await previousUpdatePromise;
-        }
-        catch (e) {
-            // Ignore any previous errors. We only care that the previous cycle is
-            // done. Any error should have been handled in the previous update.
-        }
-        // Make sure the element has connected before updating.
-        if (!this._hasConnected) {
-            await new Promise((res) => this._hasConnectedResolver = res);
-        }
-        try {
-            const result = this.performUpdate();
-            // If `performUpdate` returns a Promise, we await it. This is done to
-            // enable coordinating updates with a scheduler. Note, the result is
-            // checked to avoid delaying an additional microtask unless we need to.
-            if (result != null) {
-                await result;
-            }
-        }
-        catch (e) {
-            reject(e);
-        }
-        resolve(!this._hasRequestedUpdate);
-    }
-    get _hasConnected() {
-        return (this._updateState & STATE_HAS_CONNECTED);
-    }
-    get _hasRequestedUpdate() {
-        return (this._updateState & STATE_UPDATE_REQUESTED);
-    }
-    get hasUpdated() {
-        return (this._updateState & STATE_HAS_UPDATED);
-    }
-    /**
-     * Performs an element update. Note, if an exception is thrown during the
-     * update, `firstUpdated` and `updated` will not be called.
-     *
-     * You can override this method to change the timing of updates. If this
-     * method is overridden, `super.performUpdate()` must be called.
-     *
-     * For instance, to schedule updates to occur just before the next frame:
-     *
-     * ```
-     * protected async performUpdate(): Promise<unknown> {
-     *   await new Promise((resolve) => requestAnimationFrame(() => resolve()));
-     *   super.performUpdate();
-     * }
-     * ```
-     */
-    performUpdate() {
-        // Mixin instance properties once, if they exist.
-        if (this._instanceProperties) {
-            this._applyInstanceProperties();
-        }
-        let shouldUpdate = false;
-        const changedProperties = this._changedProperties;
-        try {
-            shouldUpdate = this.shouldUpdate(changedProperties);
-            if (shouldUpdate) {
-                this.update(changedProperties);
-            }
-        }
-        catch (e) {
-            // Prevent `firstUpdated` and `updated` from running when there's an
-            // update exception.
-            shouldUpdate = false;
-            throw e;
-        }
-        finally {
-            // Ensure element can accept additional updates after an exception.
-            this._markUpdated();
-        }
-        if (shouldUpdate) {
-            if (!(this._updateState & STATE_HAS_UPDATED)) {
-                this._updateState = this._updateState | STATE_HAS_UPDATED;
-                this.firstUpdated(changedProperties);
-            }
-            this.updated(changedProperties);
-        }
-    }
-    _markUpdated() {
-        this._changedProperties = new Map();
-        this._updateState = this._updateState & ~STATE_UPDATE_REQUESTED;
-    }
-    /**
-     * Returns a Promise that resolves when the element has completed updating.
-     * The Promise value is a boolean that is `true` if the element completed the
-     * update without triggering another update. The Promise result is `false` if
-     * a property was set inside `updated()`. If the Promise is rejected, an
-     * exception was thrown during the update.
-     *
-     * To await additional asynchronous work, override the `_getUpdateComplete`
-     * method. For example, it is sometimes useful to await a rendered element
-     * before fulfilling this Promise. To do this, first await
-     * `super._getUpdateComplete()`, then any subsequent state.
-     *
-     * @returns {Promise} The Promise returns a boolean that indicates if the
-     * update resolved without triggering another update.
-     */
-    get updateComplete() {
-        return this._getUpdateComplete();
-    }
-    /**
-     * Override point for the `updateComplete` promise.
-     *
-     * It is not safe to override the `updateComplete` getter directly due to a
-     * limitation in TypeScript which means it is not possible to call a
-     * superclass getter (e.g. `super.updateComplete.then(...)`) when the target
-     * language is ES5 (https://github.com/microsoft/TypeScript/issues/338).
-     * This method should be overridden instead. For example:
-     *
-     *   class MyElement extends LitElement {
-     *     async _getUpdateComplete() {
-     *       await super._getUpdateComplete();
-     *       await this._myChild.updateComplete;
-     *     }
-     *   }
-     */
-    _getUpdateComplete() {
-        return this._updatePromise;
-    }
-    /**
-     * Controls whether or not `update` should be called when the element requests
-     * an update. By default, this method always returns `true`, but this can be
-     * customized to control when to update.
-     *
-     * * @param _changedProperties Map of changed properties with old values
-     */
-    shouldUpdate(_changedProperties) {
-        return true;
-    }
-    /**
-     * Updates the element. This method reflects property values to attributes.
-     * It can be overridden to render and keep updated element DOM.
-     * Setting properties inside this method will *not* trigger
-     * another update.
-     *
-     * * @param _changedProperties Map of changed properties with old values
-     */
-    update(_changedProperties) {
-        if (this._reflectingProperties !== undefined &&
-            this._reflectingProperties.size > 0) {
-            // Use forEach so this works even if for/of loops are compiled to for
-            // loops expecting arrays
-            this._reflectingProperties.forEach((v, k) => this._propertyToAttribute(k, this[k], v));
-            this._reflectingProperties = undefined;
-        }
-    }
-    /**
-     * Invoked whenever the element is updated. Implement to perform
-     * post-updating tasks via DOM APIs, for example, focusing an element.
-     *
-     * Setting properties inside this method will trigger the element to update
-     * again after this update cycle completes.
-     *
-     * * @param _changedProperties Map of changed properties with old values
-     */
-    updated(_changedProperties) {
-    }
-    /**
-     * Invoked when the element is first updated. Implement to perform one time
-     * work on the element after update.
-     *
-     * Setting properties inside this method will trigger the element to update
-     * again after this update cycle completes.
-     *
-     * * @param _changedProperties Map of changed properties with old values
-     */
-    firstUpdated(_changedProperties) {
-    }
-}
-_a = finalized;
-/**
- * Marks class as having finished creating properties.
- */
-UpdatingElement[_a] = true;
-
-/**
- * @license
- * Copyright (c) 2017 The Polymer Project Authors. All rights reserved.
- * This code may only be used under the BSD style license found at
- * http://polymer.github.io/LICENSE.txt
- * The complete set of authors may be found at
- * http://polymer.github.io/AUTHORS.txt
- * The complete set of contributors may be found at
- * http://polymer.github.io/CONTRIBUTORS.txt
- * Code distributed by Google as part of the polymer project is also
- * subject to an additional IP rights grant found at
- * http://polymer.github.io/PATENTS.txt
- */
-const legacyCustomElement = (tagName, clazz) => {
-    window.customElements.define(tagName, clazz);
-    // Cast as any because TS doesn't recognize the return type as being a
-    // subtype of the decorated class when clazz is typed as
-    // `Constructor<HTMLElement>` for some reason.
-    // `Constructor<HTMLElement>` is helpful to make sure the decorator is
-    // applied to elements however.
-    // tslint:disable-next-line:no-any
-    return clazz;
-};
-const standardCustomElement = (tagName, descriptor) => {
-    const { kind, elements } = descriptor;
-    return {
-        kind,
-        elements,
-        // This callback is called once the class is otherwise fully defined
-        finisher(clazz) {
-            window.customElements.define(tagName, clazz);
-        }
-    };
-};
-/**
- * Class decorator factory that defines the decorated class as a custom element.
- *
- * @param tagName the name of the custom element to define
- */
-const customElement = (tagName) => (classOrDescriptor) => (typeof classOrDescriptor === 'function') ?
-    legacyCustomElement(tagName, classOrDescriptor) :
-    standardCustomElement(tagName, classOrDescriptor);
-const standardProperty = (options, element) => {
-    // When decorating an accessor, pass it through and add property metadata.
-    // Note, the `hasOwnProperty` check in `createProperty` ensures we don't
-    // stomp over the user's accessor.
-    if (element.kind === 'method' && element.descriptor &&
-        !('value' in element.descriptor)) {
-        return Object.assign({}, element, { finisher(clazz) {
-                clazz.createProperty(element.key, options);
-            } });
-    }
-    else {
-        // createProperty() takes care of defining the property, but we still
-        // must return some kind of descriptor, so return a descriptor for an
-        // unused prototype field. The finisher calls createProperty().
-        return {
-            kind: 'field',
-            key: Symbol(),
-            placement: 'own',
-            descriptor: {},
-            // When @babel/plugin-proposal-decorators implements initializers,
-            // do this instead of the initializer below. See:
-            // https://github.com/babel/babel/issues/9260 extras: [
-            //   {
-            //     kind: 'initializer',
-            //     placement: 'own',
-            //     initializer: descriptor.initializer,
-            //   }
-            // ],
-            initializer() {
-                if (typeof element.initializer === 'function') {
-                    this[element.key] = element.initializer.call(this);
-                }
-            },
-            finisher(clazz) {
-                clazz.createProperty(element.key, options);
-            }
-        };
-    }
-};
-const legacyProperty = (options, proto, name) => {
-    proto.constructor
-        .createProperty(name, options);
-};
-/**
- * A property decorator which creates a LitElement property which reflects a
- * corresponding attribute value. A `PropertyDeclaration` may optionally be
- * supplied to configure property features.
- *
- * @ExportDecoratedItems
- */
-function property(options) {
-    // tslint:disable-next-line:no-any decorator
-    return (protoOrDescriptor, name) => (name !== undefined) ?
-        legacyProperty(options, protoOrDescriptor, name) :
-        standardProperty(options, protoOrDescriptor);
-}
-/**
- * A property decorator that converts a class property into a getter that
- * executes a querySelector on the element's renderRoot.
- *
- * @ExportDecoratedItems
- */
-function query(selector) {
-    return (protoOrDescriptor, 
-    // tslint:disable-next-line:no-any decorator
-    name) => {
-        const descriptor = {
-            get() {
-                return this.renderRoot.querySelector(selector);
-            },
-            enumerable: true,
-            configurable: true,
-        };
-        return (name !== undefined) ?
-            legacyQuery(descriptor, protoOrDescriptor, name) :
-            standardQuery(descriptor, protoOrDescriptor);
-    };
-}
-const legacyQuery = (descriptor, proto, name) => {
-    Object.defineProperty(proto, name, descriptor);
-};
-const standardQuery = (descriptor, element) => ({
-    kind: 'method',
-    placement: 'prototype',
-    key: element.key,
-    descriptor,
-});
-
-/**
-@license
-Copyright (c) 2019 The Polymer Project Authors. All rights reserved.
-This code may only be used under the BSD style license found at
-http://polymer.github.io/LICENSE.txt The complete set of authors may be found at
-http://polymer.github.io/AUTHORS.txt The complete set of contributors may be
-found at http://polymer.github.io/CONTRIBUTORS.txt Code distributed by Google as
-part of the polymer project is also subject to an additional IP rights grant
-found at http://polymer.github.io/PATENTS.txt
-*/
-const supportsAdoptingStyleSheets = ('adoptedStyleSheets' in Document.prototype) &&
-    ('replace' in CSSStyleSheet.prototype);
-const constructionToken = Symbol();
-class CSSResult {
-    constructor(cssText, safeToken) {
-        if (safeToken !== constructionToken) {
-            throw new Error('CSSResult is not constructable. Use `unsafeCSS` or `css` instead.');
-        }
-        this.cssText = cssText;
-    }
-    // Note, this is a getter so that it's lazy. In practice, this means
-    // stylesheets are not created until the first element instance is made.
-    get styleSheet() {
-        if (this._styleSheet === undefined) {
-            // Note, if `adoptedStyleSheets` is supported then we assume CSSStyleSheet
-            // is constructable.
-            if (supportsAdoptingStyleSheets) {
-                this._styleSheet = new CSSStyleSheet();
-                this._styleSheet.replaceSync(this.cssText);
-            }
-            else {
-                this._styleSheet = null;
-            }
-        }
-        return this._styleSheet;
-    }
-    toString() {
-        return this.cssText;
-    }
-}
-const textFromCSSResult = (value) => {
-    if (value instanceof CSSResult) {
-        return value.cssText;
-    }
-    else if (typeof value === 'number') {
-        return value;
-    }
-    else {
-        throw new Error(`Value passed to 'css' function must be a 'css' function result: ${value}. Use 'unsafeCSS' to pass non-literal values, but
-            take care to ensure page security.`);
-    }
-};
-/**
- * Template tag which which can be used with LitElement's `style` property to
- * set element styles. For security reasons, only literal string values may be
- * used. To incorporate non-literal values `unsafeCSS` may be used inside a
- * template string part.
- */
-const css = (strings, ...values) => {
-    const cssText = values.reduce((acc, v, idx) => acc + textFromCSSResult(v) + strings[idx + 1], strings[0]);
-    return new CSSResult(cssText, constructionToken);
-};
-
-/**
- * @license
- * Copyright (c) 2017 The Polymer Project Authors. All rights reserved.
- * This code may only be used under the BSD style license found at
- * http://polymer.github.io/LICENSE.txt
- * The complete set of authors may be found at
- * http://polymer.github.io/AUTHORS.txt
- * The complete set of contributors may be found at
- * http://polymer.github.io/CONTRIBUTORS.txt
- * Code distributed by Google as part of the polymer project is also
- * subject to an additional IP rights grant found at
- * http://polymer.github.io/PATENTS.txt
- */
-// IMPORTANT: do not change the property name or the assignment expression.
-// This line will be used in regexes to search for LitElement usage.
-// TODO(justinfagnani): inject version number at build time
-(window['litElementVersions'] || (window['litElementVersions'] = []))
-    .push('2.2.1');
-/**
- * Minimal implementation of Array.prototype.flat
- * @param arr the array to flatten
- * @param result the accumlated result
- */
-function arrayFlat(styles, result = []) {
-    for (let i = 0, length = styles.length; i < length; i++) {
-        const value = styles[i];
-        if (Array.isArray(value)) {
-            arrayFlat(value, result);
-        }
-        else {
-            result.push(value);
-        }
-    }
-    return result;
-}
-/** Deeply flattens styles array. Uses native flat if available. */
-const flattenStyles = (styles) => styles.flat ? styles.flat(Infinity) : arrayFlat(styles);
-class LitElement extends UpdatingElement {
-    /** @nocollapse */
-    static finalize() {
-        // The Closure JS Compiler does not always preserve the correct "this"
-        // when calling static super methods (b/137460243), so explicitly bind.
-        super.finalize.call(this);
-        // Prepare styling that is stamped at first render time. Styling
-        // is built from user provided `styles` or is inherited from the superclass.
-        this._styles =
-            this.hasOwnProperty(JSCompiler_renameProperty('styles', this)) ?
-                this._getUniqueStyles() :
-                this._styles || [];
-    }
-    /** @nocollapse */
-    static _getUniqueStyles() {
-        // Take care not to call `this.styles` multiple times since this generates
-        // new CSSResults each time.
-        // TODO(sorvell): Since we do not cache CSSResults by input, any
-        // shared styles will generate new stylesheet objects, which is wasteful.
-        // This should be addressed when a browser ships constructable
-        // stylesheets.
-        const userStyles = this.styles;
-        const styles = [];
-        if (Array.isArray(userStyles)) {
-            const flatStyles = flattenStyles(userStyles);
-            // As a performance optimization to avoid duplicated styling that can
-            // occur especially when composing via subclassing, de-duplicate styles
-            // preserving the last item in the list. The last item is kept to
-            // try to preserve cascade order with the assumption that it's most
-            // important that last added styles override previous styles.
-            const styleSet = flatStyles.reduceRight((set, s) => {
-                set.add(s);
-                // on IE set.add does not return the set.
-                return set;
-            }, new Set());
-            // Array.from does not work on Set in IE
-            styleSet.forEach((v) => styles.unshift(v));
-        }
-        else if (userStyles) {
-            styles.push(userStyles);
-        }
-        return styles;
-    }
-    /**
-     * Performs element initialization. By default this calls `createRenderRoot`
-     * to create the element `renderRoot` node and captures any pre-set values for
-     * registered properties.
-     */
-    initialize() {
-        super.initialize();
-        this.renderRoot =
-            this.createRenderRoot();
-        // Note, if renderRoot is not a shadowRoot, styles would/could apply to the
-        // element's getRootNode(). While this could be done, we're choosing not to
-        // support this now since it would require different logic around de-duping.
-        if (window.ShadowRoot && this.renderRoot instanceof window.ShadowRoot) {
-            this.adoptStyles();
-        }
-    }
-    /**
-     * Returns the node into which the element should render and by default
-     * creates and returns an open shadowRoot. Implement to customize where the
-     * element's DOM is rendered. For example, to render into the element's
-     * childNodes, return `this`.
-     * @returns {Element|DocumentFragment} Returns a node into which to render.
-     */
-    createRenderRoot() {
-        return this.attachShadow({ mode: 'open' });
-    }
-    /**
-     * Applies styling to the element shadowRoot using the `static get styles`
-     * property. Styling will apply using `shadowRoot.adoptedStyleSheets` where
-     * available and will fallback otherwise. When Shadow DOM is polyfilled,
-     * ShadyCSS scopes styles and adds them to the document. When Shadow DOM
-     * is available but `adoptedStyleSheets` is not, styles are appended to the
-     * end of the `shadowRoot` to [mimic spec
-     * behavior](https://wicg.github.io/construct-stylesheets/#using-constructed-stylesheets).
-     */
-    adoptStyles() {
-        const styles = this.constructor._styles;
-        if (styles.length === 0) {
-            return;
-        }
-        // There are three separate cases here based on Shadow DOM support.
-        // (1) shadowRoot polyfilled: use ShadyCSS
-        // (2) shadowRoot.adoptedStyleSheets available: use it.
-        // (3) shadowRoot.adoptedStyleSheets polyfilled: append styles after
-        // rendering
-        if (window.ShadyCSS !== undefined && !window.ShadyCSS.nativeShadow) {
-            window.ShadyCSS.ScopingShim.prepareAdoptedCssText(styles.map((s) => s.cssText), this.localName);
-        }
-        else if (supportsAdoptingStyleSheets) {
-            this.renderRoot.adoptedStyleSheets =
-                styles.map((s) => s.styleSheet);
-        }
-        else {
-            // This must be done after rendering so the actual style insertion is done
-            // in `update`.
-            this._needsShimAdoptedStyleSheets = true;
-        }
-    }
-    connectedCallback() {
-        super.connectedCallback();
-        // Note, first update/render handles styleElement so we only call this if
-        // connected after first update.
-        if (this.hasUpdated && window.ShadyCSS !== undefined) {
-            window.ShadyCSS.styleElement(this);
-        }
-    }
-    /**
-     * Updates the element. This method reflects property values to attributes
-     * and calls `render` to render DOM via lit-html. Setting properties inside
-     * this method will *not* trigger another update.
-     * * @param _changedProperties Map of changed properties with old values
-     */
-    update(changedProperties) {
-        super.update(changedProperties);
-        const templateResult = this.render();
-        if (templateResult instanceof TemplateResult) {
-            this.constructor
-                .render(templateResult, this.renderRoot, { scopeName: this.localName, eventContext: this });
-        }
-        // When native Shadow DOM is used but adoptedStyles are not supported,
-        // insert styling after rendering to ensure adoptedStyles have highest
-        // priority.
-        if (this._needsShimAdoptedStyleSheets) {
-            this._needsShimAdoptedStyleSheets = false;
-            this.constructor._styles.forEach((s) => {
-                const style = document.createElement('style');
-                style.textContent = s.cssText;
-                this.renderRoot.appendChild(style);
-            });
-        }
-    }
-    /**
-     * Invoked on each update to perform rendering tasks. This method must return
-     * a lit-html TemplateResult. Setting properties inside this method will *not*
-     * trigger the element to update.
-     */
-    render() {
-    }
-}
-/**
- * Ensure this class is marked as `finalized` as an optimization ensuring
- * it will not needlessly try to `finalize`.
- *
- * Note this property name is a string to prevent breaking Closure JS Compiler
- * optimizations. See updating-element.ts for more information.
- */
-LitElement['finalized'] = true;
-/**
- * Render method used to render the lit-html TemplateResult to the element's
- * DOM.
- * @param {TemplateResult} Template to render.
- * @param {Element|DocumentFragment} Node into which to render.
- * @param {String} Element name.
- * @nocollapse
- */
-LitElement.render = render$1;
+import { d as directive } from '../common/directive-651fd9cf.js';
+import { h as html$3, n as nothing, N as NodePart } from '../common/lit-html-155af1cf.js';
+import { css, LitElement, property, query, customElement } from '../lit-element.js';
+import { until } from '../lit-html/directives/until.js';
+import { unsafeHTML } from '../lit-html/directives/unsafe-html.js';
+import { m as marked_1 } from '../common/marked.esm-b32a6e6d.js';
+import { styleMap } from '../lit-html/directives/style-map.js';
+import { cache as cache$2 } from '../lit-html/directives/cache.js';
 
 var demoStyle = [
   css `
@@ -2662,91 +101,6 @@ h5, h6 {
       `
 ];
 
-var noop = {value: function() {}};
-
-function dispatch() {
-  for (var i = 0, n = arguments.length, _ = {}, t; i < n; ++i) {
-    if (!(t = arguments[i] + "") || (t in _) || /[\s.]/.test(t)) throw new Error("illegal type: " + t);
-    _[t] = [];
-  }
-  return new Dispatch(_);
-}
-
-function Dispatch(_) {
-  this._ = _;
-}
-
-function parseTypenames(typenames, types) {
-  return typenames.trim().split(/^|\s+/).map(function(t) {
-    var name = "", i = t.indexOf(".");
-    if (i >= 0) name = t.slice(i + 1), t = t.slice(0, i);
-    if (t && !types.hasOwnProperty(t)) throw new Error("unknown type: " + t);
-    return {type: t, name: name};
-  });
-}
-
-Dispatch.prototype = dispatch.prototype = {
-  constructor: Dispatch,
-  on: function(typename, callback) {
-    var _ = this._,
-        T = parseTypenames(typename + "", _),
-        t,
-        i = -1,
-        n = T.length;
-
-    // If no callback was specified, return the callback of the given type and name.
-    if (arguments.length < 2) {
-      while (++i < n) if ((t = (typename = T[i]).type) && (t = get(_[t], typename.name))) return t;
-      return;
-    }
-
-    // If a type was specified, set the callback for the given type and name.
-    // Otherwise, if a null callback was specified, remove callbacks of the given name.
-    if (callback != null && typeof callback !== "function") throw new Error("invalid callback: " + callback);
-    while (++i < n) {
-      if (t = (typename = T[i]).type) _[t] = set(_[t], typename.name, callback);
-      else if (callback == null) for (t in _) _[t] = set(_[t], typename.name, null);
-    }
-
-    return this;
-  },
-  copy: function() {
-    var copy = {}, _ = this._;
-    for (var t in _) copy[t] = _[t].slice();
-    return new Dispatch(copy);
-  },
-  call: function(type, that) {
-    if ((n = arguments.length - 2) > 0) for (var args = new Array(n), i = 0, n, t; i < n; ++i) args[i] = arguments[i + 2];
-    if (!this._.hasOwnProperty(type)) throw new Error("unknown type: " + type);
-    for (t = this._[type], i = 0, n = t.length; i < n; ++i) t[i].value.apply(that, args);
-  },
-  apply: function(type, that, args) {
-    if (!this._.hasOwnProperty(type)) throw new Error("unknown type: " + type);
-    for (var t = this._[type], i = 0, n = t.length; i < n; ++i) t[i].value.apply(that, args);
-  }
-};
-
-function get(type, name) {
-  for (var i = 0, n = type.length, c; i < n; ++i) {
-    if ((c = type[i]).name === name) {
-      return c.value;
-    }
-  }
-}
-
-function set(type, name, callback) {
-  for (var i = 0, n = type.length; i < n; ++i) {
-    if (type[i].name === name) {
-      type[i] = noop, type = type.slice(0, i).concat(type.slice(i + 1));
-      break;
-    }
-  }
-  if (callback != null) type.push({name: name, value: callback});
-  return type;
-}
-
-var emptyOn = dispatch("start", "end", "cancel", "interrupt");
-
 /**
  * a mixin for avoiding that undefined attributes or properties values set by parent 
  * are applied to the element
@@ -2754,77 +108,14 @@ var emptyOn = dispatch("start", "end", "cancel", "interrupt");
  * @return {LitElement Class}             
  */
 
-/**
- * Change function that returns true if `value` is different from `oldValue`.
- * This method is used as the default for a property's `hasChanged` function.
- */
-const notEqual$1 = (value, old) => {
-  // This ensures (old==NaN, value==NaN) always returns false
-  return old !== value && (old === old || value === value);
-};
-
-const defaultConverter$1 = {
-  toAttribute(value, type) {
-    switch (type) {
-      case Boolean:
-        return value ? '' : null;
-      case Object:
-      case Array:
-        // if the value is `null` or `undefined` pass this through
-        // to allow removing/no change behavior.
-        return value == null ? value : JSON.stringify(value);
-    }
-    return value;
-  },
-  fromAttribute(value, type) {
-    switch (type) {
-      case Boolean:
-        return value !== null;
-      case Number:
-        return value === null ? null : Number(value);
-      case Object:
-      case Array:
-        return JSON.parse(value);
-    }
-    return value;
-  }
-};
-
-const defaultPropertyDeclaration$1 = {
-  attribute: true,
-  type: String,
-  converter: defaultConverter$1,
-  reflect: false,
-  hasChanged: notEqual$1
-};
-
 const doNotSetUndefinedValue = (baseElement) => class extends baseElement {
 
   /**
-   * Override the LitElement `createProperty` method to avoid undefined values to be set
-   *
-   * Creates a property accessor on the element prototype if one does not exist.
-   * The property setter calls the property's `hasChanged` property option
-   * or uses a strict identity check to determine whether or not to request
-   * an update.
-   * @nocollapse
+   * Override LitElement `getPropertyDescriptor` method to avoid undefined values to be set
    */
-  static createProperty(name, options = defaultPropertyDeclaration$1) {
-    // Note, since this can be called by the `@property` decorator which
-    // is called before `finalize`, we ensure storage exists for property
-    // metadata.
-    this._ensureClassProperties();
-    this._classProperties.set(name, options);
-    // Do not generate an accessor if the prototype already has one, since
-    // it would be lost otherwise and that would never be the user's intention;
-    // Instead, we expect users to call `requestUpdate` themselves from
-    // user-defined accessors. Note that if the super has an accessor we will
-    // still overwrite it
-    if (options.noAccessor || this.prototype.hasOwnProperty(name)) {
-      return;
-    }
-    const key = typeof name === 'symbol' ? Symbol() : `__${name}`;
-    Object.defineProperty(this.prototype, name, {
+
+  static getPropertyDescriptor(name, key, options) {
+    return {
       // tslint:disable-next-line:no-any no symbol in index
       get() {
         return this[key];
@@ -2836,11 +127,12 @@ const doNotSetUndefinedValue = (baseElement) => class extends baseElement {
         }
         const oldValue = this[name];
         this[key] = value;
-        this._requestUpdate(name, oldValue);
+        this
+          .requestUpdateInternal(name, oldValue, options);
       },
       configurable: true,
       enumerable: true
-    });
+    };
   }
 };
 
@@ -2850,7 +142,7 @@ const doNotSetUndefinedValue = (baseElement) => class extends baseElement {
  * @param {LitElement} baseElement - the LitElement to extend
  */
 const defaultValue = (baseElement) => class extends baseElement {
-  
+
   constructor() {
     super();
     if (this.constructor.properties) {
@@ -2863,7 +155,6 @@ const defaultValue = (baseElement) => class extends baseElement {
       });
     }
   }
-  
 };
 
 // import { BaseMixin } from './src/demo-base-mixin.js';
@@ -6038,15 +3329,12 @@ function newInterval(floori, offseti, count, field) {
 var durationMinute = 6e4;
 var durationDay = 864e5;
 
-var day = newInterval(function(date) {
-  date.setHours(0, 0, 0, 0);
-}, function(date, step) {
-  date.setDate(date.getDate() + step);
-}, function(start, end) {
-  return (end - start - (end.getTimezoneOffset() - start.getTimezoneOffset()) * durationMinute) / durationDay;
-}, function(date) {
-  return date.getDate() - 1;
-});
+var day = newInterval(
+  date => date.setHours(0, 0, 0, 0),
+  (date, step) => date.setDate(date.getDate() + step),
+  (start, end) => (end - start - (end.getTimezoneOffset() - start.getTimezoneOffset()) * durationMinute) / durationDay,
+  date => date.getDate() - 1
+);
 
 const rnd = (keys, max) => {
   var r = randomUniform(max);
@@ -6072,1959 +3360,21 @@ const timeData = (nbDays) => {
     return rnd(range, 10);
 };
 
-/**
- * @license
- * Copyright (c) 2017 The Polymer Project Authors. All rights reserved.
- * This code may only be used under the BSD style license found at
- * http://polymer.github.io/LICENSE.txt
- * The complete set of authors may be found at
- * http://polymer.github.io/AUTHORS.txt
- * The complete set of contributors may be found at
- * http://polymer.github.io/CONTRIBUTORS.txt
- * Code distributed by Google as part of the polymer project is also
- * subject to an additional IP rights grant found at
- * http://polymer.github.io/PATENTS.txt
- */
-const _state = new WeakMap();
-// Effectively infinity, but a SMI.
-const _infinity = 0x7fffffff;
-/**
- * Renders one of a series of values, including Promises, to a Part.
- *
- * Values are rendered in priority order, with the first argument having the
- * highest priority and the last argument having the lowest priority. If a
- * value is a Promise, low-priority values will be rendered until it resolves.
- *
- * The priority of values can be used to create placeholder content for async
- * data. For example, a Promise with pending content can be the first,
- * highest-priority, argument, and a non_promise loading indicator template can
- * be used as the second, lower-priority, argument. The loading indicator will
- * render immediately, and the primary content will render when the Promise
- * resolves.
- *
- * Example:
- *
- *     const content = fetch('./content.txt').then(r => r.text());
- *     html`${until(content, html`<span>Loading...</span>`)}`
- */
-const until = directive((...args) => (part) => {
-    let state = _state.get(part);
-    if (state === undefined) {
-        state = {
-            lastRenderedIndex: _infinity,
-            values: [],
-        };
-        _state.set(part, state);
-    }
-    const previousValues = state.values;
-    let previousLength = previousValues.length;
-    state.values = args;
-    for (let i = 0; i < args.length; i++) {
-        // If we've rendered a higher-priority value already, stop.
-        if (i > state.lastRenderedIndex) {
-            break;
-        }
-        const value = args[i];
-        // Render non-Promise values immediately
-        if (isPrimitive(value) ||
-            typeof value.then !== 'function') {
-            part.setValue(value);
-            state.lastRenderedIndex = i;
-            // Since a lower-priority value will never overwrite a higher-priority
-            // synchronous value, we can stop processsing now.
-            break;
-        }
-        // If this is a Promise we've already handled, skip it.
-        if (i < previousLength && value === previousValues[i]) {
-            continue;
-        }
-        // We have a Promise that we haven't seen before, so priorities may have
-        // changed. Forget what we rendered before.
-        state.lastRenderedIndex = _infinity;
-        previousLength = 0;
-        Promise.resolve(value).then((resolvedValue) => {
-            const index = state.values.indexOf(value);
-            // If state.values doesn't contain the value, we've re-rendered without
-            // the value, so don't render it. Then, only render if the value is
-            // higher-priority than what's already been rendered.
-            if (index > -1 && index < state.lastRenderedIndex) {
-                state.lastRenderedIndex = index;
-                part.setValue(resolvedValue);
-                part.commit();
-            }
-        });
-    }
-});
-
-/**
- * @license
- * Copyright (c) 2017 The Polymer Project Authors. All rights reserved.
- * This code may only be used under the BSD style license found at
- * http://polymer.github.io/LICENSE.txt
- * The complete set of authors may be found at
- * http://polymer.github.io/AUTHORS.txt
- * The complete set of contributors may be found at
- * http://polymer.github.io/CONTRIBUTORS.txt
- * Code distributed by Google as part of the polymer project is also
- * subject to an additional IP rights grant found at
- * http://polymer.github.io/PATENTS.txt
- */
-// For each part, remember the value that was last rendered to the part by the
-// unsafeHTML directive, and the DocumentFragment that was last set as a value.
-// The DocumentFragment is used as a unique key to check if the last value
-// rendered to the part was with unsafeHTML. If not, we'll always re-render the
-// value passed to unsafeHTML.
-const previousValues = new WeakMap();
-/**
- * Renders the result as HTML, rather than text.
- *
- * Note, this is unsafe to use with any user-provided input that hasn't been
- * sanitized or escaped, as it may lead to cross-site-scripting
- * vulnerabilities.
- */
-const unsafeHTML = directive((value) => (part) => {
-    if (!(part instanceof NodePart)) {
-        throw new Error('unsafeHTML can only be used in text bindings');
-    }
-    const previousValue = previousValues.get(part);
-    if (previousValue !== undefined && isPrimitive(value) &&
-        value === previousValue.value && part.value === previousValue.fragment) {
-        return;
-    }
-    const template = document.createElement('template');
-    template.innerHTML = value; // innerHTML casts to string internally
-    const fragment = document.importNode(template.content, true);
-    part.setValue(fragment);
-    previousValues.set(part, { value, fragment });
-});
-
-/**
- * marked - a markdown parser
- * Copyright (c) 2011-2019, Christopher Jeffrey. (MIT Licensed)
- * https://github.com/markedjs/marked
- */
-
-/**
- * DO NOT EDIT THIS FILE
- * The code in this file is generated from files in ./src/
- */
-
-function createCommonjsModule(fn, module) {
-	return module = { exports: {} }, fn(module, module.exports), module.exports;
-}
-
-var defaults = createCommonjsModule(function (module) {
-function getDefaults() {
-  return {
-    baseUrl: null,
-    breaks: false,
-    gfm: true,
-    headerIds: true,
-    headerPrefix: '',
-    highlight: null,
-    langPrefix: 'language-',
-    mangle: true,
-    pedantic: false,
-    renderer: null,
-    sanitize: false,
-    sanitizer: null,
-    silent: false,
-    smartLists: false,
-    smartypants: false,
-    xhtml: false
-  };
-}
-
-function changeDefaults(newDefaults) {
-  module.exports.defaults = newDefaults;
-}
-
-module.exports = {
-  defaults: getDefaults(),
-  getDefaults,
-  changeDefaults
-};
-});
-var defaults_1 = defaults.defaults;
-var defaults_2 = defaults.getDefaults;
-var defaults_3 = defaults.changeDefaults;
-
-/**
- * Helpers
- */
-const escapeTest = /[&<>"']/;
-const escapeReplace = /[&<>"']/g;
-const escapeTestNoEncode = /[<>"']|&(?!#?\w+;)/;
-const escapeReplaceNoEncode = /[<>"']|&(?!#?\w+;)/g;
-const escapeReplacements = {
-  '&': '&amp;',
-  '<': '&lt;',
-  '>': '&gt;',
-  '"': '&quot;',
-  "'": '&#39;'
-};
-const getEscapeReplacement = (ch) => escapeReplacements[ch];
-function escape(html, encode) {
-  if (encode) {
-    if (escapeTest.test(html)) {
-      return html.replace(escapeReplace, getEscapeReplacement);
-    }
-  } else {
-    if (escapeTestNoEncode.test(html)) {
-      return html.replace(escapeReplaceNoEncode, getEscapeReplacement);
-    }
-  }
-
-  return html;
-}
-
-const unescapeTest = /&(#(?:\d+)|(?:#x[0-9A-Fa-f]+)|(?:\w+));?/ig;
-
-function unescape(html) {
-  // explicitly match decimal, hex, and named HTML entities
-  return html.replace(unescapeTest, (_, n) => {
-    n = n.toLowerCase();
-    if (n === 'colon') return ':';
-    if (n.charAt(0) === '#') {
-      return n.charAt(1) === 'x'
-        ? String.fromCharCode(parseInt(n.substring(2), 16))
-        : String.fromCharCode(+n.substring(1));
-    }
-    return '';
-  });
-}
-
-const caret = /(^|[^\[])\^/g;
-function edit(regex, opt) {
-  regex = regex.source || regex;
-  opt = opt || '';
-  const obj = {
-    replace: (name, val) => {
-      val = val.source || val;
-      val = val.replace(caret, '$1');
-      regex = regex.replace(name, val);
-      return obj;
-    },
-    getRegex: () => {
-      return new RegExp(regex, opt);
-    }
-  };
-  return obj;
-}
-
-const nonWordAndColonTest = /[^\w:]/g;
-const originIndependentUrl = /^$|^[a-z][a-z0-9+.-]*:|^[?#]/i;
-function cleanUrl(sanitize, base, href) {
-  if (sanitize) {
-    let prot;
-    try {
-      prot = decodeURIComponent(unescape(href))
-        .replace(nonWordAndColonTest, '')
-        .toLowerCase();
-    } catch (e) {
-      return null;
-    }
-    if (prot.indexOf('javascript:') === 0 || prot.indexOf('vbscript:') === 0 || prot.indexOf('data:') === 0) {
-      return null;
-    }
-  }
-  if (base && !originIndependentUrl.test(href)) {
-    href = resolveUrl(base, href);
-  }
-  try {
-    href = encodeURI(href).replace(/%25/g, '%');
-  } catch (e) {
-    return null;
-  }
-  return href;
-}
-
-const baseUrls = {};
-const justDomain = /^[^:]+:\/*[^/]*$/;
-const protocol = /^([^:]+:)[\s\S]*$/;
-const domain = /^([^:]+:\/*[^/]*)[\s\S]*$/;
-
-function resolveUrl(base, href) {
-  if (!baseUrls[' ' + base]) {
-    // we can ignore everything in base after the last slash of its path component,
-    // but we might need to add _that_
-    // https://tools.ietf.org/html/rfc3986#section-3
-    if (justDomain.test(base)) {
-      baseUrls[' ' + base] = base + '/';
-    } else {
-      baseUrls[' ' + base] = rtrim(base, '/', true);
-    }
-  }
-  base = baseUrls[' ' + base];
-  const relativeBase = base.indexOf(':') === -1;
-
-  if (href.substring(0, 2) === '//') {
-    if (relativeBase) {
-      return href;
-    }
-    return base.replace(protocol, '$1') + href;
-  } else if (href.charAt(0) === '/') {
-    if (relativeBase) {
-      return href;
-    }
-    return base.replace(domain, '$1') + href;
-  } else {
-    return base + href;
-  }
-}
-
-const noopTest = { exec: function noopTest() {} };
-
-function merge(obj) {
-  let i = 1,
-    target,
-    key;
-
-  for (; i < arguments.length; i++) {
-    target = arguments[i];
-    for (key in target) {
-      if (Object.prototype.hasOwnProperty.call(target, key)) {
-        obj[key] = target[key];
-      }
-    }
-  }
-
-  return obj;
-}
-
-function splitCells(tableRow, count) {
-  // ensure that every cell-delimiting pipe has a space
-  // before it to distinguish it from an escaped pipe
-  const row = tableRow.replace(/\|/g, (match, offset, str) => {
-      let escaped = false,
-        curr = offset;
-      while (--curr >= 0 && str[curr] === '\\') escaped = !escaped;
-      if (escaped) {
-        // odd number of slashes means | is escaped
-        // so we leave it alone
-        return '|';
-      } else {
-        // add space before unescaped |
-        return ' |';
-      }
-    }),
-    cells = row.split(/ \|/);
-  let i = 0;
-
-  if (cells.length > count) {
-    cells.splice(count);
-  } else {
-    while (cells.length < count) cells.push('');
-  }
-
-  for (; i < cells.length; i++) {
-    // leading or trailing whitespace is ignored per the gfm spec
-    cells[i] = cells[i].trim().replace(/\\\|/g, '|');
-  }
-  return cells;
-}
-
-// Remove trailing 'c's. Equivalent to str.replace(/c*$/, '').
-// /c*$/ is vulnerable to REDOS.
-// invert: Remove suffix of non-c chars instead. Default falsey.
-function rtrim(str, c, invert) {
-  const l = str.length;
-  if (l === 0) {
-    return '';
-  }
-
-  // Length of suffix matching the invert condition.
-  let suffLen = 0;
-
-  // Step left until we fail to match the invert condition.
-  while (suffLen < l) {
-    const currChar = str.charAt(l - suffLen - 1);
-    if (currChar === c && !invert) {
-      suffLen++;
-    } else if (currChar !== c && invert) {
-      suffLen++;
-    } else {
-      break;
-    }
-  }
-
-  return str.substr(0, l - suffLen);
-}
-
-function findClosingBracket(str, b) {
-  if (str.indexOf(b[1]) === -1) {
-    return -1;
-  }
-  const l = str.length;
-  let level = 0,
-    i = 0;
-  for (; i < l; i++) {
-    if (str[i] === '\\') {
-      i++;
-    } else if (str[i] === b[0]) {
-      level++;
-    } else if (str[i] === b[1]) {
-      level--;
-      if (level < 0) {
-        return i;
-      }
-    }
-  }
-  return -1;
-}
-
-function checkSanitizeDeprecation(opt) {
-  if (opt && opt.sanitize && !opt.silent) {
-    console.warn('marked(): sanitize and sanitizer parameters are deprecated since version 0.7.0, should not be used and will be removed in the future. Read more here: https://marked.js.org/#/USING_ADVANCED.md#options');
-  }
-}
-
-var helpers = {
-  escape,
-  unescape,
-  edit,
-  cleanUrl,
-  resolveUrl,
-  noopTest,
-  merge,
-  splitCells,
-  rtrim,
-  findClosingBracket,
-  checkSanitizeDeprecation
-};
-
-const {
-  noopTest: noopTest$1,
-  edit: edit$1,
-  merge: merge$1
-} = helpers;
-
-/**
- * Block-Level Grammar
- */
-const block = {
-  newline: /^\n+/,
-  code: /^( {4}[^\n]+\n*)+/,
-  fences: /^ {0,3}(`{3,}|~{3,})([^`~\n]*)\n(?:|([\s\S]*?)\n)(?: {0,3}\1[~`]* *(?:\n+|$)|$)/,
-  hr: /^ {0,3}((?:- *){3,}|(?:_ *){3,}|(?:\* *){3,})(?:\n+|$)/,
-  heading: /^ {0,3}(#{1,6}) +([^\n]*?)(?: +#+)? *(?:\n+|$)/,
-  blockquote: /^( {0,3}> ?(paragraph|[^\n]*)(?:\n|$))+/,
-  list: /^( {0,3})(bull) [\s\S]+?(?:hr|def|\n{2,}(?! )(?!\1bull )\n*|\s*$)/,
-  html: '^ {0,3}(?:' // optional indentation
-    + '<(script|pre|style)[\\s>][\\s\\S]*?(?:</\\1>[^\\n]*\\n+|$)' // (1)
-    + '|comment[^\\n]*(\\n+|$)' // (2)
-    + '|<\\?[\\s\\S]*?\\?>\\n*' // (3)
-    + '|<![A-Z][\\s\\S]*?>\\n*' // (4)
-    + '|<!\\[CDATA\\[[\\s\\S]*?\\]\\]>\\n*' // (5)
-    + '|</?(tag)(?: +|\\n|/?>)[\\s\\S]*?(?:\\n{2,}|$)' // (6)
-    + '|<(?!script|pre|style)([a-z][\\w-]*)(?:attribute)*? */?>(?=[ \\t]*(?:\\n|$))[\\s\\S]*?(?:\\n{2,}|$)' // (7) open tag
-    + '|</(?!script|pre|style)[a-z][\\w-]*\\s*>(?=[ \\t]*(?:\\n|$))[\\s\\S]*?(?:\\n{2,}|$)' // (7) closing tag
-    + ')',
-  def: /^ {0,3}\[(label)\]: *\n? *<?([^\s>]+)>?(?:(?: +\n? *| *\n *)(title))? *(?:\n+|$)/,
-  nptable: noopTest$1,
-  table: noopTest$1,
-  lheading: /^([^\n]+)\n {0,3}(=+|-+) *(?:\n+|$)/,
-  // regex template, placeholders will be replaced according to different paragraph
-  // interruption rules of commonmark and the original markdown spec:
-  _paragraph: /^([^\n]+(?:\n(?!hr|heading|lheading|blockquote|fences|list|html)[^\n]+)*)/,
-  text: /^[^\n]+/
-};
-
-block._label = /(?!\s*\])(?:\\[\[\]]|[^\[\]])+/;
-block._title = /(?:"(?:\\"?|[^"\\])*"|'[^'\n]*(?:\n[^'\n]+)*\n?'|\([^()]*\))/;
-block.def = edit$1(block.def)
-  .replace('label', block._label)
-  .replace('title', block._title)
-  .getRegex();
-
-block.bullet = /(?:[*+-]|\d{1,9}\.)/;
-block.item = /^( *)(bull) ?[^\n]*(?:\n(?!\1bull ?)[^\n]*)*/;
-block.item = edit$1(block.item, 'gm')
-  .replace(/bull/g, block.bullet)
-  .getRegex();
-
-block.list = edit$1(block.list)
-  .replace(/bull/g, block.bullet)
-  .replace('hr', '\\n+(?=\\1?(?:(?:- *){3,}|(?:_ *){3,}|(?:\\* *){3,})(?:\\n+|$))')
-  .replace('def', '\\n+(?=' + block.def.source + ')')
-  .getRegex();
-
-block._tag = 'address|article|aside|base|basefont|blockquote|body|caption'
-  + '|center|col|colgroup|dd|details|dialog|dir|div|dl|dt|fieldset|figcaption'
-  + '|figure|footer|form|frame|frameset|h[1-6]|head|header|hr|html|iframe'
-  + '|legend|li|link|main|menu|menuitem|meta|nav|noframes|ol|optgroup|option'
-  + '|p|param|section|source|summary|table|tbody|td|tfoot|th|thead|title|tr'
-  + '|track|ul';
-block._comment = /<!--(?!-?>)[\s\S]*?-->/;
-block.html = edit$1(block.html, 'i')
-  .replace('comment', block._comment)
-  .replace('tag', block._tag)
-  .replace('attribute', / +[a-zA-Z:_][\w.:-]*(?: *= *"[^"\n]*"| *= *'[^'\n]*'| *= *[^\s"'=<>`]+)?/)
-  .getRegex();
-
-block.paragraph = edit$1(block._paragraph)
-  .replace('hr', block.hr)
-  .replace('heading', ' {0,3}#{1,6} +')
-  .replace('|lheading', '') // setex headings don't interrupt commonmark paragraphs
-  .replace('blockquote', ' {0,3}>')
-  .replace('fences', ' {0,3}(?:`{3,}|~{3,})[^`\\n]*\\n')
-  .replace('list', ' {0,3}(?:[*+-]|1[.)]) ') // only lists starting from 1 can interrupt
-  .replace('html', '</?(?:tag)(?: +|\\n|/?>)|<(?:script|pre|style|!--)')
-  .replace('tag', block._tag) // pars can be interrupted by type (6) html blocks
-  .getRegex();
-
-block.blockquote = edit$1(block.blockquote)
-  .replace('paragraph', block.paragraph)
-  .getRegex();
-
-/**
- * Normal Block Grammar
- */
-
-block.normal = merge$1({}, block);
-
-/**
- * GFM Block Grammar
- */
-
-block.gfm = merge$1({}, block.normal, {
-  nptable: /^ *([^|\n ].*\|.*)\n *([-:]+ *\|[-| :]*)(?:\n((?:.*[^>\n ].*(?:\n|$))*)\n*|$)/,
-  table: /^ *\|(.+)\n *\|?( *[-:]+[-| :]*)(?:\n((?: *[^>\n ].*(?:\n|$))*)\n*|$)/
-});
-
-/**
- * Pedantic grammar (original John Gruber's loose markdown specification)
- */
-
-block.pedantic = merge$1({}, block.normal, {
-  html: edit$1(
-    '^ *(?:comment *(?:\\n|\\s*$)'
-    + '|<(tag)[\\s\\S]+?</\\1> *(?:\\n{2,}|\\s*$)' // closed tag
-    + '|<tag(?:"[^"]*"|\'[^\']*\'|\\s[^\'"/>\\s]*)*?/?> *(?:\\n{2,}|\\s*$))')
-    .replace('comment', block._comment)
-    .replace(/tag/g, '(?!(?:'
-      + 'a|em|strong|small|s|cite|q|dfn|abbr|data|time|code|var|samp|kbd|sub'
-      + '|sup|i|b|u|mark|ruby|rt|rp|bdi|bdo|span|br|wbr|ins|del|img)'
-      + '\\b)\\w+(?!:|[^\\w\\s@]*@)\\b')
-    .getRegex(),
-  def: /^ *\[([^\]]+)\]: *<?([^\s>]+)>?(?: +(["(][^\n]+[")]))? *(?:\n+|$)/,
-  heading: /^ *(#{1,6}) *([^\n]+?) *(?:#+ *)?(?:\n+|$)/,
-  fences: noopTest$1, // fences not supported
-  paragraph: edit$1(block.normal._paragraph)
-    .replace('hr', block.hr)
-    .replace('heading', ' *#{1,6} *[^\n]')
-    .replace('lheading', block.lheading)
-    .replace('blockquote', ' {0,3}>')
-    .replace('|fences', '')
-    .replace('|list', '')
-    .replace('|html', '')
-    .getRegex()
-});
-
-/**
- * Inline-Level Grammar
- */
-const inline = {
-  escape: /^\\([!"#$%&'()*+,\-./:;<=>?@\[\]\\^_`{|}~])/,
-  autolink: /^<(scheme:[^\s\x00-\x1f<>]*|email)>/,
-  url: noopTest$1,
-  tag: '^comment'
-    + '|^</[a-zA-Z][\\w:-]*\\s*>' // self-closing tag
-    + '|^<[a-zA-Z][\\w-]*(?:attribute)*?\\s*/?>' // open tag
-    + '|^<\\?[\\s\\S]*?\\?>' // processing instruction, e.g. <?php ?>
-    + '|^<![a-zA-Z]+\\s[\\s\\S]*?>' // declaration, e.g. <!DOCTYPE html>
-    + '|^<!\\[CDATA\\[[\\s\\S]*?\\]\\]>', // CDATA section
-  link: /^!?\[(label)\]\(\s*(href)(?:\s+(title))?\s*\)/,
-  reflink: /^!?\[(label)\]\[(?!\s*\])((?:\\[\[\]]?|[^\[\]\\])+)\]/,
-  nolink: /^!?\[(?!\s*\])((?:\[[^\[\]]*\]|\\[\[\]]|[^\[\]])*)\](?:\[\])?/,
-  strong: /^__([^\s_])__(?!_)|^\*\*([^\s*])\*\*(?!\*)|^__([^\s][\s\S]*?[^\s])__(?!_)|^\*\*([^\s][\s\S]*?[^\s])\*\*(?!\*)/,
-  em: /^_([^\s_])_(?!_)|^\*([^\s*<\[])\*(?!\*)|^_([^\s<][\s\S]*?[^\s_])_(?!_|[^\spunctuation])|^_([^\s_<][\s\S]*?[^\s])_(?!_|[^\spunctuation])|^\*([^\s<"][\s\S]*?[^\s\*])\*(?!\*|[^\spunctuation])|^\*([^\s*"<\[][\s\S]*?[^\s])\*(?!\*)/,
-  code: /^(`+)([^`]|[^`][\s\S]*?[^`])\1(?!`)/,
-  br: /^( {2,}|\\)\n(?!\s*$)/,
-  del: noopTest$1,
-  text: /^(`+|[^`])(?:[\s\S]*?(?:(?=[\\<!\[`*]|\b_|$)|[^ ](?= {2,}\n))|(?= {2,}\n))/
-};
-
-// list of punctuation marks from common mark spec
-// without ` and ] to workaround Rule 17 (inline code blocks/links)
-inline._punctuation = '!"#$%&\'()*+,\\-./:;<=>?@\\[^_{|}~';
-inline.em = edit$1(inline.em).replace(/punctuation/g, inline._punctuation).getRegex();
-
-inline._escapes = /\\([!"#$%&'()*+,\-./:;<=>?@\[\]\\^_`{|}~])/g;
-
-inline._scheme = /[a-zA-Z][a-zA-Z0-9+.-]{1,31}/;
-inline._email = /[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+(@)[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+(?![-_])/;
-inline.autolink = edit$1(inline.autolink)
-  .replace('scheme', inline._scheme)
-  .replace('email', inline._email)
-  .getRegex();
-
-inline._attribute = /\s+[a-zA-Z:_][\w.:-]*(?:\s*=\s*"[^"]*"|\s*=\s*'[^']*'|\s*=\s*[^\s"'=<>`]+)?/;
-
-inline.tag = edit$1(inline.tag)
-  .replace('comment', block._comment)
-  .replace('attribute', inline._attribute)
-  .getRegex();
-
-inline._label = /(?:\[[^\[\]]*\]|\\.|`[^`]*`|[^\[\]\\`])*?/;
-inline._href = /<(?:\\[<>]?|[^\s<>\\])*>|[^\s\x00-\x1f]*/;
-inline._title = /"(?:\\"?|[^"\\])*"|'(?:\\'?|[^'\\])*'|\((?:\\\)?|[^)\\])*\)/;
-
-inline.link = edit$1(inline.link)
-  .replace('label', inline._label)
-  .replace('href', inline._href)
-  .replace('title', inline._title)
-  .getRegex();
-
-inline.reflink = edit$1(inline.reflink)
-  .replace('label', inline._label)
-  .getRegex();
-
-/**
- * Normal Inline Grammar
- */
-
-inline.normal = merge$1({}, inline);
-
-/**
- * Pedantic Inline Grammar
- */
-
-inline.pedantic = merge$1({}, inline.normal, {
-  strong: /^__(?=\S)([\s\S]*?\S)__(?!_)|^\*\*(?=\S)([\s\S]*?\S)\*\*(?!\*)/,
-  em: /^_(?=\S)([\s\S]*?\S)_(?!_)|^\*(?=\S)([\s\S]*?\S)\*(?!\*)/,
-  link: edit$1(/^!?\[(label)\]\((.*?)\)/)
-    .replace('label', inline._label)
-    .getRegex(),
-  reflink: edit$1(/^!?\[(label)\]\s*\[([^\]]*)\]/)
-    .replace('label', inline._label)
-    .getRegex()
-});
-
-/**
- * GFM Inline Grammar
- */
-
-inline.gfm = merge$1({}, inline.normal, {
-  escape: edit$1(inline.escape).replace('])', '~|])').getRegex(),
-  _extended_email: /[A-Za-z0-9._+-]+(@)[a-zA-Z0-9-_]+(?:\.[a-zA-Z0-9-_]*[a-zA-Z0-9])+(?![-_])/,
-  url: /^((?:ftp|https?):\/\/|www\.)(?:[a-zA-Z0-9\-]+\.?)+[^\s<]*|^email/,
-  _backpedal: /(?:[^?!.,:;*_~()&]+|\([^)]*\)|&(?![a-zA-Z0-9]+;$)|[?!.,:;*_~)]+(?!$))+/,
-  del: /^~+(?=\S)([\s\S]*?\S)~+/,
-  text: /^(`+|[^`])(?:[\s\S]*?(?:(?=[\\<!\[`*~]|\b_|https?:\/\/|ftp:\/\/|www\.|$)|[^ ](?= {2,}\n)|[^a-zA-Z0-9.!#$%&'*+\/=?_`{\|}~-](?=[a-zA-Z0-9.!#$%&'*+\/=?_`{\|}~-]+@))|(?= {2,}\n|[a-zA-Z0-9.!#$%&'*+\/=?_`{\|}~-]+@))/
-});
-
-inline.gfm.url = edit$1(inline.gfm.url, 'i')
-  .replace('email', inline.gfm._extended_email)
-  .getRegex();
-/**
- * GFM + Line Breaks Inline Grammar
- */
-
-inline.breaks = merge$1({}, inline.gfm, {
-  br: edit$1(inline.br).replace('{2,}', '*').getRegex(),
-  text: edit$1(inline.gfm.text)
-    .replace('\\b_', '\\b_| {2,}\\n')
-    .replace(/\{2,\}/g, '*')
-    .getRegex()
-});
-
-var rules = {
-  block,
-  inline
-};
-
-const { defaults: defaults$1 } = defaults;
-const { block: block$1 } = rules;
-const {
-  rtrim: rtrim$1,
-  splitCells: splitCells$1,
-  escape: escape$1
-} = helpers;
-
-/**
- * Block Lexer
- */
-var Lexer_1 = class Lexer {
-  constructor(options) {
-    this.tokens = [];
-    this.tokens.links = Object.create(null);
-    this.options = options || defaults$1;
-    this.rules = block$1.normal;
-
-    if (this.options.pedantic) {
-      this.rules = block$1.pedantic;
-    } else if (this.options.gfm) {
-      this.rules = block$1.gfm;
-    }
-  }
-
-  /**
-   * Expose Block Rules
-   */
-  static get rules() {
-    return block$1;
-  }
-
-  /**
-   * Static Lex Method
-   */
-  static lex(src, options) {
-    const lexer = new Lexer(options);
-    return lexer.lex(src);
-  };
-
-  /**
-   * Preprocessing
-   */
-  lex(src) {
-    src = src
-      .replace(/\r\n|\r/g, '\n')
-      .replace(/\t/g, '    ');
-
-    return this.token(src, true);
-  };
-
-  /**
-   * Lexing
-   */
-  token(src, top) {
-    src = src.replace(/^ +$/gm, '');
-    let next,
-      loose,
-      cap,
-      bull,
-      b,
-      item,
-      listStart,
-      listItems,
-      t,
-      space,
-      i,
-      tag,
-      l,
-      isordered,
-      istask,
-      ischecked;
-
-    while (src) {
-      // newline
-      if (cap = this.rules.newline.exec(src)) {
-        src = src.substring(cap[0].length);
-        if (cap[0].length > 1) {
-          this.tokens.push({
-            type: 'space'
-          });
-        }
-      }
-
-      // code
-      if (cap = this.rules.code.exec(src)) {
-        const lastToken = this.tokens[this.tokens.length - 1];
-        src = src.substring(cap[0].length);
-        // An indented code block cannot interrupt a paragraph.
-        if (lastToken && lastToken.type === 'paragraph') {
-          lastToken.text += '\n' + cap[0].trimRight();
-        } else {
-          cap = cap[0].replace(/^ {4}/gm, '');
-          this.tokens.push({
-            type: 'code',
-            codeBlockStyle: 'indented',
-            text: !this.options.pedantic
-              ? rtrim$1(cap, '\n')
-              : cap
-          });
-        }
-        continue;
-      }
-
-      // fences
-      if (cap = this.rules.fences.exec(src)) {
-        src = src.substring(cap[0].length);
-        this.tokens.push({
-          type: 'code',
-          lang: cap[2] ? cap[2].trim() : cap[2],
-          text: cap[3] || ''
-        });
-        continue;
-      }
-
-      // heading
-      if (cap = this.rules.heading.exec(src)) {
-        src = src.substring(cap[0].length);
-        this.tokens.push({
-          type: 'heading',
-          depth: cap[1].length,
-          text: cap[2]
-        });
-        continue;
-      }
-
-      // table no leading pipe (gfm)
-      if (cap = this.rules.nptable.exec(src)) {
-        item = {
-          type: 'table',
-          header: splitCells$1(cap[1].replace(/^ *| *\| *$/g, '')),
-          align: cap[2].replace(/^ *|\| *$/g, '').split(/ *\| */),
-          cells: cap[3] ? cap[3].replace(/\n$/, '').split('\n') : []
-        };
-
-        if (item.header.length === item.align.length) {
-          src = src.substring(cap[0].length);
-
-          for (i = 0; i < item.align.length; i++) {
-            if (/^ *-+: *$/.test(item.align[i])) {
-              item.align[i] = 'right';
-            } else if (/^ *:-+: *$/.test(item.align[i])) {
-              item.align[i] = 'center';
-            } else if (/^ *:-+ *$/.test(item.align[i])) {
-              item.align[i] = 'left';
-            } else {
-              item.align[i] = null;
-            }
-          }
-
-          for (i = 0; i < item.cells.length; i++) {
-            item.cells[i] = splitCells$1(item.cells[i], item.header.length);
-          }
-
-          this.tokens.push(item);
-
-          continue;
-        }
-      }
-
-      // hr
-      if (cap = this.rules.hr.exec(src)) {
-        src = src.substring(cap[0].length);
-        this.tokens.push({
-          type: 'hr'
-        });
-        continue;
-      }
-
-      // blockquote
-      if (cap = this.rules.blockquote.exec(src)) {
-        src = src.substring(cap[0].length);
-
-        this.tokens.push({
-          type: 'blockquote_start'
-        });
-
-        cap = cap[0].replace(/^ *> ?/gm, '');
-
-        // Pass `top` to keep the current
-        // "toplevel" state. This is exactly
-        // how markdown.pl works.
-        this.token(cap, top);
-
-        this.tokens.push({
-          type: 'blockquote_end'
-        });
-
-        continue;
-      }
-
-      // list
-      if (cap = this.rules.list.exec(src)) {
-        src = src.substring(cap[0].length);
-        bull = cap[2];
-        isordered = bull.length > 1;
-
-        listStart = {
-          type: 'list_start',
-          ordered: isordered,
-          start: isordered ? +bull : '',
-          loose: false
-        };
-
-        this.tokens.push(listStart);
-
-        // Get each top-level item.
-        cap = cap[0].match(this.rules.item);
-
-        listItems = [];
-        next = false;
-        l = cap.length;
-        i = 0;
-
-        for (; i < l; i++) {
-          item = cap[i];
-
-          // Remove the list item's bullet
-          // so it is seen as the next token.
-          space = item.length;
-          item = item.replace(/^ *([*+-]|\d+\.) */, '');
-
-          // Outdent whatever the
-          // list item contains. Hacky.
-          if (~item.indexOf('\n ')) {
-            space -= item.length;
-            item = !this.options.pedantic
-              ? item.replace(new RegExp('^ {1,' + space + '}', 'gm'), '')
-              : item.replace(/^ {1,4}/gm, '');
-          }
-
-          // Determine whether the next list item belongs here.
-          // Backpedal if it does not belong in this list.
-          if (i !== l - 1) {
-            b = block$1.bullet.exec(cap[i + 1])[0];
-            if (bull.length > 1 ? b.length === 1
-              : (b.length > 1 || (this.options.smartLists && b !== bull))) {
-              src = cap.slice(i + 1).join('\n') + src;
-              i = l - 1;
-            }
-          }
-
-          // Determine whether item is loose or not.
-          // Use: /(^|\n)(?! )[^\n]+\n\n(?!\s*$)/
-          // for discount behavior.
-          loose = next || /\n\n(?!\s*$)/.test(item);
-          if (i !== l - 1) {
-            next = item.charAt(item.length - 1) === '\n';
-            if (!loose) loose = next;
-          }
-
-          if (loose) {
-            listStart.loose = true;
-          }
-
-          // Check for task list items
-          istask = /^\[[ xX]\] /.test(item);
-          ischecked = undefined;
-          if (istask) {
-            ischecked = item[1] !== ' ';
-            item = item.replace(/^\[[ xX]\] +/, '');
-          }
-
-          t = {
-            type: 'list_item_start',
-            task: istask,
-            checked: ischecked,
-            loose: loose
-          };
-
-          listItems.push(t);
-          this.tokens.push(t);
-
-          // Recurse.
-          this.token(item, false);
-
-          this.tokens.push({
-            type: 'list_item_end'
-          });
-        }
-
-        if (listStart.loose) {
-          l = listItems.length;
-          i = 0;
-          for (; i < l; i++) {
-            listItems[i].loose = true;
-          }
-        }
-
-        this.tokens.push({
-          type: 'list_end'
-        });
-
-        continue;
-      }
-
-      // html
-      if (cap = this.rules.html.exec(src)) {
-        src = src.substring(cap[0].length);
-        this.tokens.push({
-          type: this.options.sanitize
-            ? 'paragraph'
-            : 'html',
-          pre: !this.options.sanitizer
-            && (cap[1] === 'pre' || cap[1] === 'script' || cap[1] === 'style'),
-          text: this.options.sanitize ? (this.options.sanitizer ? this.options.sanitizer(cap[0]) : escape$1(cap[0])) : cap[0]
-        });
-        continue;
-      }
-
-      // def
-      if (top && (cap = this.rules.def.exec(src))) {
-        src = src.substring(cap[0].length);
-        if (cap[3]) cap[3] = cap[3].substring(1, cap[3].length - 1);
-        tag = cap[1].toLowerCase().replace(/\s+/g, ' ');
-        if (!this.tokens.links[tag]) {
-          this.tokens.links[tag] = {
-            href: cap[2],
-            title: cap[3]
-          };
-        }
-        continue;
-      }
-
-      // table (gfm)
-      if (cap = this.rules.table.exec(src)) {
-        item = {
-          type: 'table',
-          header: splitCells$1(cap[1].replace(/^ *| *\| *$/g, '')),
-          align: cap[2].replace(/^ *|\| *$/g, '').split(/ *\| */),
-          cells: cap[3] ? cap[3].replace(/\n$/, '').split('\n') : []
-        };
-
-        if (item.header.length === item.align.length) {
-          src = src.substring(cap[0].length);
-
-          for (i = 0; i < item.align.length; i++) {
-            if (/^ *-+: *$/.test(item.align[i])) {
-              item.align[i] = 'right';
-            } else if (/^ *:-+: *$/.test(item.align[i])) {
-              item.align[i] = 'center';
-            } else if (/^ *:-+ *$/.test(item.align[i])) {
-              item.align[i] = 'left';
-            } else {
-              item.align[i] = null;
-            }
-          }
-
-          for (i = 0; i < item.cells.length; i++) {
-            item.cells[i] = splitCells$1(
-              item.cells[i].replace(/^ *\| *| *\| *$/g, ''),
-              item.header.length);
-          }
-
-          this.tokens.push(item);
-
-          continue;
-        }
-      }
-
-      // lheading
-      if (cap = this.rules.lheading.exec(src)) {
-        src = src.substring(cap[0].length);
-        this.tokens.push({
-          type: 'heading',
-          depth: cap[2].charAt(0) === '=' ? 1 : 2,
-          text: cap[1]
-        });
-        continue;
-      }
-
-      // top-level paragraph
-      if (top && (cap = this.rules.paragraph.exec(src))) {
-        src = src.substring(cap[0].length);
-        this.tokens.push({
-          type: 'paragraph',
-          text: cap[1].charAt(cap[1].length - 1) === '\n'
-            ? cap[1].slice(0, -1)
-            : cap[1]
-        });
-        continue;
-      }
-
-      // text
-      if (cap = this.rules.text.exec(src)) {
-        // Top-level should never reach here.
-        src = src.substring(cap[0].length);
-        this.tokens.push({
-          type: 'text',
-          text: cap[0]
-        });
-        continue;
-      }
-
-      if (src) {
-        throw new Error('Infinite loop on byte: ' + src.charCodeAt(0));
-      }
-    }
-
-    return this.tokens;
-  };
-};
-
-const { defaults: defaults$2 } = defaults;
-const {
-  cleanUrl: cleanUrl$1,
-  escape: escape$2
-} = helpers;
-
-/**
- * Renderer
- */
-var Renderer_1 = class Renderer {
-  constructor(options) {
-    this.options = options || defaults$2;
-  }
-
-  code(code, infostring, escaped) {
-    const lang = (infostring || '').match(/\S*/)[0];
-    if (this.options.highlight) {
-      const out = this.options.highlight(code, lang);
-      if (out != null && out !== code) {
-        escaped = true;
-        code = out;
-      }
-    }
-
-    if (!lang) {
-      return '<pre><code>'
-        + (escaped ? code : escape$2(code, true))
-        + '</code></pre>';
-    }
-
-    return '<pre><code class="'
-      + this.options.langPrefix
-      + escape$2(lang, true)
-      + '">'
-      + (escaped ? code : escape$2(code, true))
-      + '</code></pre>\n';
-  };
-
-  blockquote(quote) {
-    return '<blockquote>\n' + quote + '</blockquote>\n';
-  };
-
-  html(html) {
-    return html;
-  };
-
-  heading(text, level, raw, slugger) {
-    if (this.options.headerIds) {
-      return '<h'
-        + level
-        + ' id="'
-        + this.options.headerPrefix
-        + slugger.slug(raw)
-        + '">'
-        + text
-        + '</h'
-        + level
-        + '>\n';
-    }
-    // ignore IDs
-    return '<h' + level + '>' + text + '</h' + level + '>\n';
-  };
-
-  hr() {
-    return this.options.xhtml ? '<hr/>\n' : '<hr>\n';
-  };
-
-  list(body, ordered, start) {
-    const type = ordered ? 'ol' : 'ul',
-      startatt = (ordered && start !== 1) ? (' start="' + start + '"') : '';
-    return '<' + type + startatt + '>\n' + body + '</' + type + '>\n';
-  };
-
-  listitem(text) {
-    return '<li>' + text + '</li>\n';
-  };
-
-  checkbox(checked) {
-    return '<input '
-      + (checked ? 'checked="" ' : '')
-      + 'disabled="" type="checkbox"'
-      + (this.options.xhtml ? ' /' : '')
-      + '> ';
-  };
-
-  paragraph(text) {
-    return '<p>' + text + '</p>\n';
-  };
-
-  table(header, body) {
-    if (body) body = '<tbody>' + body + '</tbody>';
-
-    return '<table>\n'
-      + '<thead>\n'
-      + header
-      + '</thead>\n'
-      + body
-      + '</table>\n';
-  };
-
-  tablerow(content) {
-    return '<tr>\n' + content + '</tr>\n';
-  };
-
-  tablecell(content, flags) {
-    const type = flags.header ? 'th' : 'td';
-    const tag = flags.align
-      ? '<' + type + ' align="' + flags.align + '">'
-      : '<' + type + '>';
-    return tag + content + '</' + type + '>\n';
-  };
-
-  // span level renderer
-  strong(text) {
-    return '<strong>' + text + '</strong>';
-  };
-
-  em(text) {
-    return '<em>' + text + '</em>';
-  };
-
-  codespan(text) {
-    return '<code>' + text + '</code>';
-  };
-
-  br() {
-    return this.options.xhtml ? '<br/>' : '<br>';
-  };
-
-  del(text) {
-    return '<del>' + text + '</del>';
-  };
-
-  link(href, title, text) {
-    href = cleanUrl$1(this.options.sanitize, this.options.baseUrl, href);
-    if (href === null) {
-      return text;
-    }
-    let out = '<a href="' + escape$2(href) + '"';
-    if (title) {
-      out += ' title="' + title + '"';
-    }
-    out += '>' + text + '</a>';
-    return out;
-  };
-
-  image(href, title, text) {
-    href = cleanUrl$1(this.options.sanitize, this.options.baseUrl, href);
-    if (href === null) {
-      return text;
-    }
-
-    let out = '<img src="' + href + '" alt="' + text + '"';
-    if (title) {
-      out += ' title="' + title + '"';
-    }
-    out += this.options.xhtml ? '/>' : '>';
-    return out;
-  };
-
-  text(text) {
-    return text;
-  };
-};
-
-/**
- * Slugger generates header id
- */
-var Slugger_1 = class Slugger {
-  constructor() {
-    this.seen = {};
-  }
-
-  /**
-   * Convert string to unique id
-   */
-  slug(value) {
-    let slug = value
-      .toLowerCase()
-      .trim()
-      .replace(/[\u2000-\u206F\u2E00-\u2E7F\\'!"#$%&()*+,./:;<=>?@[\]^`{|}~]/g, '')
-      .replace(/\s/g, '-');
-
-    if (this.seen.hasOwnProperty(slug)) {
-      const originalSlug = slug;
-      do {
-        this.seen[originalSlug]++;
-        slug = originalSlug + '-' + this.seen[originalSlug];
-      } while (this.seen.hasOwnProperty(slug));
-    }
-    this.seen[slug] = 0;
-
-    return slug;
-  };
-};
-
-const { defaults: defaults$3 } = defaults;
-const { inline: inline$1 } = rules;
-const {
-  findClosingBracket: findClosingBracket$1,
-  escape: escape$3
-} = helpers;
-
-/**
- * Inline Lexer & Compiler
- */
-var InlineLexer_1 = class InlineLexer {
-  constructor(links, options) {
-    this.options = options || defaults$3;
-    this.links = links;
-    this.rules = inline$1.normal;
-    this.options.renderer = this.options.renderer || new Renderer_1();
-    this.renderer = this.options.renderer;
-    this.renderer.options = this.options;
-
-    if (!this.links) {
-      throw new Error('Tokens array requires a `links` property.');
-    }
-
-    if (this.options.pedantic) {
-      this.rules = inline$1.pedantic;
-    } else if (this.options.gfm) {
-      if (this.options.breaks) {
-        this.rules = inline$1.breaks;
-      } else {
-        this.rules = inline$1.gfm;
-      }
-    }
-  }
-
-  /**
-   * Expose Inline Rules
-   */
-  static get rules() {
-    return inline$1;
-  }
-
-  /**
-   * Static Lexing/Compiling Method
-   */
-  static output(src, links, options) {
-    const inline = new InlineLexer(links, options);
-    return inline.output(src);
-  }
-
-  /**
-   * Lexing/Compiling
-   */
-  output(src) {
-    let out = '',
-      link,
-      text,
-      href,
-      title,
-      cap,
-      prevCapZero;
-
-    while (src) {
-      // escape
-      if (cap = this.rules.escape.exec(src)) {
-        src = src.substring(cap[0].length);
-        out += escape$3(cap[1]);
-        continue;
-      }
-
-      // tag
-      if (cap = this.rules.tag.exec(src)) {
-        if (!this.inLink && /^<a /i.test(cap[0])) {
-          this.inLink = true;
-        } else if (this.inLink && /^<\/a>/i.test(cap[0])) {
-          this.inLink = false;
-        }
-        if (!this.inRawBlock && /^<(pre|code|kbd|script)(\s|>)/i.test(cap[0])) {
-          this.inRawBlock = true;
-        } else if (this.inRawBlock && /^<\/(pre|code|kbd|script)(\s|>)/i.test(cap[0])) {
-          this.inRawBlock = false;
-        }
-
-        src = src.substring(cap[0].length);
-        out += this.options.sanitize
-          ? this.options.sanitizer
-            ? this.options.sanitizer(cap[0])
-            : escape$3(cap[0])
-          : cap[0];
-        continue;
-      }
-
-      // link
-      if (cap = this.rules.link.exec(src)) {
-        const lastParenIndex = findClosingBracket$1(cap[2], '()');
-        if (lastParenIndex > -1) {
-          const start = cap[0].indexOf('!') === 0 ? 5 : 4;
-          const linkLen = start + cap[1].length + lastParenIndex;
-          cap[2] = cap[2].substring(0, lastParenIndex);
-          cap[0] = cap[0].substring(0, linkLen).trim();
-          cap[3] = '';
-        }
-        src = src.substring(cap[0].length);
-        this.inLink = true;
-        href = cap[2];
-        if (this.options.pedantic) {
-          link = /^([^'"]*[^\s])\s+(['"])(.*)\2/.exec(href);
-
-          if (link) {
-            href = link[1];
-            title = link[3];
-          } else {
-            title = '';
-          }
-        } else {
-          title = cap[3] ? cap[3].slice(1, -1) : '';
-        }
-        href = href.trim().replace(/^<([\s\S]*)>$/, '$1');
-        out += this.outputLink(cap, {
-          href: InlineLexer.escapes(href),
-          title: InlineLexer.escapes(title)
-        });
-        this.inLink = false;
-        continue;
-      }
-
-      // reflink, nolink
-      if ((cap = this.rules.reflink.exec(src))
-          || (cap = this.rules.nolink.exec(src))) {
-        src = src.substring(cap[0].length);
-        link = (cap[2] || cap[1]).replace(/\s+/g, ' ');
-        link = this.links[link.toLowerCase()];
-        if (!link || !link.href) {
-          out += cap[0].charAt(0);
-          src = cap[0].substring(1) + src;
-          continue;
-        }
-        this.inLink = true;
-        out += this.outputLink(cap, link);
-        this.inLink = false;
-        continue;
-      }
-
-      // strong
-      if (cap = this.rules.strong.exec(src)) {
-        src = src.substring(cap[0].length);
-        out += this.renderer.strong(this.output(cap[4] || cap[3] || cap[2] || cap[1]));
-        continue;
-      }
-
-      // em
-      if (cap = this.rules.em.exec(src)) {
-        src = src.substring(cap[0].length);
-        out += this.renderer.em(this.output(cap[6] || cap[5] || cap[4] || cap[3] || cap[2] || cap[1]));
-        continue;
-      }
-
-      // code
-      if (cap = this.rules.code.exec(src)) {
-        src = src.substring(cap[0].length);
-        out += this.renderer.codespan(escape$3(cap[2].trim(), true));
-        continue;
-      }
-
-      // br
-      if (cap = this.rules.br.exec(src)) {
-        src = src.substring(cap[0].length);
-        out += this.renderer.br();
-        continue;
-      }
-
-      // del (gfm)
-      if (cap = this.rules.del.exec(src)) {
-        src = src.substring(cap[0].length);
-        out += this.renderer.del(this.output(cap[1]));
-        continue;
-      }
-
-      // autolink
-      if (cap = this.rules.autolink.exec(src)) {
-        src = src.substring(cap[0].length);
-        if (cap[2] === '@') {
-          text = escape$3(this.mangle(cap[1]));
-          href = 'mailto:' + text;
-        } else {
-          text = escape$3(cap[1]);
-          href = text;
-        }
-        out += this.renderer.link(href, null, text);
-        continue;
-      }
-
-      // url (gfm)
-      if (!this.inLink && (cap = this.rules.url.exec(src))) {
-        if (cap[2] === '@') {
-          text = escape$3(cap[0]);
-          href = 'mailto:' + text;
-        } else {
-          // do extended autolink path validation
-          do {
-            prevCapZero = cap[0];
-            cap[0] = this.rules._backpedal.exec(cap[0])[0];
-          } while (prevCapZero !== cap[0]);
-          text = escape$3(cap[0]);
-          if (cap[1] === 'www.') {
-            href = 'http://' + text;
-          } else {
-            href = text;
-          }
-        }
-        src = src.substring(cap[0].length);
-        out += this.renderer.link(href, null, text);
-        continue;
-      }
-
-      // text
-      if (cap = this.rules.text.exec(src)) {
-        src = src.substring(cap[0].length);
-        if (this.inRawBlock) {
-          out += this.renderer.text(this.options.sanitize ? (this.options.sanitizer ? this.options.sanitizer(cap[0]) : escape$3(cap[0])) : cap[0]);
-        } else {
-          out += this.renderer.text(escape$3(this.smartypants(cap[0])));
-        }
-        continue;
-      }
-
-      if (src) {
-        throw new Error('Infinite loop on byte: ' + src.charCodeAt(0));
-      }
-    }
-
-    return out;
-  }
-
-  static escapes(text) {
-    return text ? text.replace(InlineLexer.rules._escapes, '$1') : text;
-  }
-
-  /**
-   * Compile Link
-   */
-  outputLink(cap, link) {
-    const href = link.href,
-      title = link.title ? escape$3(link.title) : null;
-
-    return cap[0].charAt(0) !== '!'
-      ? this.renderer.link(href, title, this.output(cap[1]))
-      : this.renderer.image(href, title, escape$3(cap[1]));
-  }
-
-  /**
-   * Smartypants Transformations
-   */
-  smartypants(text) {
-    if (!this.options.smartypants) return text;
-    return text
-      // em-dashes
-      .replace(/---/g, '\u2014')
-      // en-dashes
-      .replace(/--/g, '\u2013')
-      // opening singles
-      .replace(/(^|[-\u2014/(\[{"\s])'/g, '$1\u2018')
-      // closing singles & apostrophes
-      .replace(/'/g, '\u2019')
-      // opening doubles
-      .replace(/(^|[-\u2014/(\[{\u2018\s])"/g, '$1\u201c')
-      // closing doubles
-      .replace(/"/g, '\u201d')
-      // ellipses
-      .replace(/\.{3}/g, '\u2026');
-  }
-
-  /**
-   * Mangle Links
-   */
-  mangle(text) {
-    if (!this.options.mangle) return text;
-    const l = text.length;
-    let out = '',
-      i = 0,
-      ch;
-
-    for (; i < l; i++) {
-      ch = text.charCodeAt(i);
-      if (Math.random() > 0.5) {
-        ch = 'x' + ch.toString(16);
-      }
-      out += '&#' + ch + ';';
-    }
-
-    return out;
-  }
-};
-
-/**
- * TextRenderer
- * returns only the textual part of the token
- */
-var TextRenderer_1 = class TextRenderer {
-  // no need for block level renderers
-  strong(text) {
-    return text;
-  }
-
-  em(text) {
-    return text;
-  }
-
-  codespan(text) {
-    return text;
-  }
-
-  del(text) {
-    return text;
-  }
-
-  text(text) {
-    return text;
-  }
-
-  link(href, title, text) {
-    return '' + text;
-  }
-
-  image(href, title, text) {
-    return '' + text;
-  }
-
-  br() {
-    return '';
-  }
-};
-
-const { defaults: defaults$4 } = defaults;
-const {
-  merge: merge$2,
-  unescape: unescape$1
-} = helpers;
-
-/**
- * Parsing & Compiling
- */
-var Parser_1 = class Parser {
-  constructor(options) {
-    this.tokens = [];
-    this.token = null;
-    this.options = options || defaults$4;
-    this.options.renderer = this.options.renderer || new Renderer_1();
-    this.renderer = this.options.renderer;
-    this.renderer.options = this.options;
-    this.slugger = new Slugger_1();
-  }
-
-  /**
-   * Static Parse Method
-   */
-  static parse(tokens, options) {
-    const parser = new Parser(options);
-    return parser.parse(tokens);
-  };
-
-  /**
-   * Parse Loop
-   */
-  parse(tokens) {
-    this.inline = new InlineLexer_1(tokens.links, this.options);
-    // use an InlineLexer with a TextRenderer to extract pure text
-    this.inlineText = new InlineLexer_1(
-      tokens.links,
-      merge$2({}, this.options, { renderer: new TextRenderer_1() })
-    );
-    this.tokens = tokens.reverse();
-
-    let out = '';
-    while (this.next()) {
-      out += this.tok();
-    }
-
-    return out;
-  };
-
-  /**
-   * Next Token
-   */
-  next() {
-    this.token = this.tokens.pop();
-    return this.token;
-  };
-
-  /**
-   * Preview Next Token
-   */
-  peek() {
-    return this.tokens[this.tokens.length - 1] || 0;
-  };
-
-  /**
-   * Parse Text Tokens
-   */
-  parseText() {
-    let body = this.token.text;
-
-    while (this.peek().type === 'text') {
-      body += '\n' + this.next().text;
-    }
-
-    return this.inline.output(body);
-  };
-
-  /**
-   * Parse Current Token
-   */
-  tok() {
-    let body = '';
-    switch (this.token.type) {
-      case 'space': {
-        return '';
-      }
-      case 'hr': {
-        return this.renderer.hr();
-      }
-      case 'heading': {
-        return this.renderer.heading(
-          this.inline.output(this.token.text),
-          this.token.depth,
-          unescape$1(this.inlineText.output(this.token.text)),
-          this.slugger);
-      }
-      case 'code': {
-        return this.renderer.code(this.token.text,
-          this.token.lang,
-          this.token.escaped);
-      }
-      case 'table': {
-        let header = '',
-          i,
-          row,
-          cell,
-          j;
-
-        // header
-        cell = '';
-        for (i = 0; i < this.token.header.length; i++) {
-          cell += this.renderer.tablecell(
-            this.inline.output(this.token.header[i]),
-            { header: true, align: this.token.align[i] }
-          );
-        }
-        header += this.renderer.tablerow(cell);
-
-        for (i = 0; i < this.token.cells.length; i++) {
-          row = this.token.cells[i];
-
-          cell = '';
-          for (j = 0; j < row.length; j++) {
-            cell += this.renderer.tablecell(
-              this.inline.output(row[j]),
-              { header: false, align: this.token.align[j] }
-            );
-          }
-
-          body += this.renderer.tablerow(cell);
-        }
-        return this.renderer.table(header, body);
-      }
-      case 'blockquote_start': {
-        body = '';
-
-        while (this.next().type !== 'blockquote_end') {
-          body += this.tok();
-        }
-
-        return this.renderer.blockquote(body);
-      }
-      case 'list_start': {
-        body = '';
-        const ordered = this.token.ordered,
-          start = this.token.start;
-
-        while (this.next().type !== 'list_end') {
-          body += this.tok();
-        }
-
-        return this.renderer.list(body, ordered, start);
-      }
-      case 'list_item_start': {
-        body = '';
-        const loose = this.token.loose;
-        const checked = this.token.checked;
-        const task = this.token.task;
-
-        if (this.token.task) {
-          if (loose) {
-            if (this.peek().type === 'text') {
-              const nextToken = this.peek();
-              nextToken.text = this.renderer.checkbox(checked) + ' ' + nextToken.text;
-            } else {
-              this.tokens.push({
-                type: 'text',
-                text: this.renderer.checkbox(checked)
-              });
-            }
-          } else {
-            body += this.renderer.checkbox(checked);
-          }
-        }
-
-        while (this.next().type !== 'list_item_end') {
-          body += !loose && this.token.type === 'text'
-            ? this.parseText()
-            : this.tok();
-        }
-        return this.renderer.listitem(body, task, checked);
-      }
-      case 'html': {
-        // TODO parse inline content if parameter markdown=1
-        return this.renderer.html(this.token.text);
-      }
-      case 'paragraph': {
-        return this.renderer.paragraph(this.inline.output(this.token.text));
-      }
-      case 'text': {
-        return this.renderer.paragraph(this.parseText());
-      }
-      default: {
-        const errMsg = 'Token with "' + this.token.type + '" type was not found.';
-        if (this.options.silent) {
-          console.log(errMsg);
-        } else {
-          throw new Error(errMsg);
-        }
-      }
-    }
-  };
-};
-
-const {
-  merge: merge$3,
-  checkSanitizeDeprecation: checkSanitizeDeprecation$1,
-  escape: escape$4
-} = helpers;
-const {
-  getDefaults,
-  changeDefaults,
-  defaults: defaults$5
-} = defaults;
-
-/**
- * Marked
- */
-function marked(src, opt, callback) {
-  // throw error in case of non string input
-  if (typeof src === 'undefined' || src === null) {
-    throw new Error('marked(): input parameter is undefined or null');
-  }
-  if (typeof src !== 'string') {
-    throw new Error('marked(): input parameter is of type '
-      + Object.prototype.toString.call(src) + ', string expected');
-  }
-
-  if (callback || typeof opt === 'function') {
-    if (!callback) {
-      callback = opt;
-      opt = null;
-    }
-
-    opt = merge$3({}, marked.defaults, opt || {});
-    checkSanitizeDeprecation$1(opt);
-    const highlight = opt.highlight;
-    let tokens,
-      pending,
-      i = 0;
-
-    try {
-      tokens = Lexer_1.lex(src, opt);
-    } catch (e) {
-      return callback(e);
-    }
-
-    pending = tokens.length;
-
-    const done = function(err) {
-      if (err) {
-        opt.highlight = highlight;
-        return callback(err);
-      }
-
-      let out;
-
-      try {
-        out = Parser_1.parse(tokens, opt);
-      } catch (e) {
-        err = e;
-      }
-
-      opt.highlight = highlight;
-
-      return err
-        ? callback(err)
-        : callback(null, out);
-    };
-
-    if (!highlight || highlight.length < 3) {
-      return done();
-    }
-
-    delete opt.highlight;
-
-    if (!pending) return done();
-
-    for (; i < tokens.length; i++) {
-      (function(token) {
-        if (token.type !== 'code') {
-          return --pending || done();
-        }
-        return highlight(token.text, token.lang, function(err, code) {
-          if (err) return done(err);
-          if (code == null || code === token.text) {
-            return --pending || done();
-          }
-          token.text = code;
-          token.escaped = true;
-          --pending || done();
-        });
-      })(tokens[i]);
-    }
-
-    return;
-  }
-  try {
-    opt = merge$3({}, marked.defaults, opt || {});
-    checkSanitizeDeprecation$1(opt);
-    return Parser_1.parse(Lexer_1.lex(src, opt), opt);
-  } catch (e) {
-    e.message += '\nPlease report this to https://github.com/markedjs/marked.';
-    if ((opt || marked.defaults).silent) {
-      return '<p>An error occurred:</p><pre>'
-        + escape$4(e.message + '', true)
-        + '</pre>';
-    }
-    throw e;
-  }
-}
-
-/**
- * Options
- */
-
-marked.options =
-marked.setOptions = function(opt) {
-  merge$3(marked.defaults, opt);
-  changeDefaults(marked.defaults);
-  return marked;
-};
-
-marked.getDefaults = getDefaults;
-
-marked.defaults = defaults$5;
-
-/**
- * Expose
- */
-
-marked.Parser = Parser_1;
-marked.parser = Parser_1.parse;
-
-marked.Renderer = Renderer_1;
-marked.TextRenderer = TextRenderer_1;
-
-marked.Lexer = Lexer_1;
-marked.lexer = Lexer_1.lex;
-
-marked.InlineLexer = InlineLexer_1;
-marked.inlineLexer = InlineLexer_1.output;
-
-marked.Slugger = Slugger_1;
-
-marked.parse = marked;
-
-var marked_1 = marked;
-
-function _toConsumableArray$1(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
-
-var hasOwnProperty$1 = Object.hasOwnProperty;
-var setPrototypeOf = Object.setPrototypeOf;
-var isFrozen = Object.isFrozen;
-var objectKeys = Object.keys;
-var freeze = Object.freeze;
-var seal = Object.seal; // eslint-disable-line import/no-mutable-exports
-
-var _ref = typeof Reflect !== 'undefined' && Reflect;
-var apply = _ref.apply;
-var construct = _ref.construct;
+/*! @license DOMPurify | (c) Cure53 and other contributors | Released under the Apache license 2.0 and Mozilla Public License 2.0 | github.com/cure53/DOMPurify/blob/2.0.8/LICENSE */
+
+function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
+
+var hasOwnProperty$1 = Object.hasOwnProperty,
+    setPrototypeOf = Object.setPrototypeOf,
+    isFrozen = Object.isFrozen,
+    objectKeys = Object.keys;
+var freeze = Object.freeze,
+    seal = Object.seal,
+    create = Object.create; // eslint-disable-line import/no-mutable-exports
+
+var _ref = typeof Reflect !== 'undefined' && Reflect,
+    apply = _ref.apply,
+    construct = _ref.construct;
 
 if (!apply) {
   apply = function apply(fun, thisValue, args) {
@@ -8046,7 +3396,7 @@ if (!seal) {
 
 if (!construct) {
   construct = function construct(Func, args) {
-    return new (Function.prototype.bind.apply(Func, [null].concat(_toConsumableArray$1(args))))();
+    return new (Function.prototype.bind.apply(Func, [null].concat(_toConsumableArray(args))))();
   };
 }
 
@@ -8120,7 +3470,7 @@ function addToSet(set, array) {
 
 /* Shallow clone an object */
 function clone(object) {
-  var newObject = {};
+  var newObject = create(null);
 
   var property = void 0;
   for (property in object) {
@@ -8132,7 +3482,7 @@ function clone(object) {
   return newObject;
 }
 
-var html$1 = freeze(['a', 'abbr', 'acronym', 'address', 'area', 'article', 'aside', 'audio', 'b', 'bdi', 'bdo', 'big', 'blink', 'blockquote', 'body', 'br', 'button', 'canvas', 'caption', 'center', 'cite', 'code', 'col', 'colgroup', 'content', 'data', 'datalist', 'dd', 'decorator', 'del', 'details', 'dfn', 'dir', 'div', 'dl', 'dt', 'element', 'em', 'fieldset', 'figcaption', 'figure', 'font', 'footer', 'form', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'head', 'header', 'hgroup', 'hr', 'html', 'i', 'img', 'input', 'ins', 'kbd', 'label', 'legend', 'li', 'main', 'map', 'mark', 'marquee', 'menu', 'menuitem', 'meter', 'nav', 'nobr', 'ol', 'optgroup', 'option', 'output', 'p', 'picture', 'pre', 'progress', 'q', 'rp', 'rt', 'ruby', 's', 'samp', 'section', 'select', 'shadow', 'small', 'source', 'spacer', 'span', 'strike', 'strong', 'style', 'sub', 'summary', 'sup', 'table', 'tbody', 'td', 'template', 'textarea', 'tfoot', 'th', 'thead', 'time', 'tr', 'track', 'tt', 'u', 'ul', 'var', 'video', 'wbr']);
+var html = freeze(['a', 'abbr', 'acronym', 'address', 'area', 'article', 'aside', 'audio', 'b', 'bdi', 'bdo', 'big', 'blink', 'blockquote', 'body', 'br', 'button', 'canvas', 'caption', 'center', 'cite', 'code', 'col', 'colgroup', 'content', 'data', 'datalist', 'dd', 'decorator', 'del', 'details', 'dfn', 'dir', 'div', 'dl', 'dt', 'element', 'em', 'fieldset', 'figcaption', 'figure', 'font', 'footer', 'form', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'head', 'header', 'hgroup', 'hr', 'html', 'i', 'img', 'input', 'ins', 'kbd', 'label', 'legend', 'li', 'main', 'map', 'mark', 'marquee', 'menu', 'menuitem', 'meter', 'nav', 'nobr', 'ol', 'optgroup', 'option', 'output', 'p', 'picture', 'pre', 'progress', 'q', 'rp', 'rt', 'ruby', 's', 'samp', 'section', 'select', 'shadow', 'small', 'source', 'spacer', 'span', 'strike', 'strong', 'style', 'sub', 'summary', 'sup', 'table', 'tbody', 'td', 'template', 'textarea', 'tfoot', 'th', 'thead', 'time', 'tr', 'track', 'tt', 'u', 'ul', 'var', 'video', 'wbr']);
 
 // SVG
 var svg = freeze(['svg', 'a', 'altglyph', 'altglyphdef', 'altglyphitem', 'animatecolor', 'animatemotion', 'animatetransform', 'audio', 'canvas', 'circle', 'clippath', 'defs', 'desc', 'ellipse', 'filter', 'font', 'g', 'glyph', 'glyphref', 'hkern', 'image', 'line', 'lineargradient', 'marker', 'mask', 'metadata', 'mpath', 'path', 'pattern', 'polygon', 'polyline', 'radialgradient', 'rect', 'stop', 'style', 'switch', 'symbol', 'text', 'textpath', 'title', 'tref', 'tspan', 'video', 'view', 'vkern']);
@@ -8143,14 +3493,15 @@ var mathMl = freeze(['math', 'menclose', 'merror', 'mfenced', 'mfrac', 'mglyph',
 
 var text = freeze(['#text']);
 
-var html$1$1 = freeze(['accept', 'action', 'align', 'alt', 'autocomplete', 'background', 'bgcolor', 'border', 'cellpadding', 'cellspacing', 'checked', 'cite', 'class', 'clear', 'color', 'cols', 'colspan', 'controls', 'coords', 'crossorigin', 'datetime', 'default', 'dir', 'disabled', 'download', 'enctype', 'face', 'for', 'headers', 'height', 'hidden', 'high', 'href', 'hreflang', 'id', 'integrity', 'ismap', 'label', 'lang', 'list', 'loop', 'low', 'max', 'maxlength', 'media', 'method', 'min', 'minlength', 'multiple', 'name', 'noshade', 'novalidate', 'nowrap', 'open', 'optimum', 'pattern', 'placeholder', 'poster', 'preload', 'pubdate', 'radiogroup', 'readonly', 'rel', 'required', 'rev', 'reversed', 'role', 'rows', 'rowspan', 'spellcheck', 'scope', 'selected', 'shape', 'size', 'sizes', 'span', 'srclang', 'start', 'src', 'srcset', 'step', 'style', 'summary', 'tabindex', 'title', 'type', 'usemap', 'valign', 'value', 'width', 'xmlns']);
+var html$1 = freeze(['accept', 'action', 'align', 'alt', 'autocapitalize', 'autocomplete', 'autopictureinpicture', 'autoplay', 'background', 'bgcolor', 'border', 'capture', 'cellpadding', 'cellspacing', 'checked', 'cite', 'class', 'clear', 'color', 'cols', 'colspan', 'controls', 'controlslist', 'coords', 'crossorigin', 'datetime', 'decoding', 'default', 'dir', 'disabled', 'disablepictureinpicture', 'disableremoteplayback', 'download', 'draggable', 'enctype', 'enterkeyhint', 'face', 'for', 'headers', 'height', 'hidden', 'high', 'href', 'hreflang', 'id', 'inputmode', 'integrity', 'ismap', 'kind', 'label', 'lang', 'list', 'loading', 'loop', 'low', 'max', 'maxlength', 'media', 'method', 'min', 'minlength', 'multiple', 'muted', 'name', 'noshade', 'novalidate', 'nowrap', 'open', 'optimum', 'pattern', 'placeholder', 'playsinline', 'poster', 'preload', 'pubdate', 'radiogroup', 'readonly', 'rel', 'required', 'rev', 'reversed', 'role', 'rows', 'rowspan', 'spellcheck', 'scope', 'selected', 'shape', 'size', 'sizes', 'span', 'srclang', 'start', 'src', 'srcset', 'step', 'style', 'summary', 'tabindex', 'title', 'translate', 'type', 'usemap', 'valign', 'value', 'width', 'xmlns']);
 
-var svg$1 = freeze(['accent-height', 'accumulate', 'additive', 'alignment-baseline', 'ascent', 'attributename', 'attributetype', 'azimuth', 'basefrequency', 'baseline-shift', 'begin', 'bias', 'by', 'class', 'clip', 'clip-path', 'clip-rule', 'color', 'color-interpolation', 'color-interpolation-filters', 'color-profile', 'color-rendering', 'cx', 'cy', 'd', 'dx', 'dy', 'diffuseconstant', 'direction', 'display', 'divisor', 'dur', 'edgemode', 'elevation', 'end', 'fill', 'fill-opacity', 'fill-rule', 'filter', 'filterunits', 'flood-color', 'flood-opacity', 'font-family', 'font-size', 'font-size-adjust', 'font-stretch', 'font-style', 'font-variant', 'font-weight', 'fx', 'fy', 'g1', 'g2', 'glyph-name', 'glyphref', 'gradientunits', 'gradienttransform', 'height', 'href', 'id', 'image-rendering', 'in', 'in2', 'k', 'k1', 'k2', 'k3', 'k4', 'kerning', 'keypoints', 'keysplines', 'keytimes', 'lang', 'lengthadjust', 'letter-spacing', 'kernelmatrix', 'kernelunitlength', 'lighting-color', 'local', 'marker-end', 'marker-mid', 'marker-start', 'markerheight', 'markerunits', 'markerwidth', 'maskcontentunits', 'maskunits', 'max', 'mask', 'media', 'method', 'mode', 'min', 'name', 'numoctaves', 'offset', 'operator', 'opacity', 'order', 'orient', 'orientation', 'origin', 'overflow', 'paint-order', 'path', 'pathlength', 'patterncontentunits', 'patterntransform', 'patternunits', 'points', 'preservealpha', 'preserveaspectratio', 'primitiveunits', 'r', 'rx', 'ry', 'radius', 'refx', 'refy', 'repeatcount', 'repeatdur', 'restart', 'result', 'rotate', 'scale', 'seed', 'shape-rendering', 'specularconstant', 'specularexponent', 'spreadmethod', 'stddeviation', 'stitchtiles', 'stop-color', 'stop-opacity', 'stroke-dasharray', 'stroke-dashoffset', 'stroke-linecap', 'stroke-linejoin', 'stroke-miterlimit', 'stroke-opacity', 'stroke', 'stroke-width', 'style', 'surfacescale', 'tabindex', 'targetx', 'targety', 'transform', 'text-anchor', 'text-decoration', 'text-rendering', 'textlength', 'type', 'u1', 'u2', 'unicode', 'values', 'viewbox', 'visibility', 'version', 'vert-adv-y', 'vert-origin-x', 'vert-origin-y', 'width', 'word-spacing', 'wrap', 'writing-mode', 'xchannelselector', 'ychannelselector', 'x', 'x1', 'x2', 'xmlns', 'y', 'y1', 'y2', 'z', 'zoomandpan']);
+var svg$1 = freeze(['accent-height', 'accumulate', 'additive', 'alignment-baseline', 'ascent', 'attributename', 'attributetype', 'azimuth', 'basefrequency', 'baseline-shift', 'begin', 'bias', 'by', 'class', 'clip', 'clippathunits', 'clip-path', 'clip-rule', 'color', 'color-interpolation', 'color-interpolation-filters', 'color-profile', 'color-rendering', 'cx', 'cy', 'd', 'dx', 'dy', 'diffuseconstant', 'direction', 'display', 'divisor', 'dur', 'edgemode', 'elevation', 'end', 'fill', 'fill-opacity', 'fill-rule', 'filter', 'filterunits', 'flood-color', 'flood-opacity', 'font-family', 'font-size', 'font-size-adjust', 'font-stretch', 'font-style', 'font-variant', 'font-weight', 'fx', 'fy', 'g1', 'g2', 'glyph-name', 'glyphref', 'gradientunits', 'gradienttransform', 'height', 'href', 'id', 'image-rendering', 'in', 'in2', 'k', 'k1', 'k2', 'k3', 'k4', 'kerning', 'keypoints', 'keysplines', 'keytimes', 'lang', 'lengthadjust', 'letter-spacing', 'kernelmatrix', 'kernelunitlength', 'lighting-color', 'local', 'marker-end', 'marker-mid', 'marker-start', 'markerheight', 'markerunits', 'markerwidth', 'maskcontentunits', 'maskunits', 'max', 'mask', 'media', 'method', 'mode', 'min', 'name', 'numoctaves', 'offset', 'operator', 'opacity', 'order', 'orient', 'orientation', 'origin', 'overflow', 'paint-order', 'path', 'pathlength', 'patterncontentunits', 'patterntransform', 'patternunits', 'points', 'preservealpha', 'preserveaspectratio', 'primitiveunits', 'r', 'rx', 'ry', 'radius', 'refx', 'refy', 'repeatcount', 'repeatdur', 'restart', 'result', 'rotate', 'scale', 'seed', 'shape-rendering', 'specularconstant', 'specularexponent', 'spreadmethod', 'startoffset', 'stddeviation', 'stitchtiles', 'stop-color', 'stop-opacity', 'stroke-dasharray', 'stroke-dashoffset', 'stroke-linecap', 'stroke-linejoin', 'stroke-miterlimit', 'stroke-opacity', 'stroke', 'stroke-width', 'style', 'surfacescale', 'systemlanguage', 'tabindex', 'targetx', 'targety', 'transform', 'text-anchor', 'text-decoration', 'text-rendering', 'textlength', 'type', 'u1', 'u2', 'unicode', 'values', 'viewbox', 'visibility', 'version', 'vert-adv-y', 'vert-origin-x', 'vert-origin-y', 'width', 'word-spacing', 'wrap', 'writing-mode', 'xchannelselector', 'ychannelselector', 'x', 'x1', 'x2', 'xmlns', 'y', 'y1', 'y2', 'z', 'zoomandpan']);
 
 var mathMl$1 = freeze(['accent', 'accentunder', 'align', 'bevelled', 'close', 'columnsalign', 'columnlines', 'columnspan', 'denomalign', 'depth', 'dir', 'display', 'displaystyle', 'encoding', 'fence', 'frame', 'height', 'href', 'id', 'largeop', 'length', 'linethickness', 'lspace', 'lquote', 'mathbackground', 'mathcolor', 'mathsize', 'mathvariant', 'maxsize', 'minsize', 'movablelimits', 'notation', 'numalign', 'open', 'rowalign', 'rowlines', 'rowspacing', 'rowspan', 'rspace', 'rquote', 'scriptlevel', 'scriptminsize', 'scriptsizemultiplier', 'selection', 'separator', 'separators', 'stretchy', 'subscriptshift', 'supscriptshift', 'symmetric', 'voffset', 'width', 'xmlns']);
 
 var xml = freeze(['xlink:href', 'xml:id', 'xlink:title', 'xml:space', 'xmlns:xlink']);
 
+// eslint-disable-next-line unicorn/better-regex
 var MUSTACHE_EXPR = seal(/\{\{[\s\S]*|[\s\S]*\}\}/gm); // Specify template detection regex for SAFE_FOR_TEMPLATES mode
 var ERB_EXPR = seal(/<%[\s\S]*|[\s\S]*%>/gm);
 var DATA_ATTR = seal(/^data-[\-\w.\u00B7-\uFFFF]/); // eslint-disable-line no-useless-escape
@@ -8158,12 +3509,12 @@ var ARIA_ATTR = seal(/^aria-[\-\w]+$/); // eslint-disable-line no-useless-escape
 var IS_ALLOWED_URI = seal(/^(?:(?:(?:f|ht)tps?|mailto|tel|callto|cid|xmpp):|[^a-z]|[a-z+.\-]+(?:[^a-z+.\-:]|$))/i // eslint-disable-line no-useless-escape
 );
 var IS_SCRIPT_OR_DATA = seal(/^(?:\w+script|data):/i);
-var ATTR_WHITESPACE = seal(/[\u0000-\u0020\u00A0\u1680\u180E\u2000-\u2029\u205f\u3000]/g // eslint-disable-line no-control-regex
+var ATTR_WHITESPACE = seal(/[\u0000-\u0020\u00A0\u1680\u180E\u2000-\u2029\u205F\u3000]/g // eslint-disable-line no-control-regex
 );
 
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
-function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
+function _toConsumableArray$1(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 
 var getGlobal = function getGlobal() {
   return typeof window === 'undefined' ? null : window;
@@ -8199,7 +3550,7 @@ var _createTrustedTypesPolicy = function _createTrustedTypesPolicy(trustedTypes,
         return html$$1;
       }
     });
-  } catch (error) {
+  } catch (_) {
     // Policy creation failed (most likely another DOMPurify script has
     // already run). Skip creating the policy, as this will only cause errors
     // if TT are enforced.
@@ -8219,7 +3570,7 @@ function createDOMPurify() {
    * Version label, exposed for easier checks
    * if DOMPurify is up to date or not
    */
-  DOMPurify.version = '2.0.8';
+  DOMPurify.version = '2.0.15';
 
   /**
    * Array of elements that DOMPurify removed during sanitation.
@@ -8236,7 +3587,6 @@ function createDOMPurify() {
   }
 
   var originalDocument = window.document;
-  var useDOMParser = false;
   var removeTitle = false;
 
   var document = window.document;
@@ -8266,7 +3616,7 @@ function createDOMPurify() {
   }
 
   var trustedTypesPolicy = _createTrustedTypesPolicy(trustedTypes, originalDocument);
-  var emptyHTML = trustedTypesPolicy ? trustedTypesPolicy.createHTML('') : '';
+  var emptyHTML = trustedTypesPolicy && RETURN_TRUSTED_TYPE ? trustedTypesPolicy.createHTML('') : '';
 
   var _document = document,
       implementation = _document.implementation,
@@ -8276,12 +3626,14 @@ function createDOMPurify() {
   var importNode = originalDocument.importNode;
 
 
+  var documentMode = clone(document).documentMode ? document.documentMode : {};
+
   var hooks = {};
 
   /**
    * Expose whether this browser supports running the full DOMPurify.
    */
-  DOMPurify.isSupported = implementation && typeof implementation.createHTMLDocument !== 'undefined' && document.documentMode !== 9;
+  DOMPurify.isSupported = implementation && typeof implementation.createHTMLDocument !== 'undefined' && documentMode !== 9;
 
   var MUSTACHE_EXPR$$1 = MUSTACHE_EXPR,
       ERB_EXPR$$1 = ERB_EXPR,
@@ -8299,11 +3651,11 @@ function createDOMPurify() {
   /* allowed element names */
 
   var ALLOWED_TAGS = null;
-  var DEFAULT_ALLOWED_TAGS = addToSet({}, [].concat(_toConsumableArray(html$1), _toConsumableArray(svg), _toConsumableArray(svgFilters), _toConsumableArray(mathMl), _toConsumableArray(text)));
+  var DEFAULT_ALLOWED_TAGS = addToSet({}, [].concat(_toConsumableArray$1(html), _toConsumableArray$1(svg), _toConsumableArray$1(svgFilters), _toConsumableArray$1(mathMl), _toConsumableArray$1(text)));
 
   /* Allowed attribute names */
   var ALLOWED_ATTR = null;
-  var DEFAULT_ALLOWED_ATTR = addToSet({}, [].concat(_toConsumableArray(html$1$1), _toConsumableArray(svg$1), _toConsumableArray(mathMl$1), _toConsumableArray(xml)));
+  var DEFAULT_ALLOWED_ATTR = addToSet({}, [].concat(_toConsumableArray$1(html$1), _toConsumableArray$1(svg$1), _toConsumableArray$1(mathMl$1), _toConsumableArray$1(xml)));
 
   /* Explicitly forbidden tags (overrides ALLOWED_TAGS/ADD_TAGS) */
   var FORBID_TAGS = null;
@@ -8354,7 +3706,7 @@ function createDOMPurify() {
    * DOMPurify. */
   var RETURN_DOM_IMPORT = false;
 
-  /* Try to return a Trusted Type object instead of a string, retrun a string in
+  /* Try to return a Trusted Type object instead of a string, return a string in
    * case Trusted Types are not supported  */
   var RETURN_TRUSTED_TYPE = false;
 
@@ -8375,7 +3727,8 @@ function createDOMPurify() {
   var FORBID_CONTENTS = addToSet({}, ['annotation-xml', 'audio', 'colgroup', 'desc', 'foreignobject', 'head', 'iframe', 'math', 'mi', 'mn', 'mo', 'ms', 'mtext', 'noembed', 'noframes', 'plaintext', 'script', 'style', 'svg', 'template', 'thead', 'title', 'video', 'xmp']);
 
   /* Tags that are safe for data: URIs */
-  var DATA_URI_TAGS = addToSet({}, ['audio', 'video', 'img', 'source', 'image']);
+  var DATA_URI_TAGS = null;
+  var DEFAULT_DATA_URI_TAGS = addToSet({}, ['audio', 'video', 'img', 'source', 'image', 'track']);
 
   /* Attributes safe for values like "javascript:" */
   var URI_SAFE_ATTRIBUTES = null;
@@ -8405,10 +3758,14 @@ function createDOMPurify() {
       cfg = {};
     }
 
+    /* Shield configuration object from prototype pollution */
+    cfg = clone(cfg);
+
     /* Set configuration parameters */
     ALLOWED_TAGS = 'ALLOWED_TAGS' in cfg ? addToSet({}, cfg.ALLOWED_TAGS) : DEFAULT_ALLOWED_TAGS;
     ALLOWED_ATTR = 'ALLOWED_ATTR' in cfg ? addToSet({}, cfg.ALLOWED_ATTR) : DEFAULT_ALLOWED_ATTR;
     URI_SAFE_ATTRIBUTES = 'ADD_URI_SAFE_ATTR' in cfg ? addToSet(clone(DEFAULT_URI_SAFE_ATTRIBUTES), cfg.ADD_URI_SAFE_ATTR) : DEFAULT_URI_SAFE_ATTRIBUTES;
+    DATA_URI_TAGS = 'ADD_DATA_URI_TAGS' in cfg ? addToSet(clone(DEFAULT_DATA_URI_TAGS), cfg.ADD_DATA_URI_TAGS) : DEFAULT_DATA_URI_TAGS;
     FORBID_TAGS = 'FORBID_TAGS' in cfg ? addToSet({}, cfg.FORBID_TAGS) : {};
     FORBID_ATTR = 'FORBID_ATTR' in cfg ? addToSet({}, cfg.FORBID_ATTR) : {};
     USE_PROFILES = 'USE_PROFILES' in cfg ? cfg.USE_PROFILES : false;
@@ -8437,11 +3794,11 @@ function createDOMPurify() {
 
     /* Parse profile info */
     if (USE_PROFILES) {
-      ALLOWED_TAGS = addToSet({}, [].concat(_toConsumableArray(text)));
+      ALLOWED_TAGS = addToSet({}, [].concat(_toConsumableArray$1(text)));
       ALLOWED_ATTR = [];
       if (USE_PROFILES.html === true) {
-        addToSet(ALLOWED_TAGS, html$1);
-        addToSet(ALLOWED_ATTR, html$1$1);
+        addToSet(ALLOWED_TAGS, html);
+        addToSet(ALLOWED_ATTR, html$1);
       }
 
       if (USE_PROFILES.svg === true) {
@@ -8518,7 +3875,7 @@ function createDOMPurify() {
     arrayPush(DOMPurify.removed, { element: node });
     try {
       node.parentNode.removeChild(node);
-    } catch (error) {
+    } catch (_) {
       node.outerHTML = emptyHTML;
     }
   };
@@ -8535,7 +3892,7 @@ function createDOMPurify() {
         attribute: node.getAttributeNode(name),
         from: node
       });
-    } catch (error) {
+    } catch (_) {
       arrayPush(DOMPurify.removed, {
         attribute: null,
         from: node
@@ -8560,25 +3917,22 @@ function createDOMPurify() {
       dirty = '<remove></remove>' + dirty;
     } else {
       /* If FORCE_BODY isn't used, leading whitespace needs to be preserved manually */
-      var matches = stringMatch(dirty, /^[\s]+/);
+      var matches = stringMatch(dirty, /^[\r\n\t ]+/);
       leadingWhitespace = matches && matches[0];
     }
 
     var dirtyPayload = trustedTypesPolicy ? trustedTypesPolicy.createHTML(dirty) : dirty;
-    /* Use DOMParser to workaround Firefox bug (see comment below) */
-    if (useDOMParser) {
-      try {
-        doc = new DOMParser().parseFromString(dirtyPayload, 'text/html');
-      } catch (error) {}
-    }
+    /* Use the DOMParser API by default, fallback later if needs be */
+    try {
+      doc = new DOMParser().parseFromString(dirtyPayload, 'text/html');
+    } catch (_) {}
 
     /* Remove title to fix a mXSS bug in older MS Edge */
     if (removeTitle) {
       addToSet(FORBID_TAGS, ['title']);
     }
 
-    /* Otherwise use createHTMLDocument, because DOMParser is unsafe in
-    Safari (see comment below) */
+    /* Use createHTMLDocument in case DOMParser is not available */
     if (!doc || !doc.documentElement) {
       doc = implementation.createHTMLDocument('');
       var _doc = doc,
@@ -8596,32 +3950,15 @@ function createDOMPurify() {
     return getElementsByTagName.call(doc, WHOLE_DOCUMENT ? 'html' : 'body')[0];
   };
 
-  // Firefox uses a different parser for innerHTML rather than
-  // DOMParser (see https://bugzilla.mozilla.org/show_bug.cgi?id=1205631)
-  // which means that you *must* use DOMParser, otherwise the output may
-  // not be safe if used in a document.write context later.
-  //
-  // So we feature detect the Firefox bug and use the DOMParser if necessary.
-  //
-  // Chrome 77 and other versions ship an mXSS bug that caused a bypass to
-  // happen. We now check for the mXSS trigger and react accordingly.
+  /* Here we test for a broken feature in Edge that might cause mXSS */
   if (DOMPurify.isSupported) {
-    (function () {
-      try {
-        var doc = _initDocument('<svg><p><textarea><img src="</textarea><img src=x abc=1//">');
-        if (doc.querySelector('svg img')) {
-          useDOMParser = true;
-        }
-      } catch (error) {}
-    })();
-
     (function () {
       try {
         var doc = _initDocument('<x/><title>&lt;/title&gt;&lt;img&gt;');
         if (regExpTest(/<\/title/, doc.querySelector('title').innerHTML)) {
           removeTitle = true;
         }
-      } catch (error) {}
+      } catch (_) {}
     })();
   }
 
@@ -8661,8 +3998,8 @@ function createDOMPurify() {
    * @param  {Node} obj object to check whether it's a DOM node
    * @return {Boolean} true is object is a DOM node
    */
-  var _isNode = function _isNode(obj) {
-    return (typeof Node === 'undefined' ? 'undefined' : _typeof(Node)) === 'object' ? obj instanceof Node : obj && (typeof obj === 'undefined' ? 'undefined' : _typeof(obj)) === 'object' && typeof obj.nodeType === 'number' && typeof obj.nodeName === 'string';
+  var _isNode = function _isNode(object) {
+    return (typeof Node === 'undefined' ? 'undefined' : _typeof(Node)) === 'object' ? object instanceof Node : object && (typeof object === 'undefined' ? 'undefined' : _typeof(object)) === 'object' && typeof object.nodeType === 'number' && typeof object.nodeName === 'string';
   };
 
   /**
@@ -8706,6 +4043,12 @@ function createDOMPurify() {
       return true;
     }
 
+    /* Check if tagname contains Unicode */
+    if (stringMatch(currentNode.nodeName, /[\u0080-\uFFFF]/)) {
+      _forceRemove(currentNode);
+      return true;
+    }
+
     /* Now let's check the element's type and name */
     var tagName = stringToLowerCase(currentNode.nodeName);
 
@@ -8723,12 +4066,12 @@ function createDOMPurify() {
 
     /* Remove element if anything forbids its presence */
     if (!ALLOWED_TAGS[tagName] || FORBID_TAGS[tagName]) {
-      /* Keep content except for black-listed elements */
+      /* Keep content except for bad-listed elements */
       if (KEEP_CONTENT && !FORBID_CONTENTS[tagName] && typeof currentNode.insertAdjacentHTML === 'function') {
         try {
           var htmlToInsert = currentNode.innerHTML;
           currentNode.insertAdjacentHTML('AfterEnd', trustedTypesPolicy ? trustedTypesPolicy.createHTML(htmlToInsert) : htmlToInsert);
-        } catch (error) {}
+        } catch (_) {}
       }
 
       _forceRemove(currentNode);
@@ -8747,7 +4090,7 @@ function createDOMPurify() {
     }
 
     /* Convert markup to cover jQuery behavior */
-    if (SAFE_FOR_JQUERY && !currentNode.firstElementChild && (!currentNode.content || !currentNode.content.firstElementChild) && regExpTest(/</g, currentNode.textContent)) {
+    if (SAFE_FOR_JQUERY && !_isNode(currentNode.firstElementChild) && (!_isNode(currentNode.content) || !_isNode(currentNode.content.firstElementChild)) && regExpTest(/</g, currentNode.textContent)) {
       arrayPush(DOMPurify.removed, { element: currentNode.cloneNode() });
       if (currentNode.innerHTML) {
         currentNode.innerHTML = stringReplace(currentNode.innerHTML, /</g, '&lt;');
@@ -8929,7 +4272,7 @@ function createDOMPurify() {
         }
 
         arrayPop(DOMPurify.removed);
-      } catch (error) {}
+      } catch (_) {}
     }
 
     /* Execute a hook if present */
@@ -9048,8 +4391,10 @@ function createDOMPurify() {
       }
     } else {
       /* Exit directly if we have nothing to do */
-      if (!RETURN_DOM && !SAFE_FOR_TEMPLATES && !WHOLE_DOCUMENT && RETURN_TRUSTED_TYPE && dirty.indexOf('<') === -1) {
-        return trustedTypesPolicy ? trustedTypesPolicy.createHTML(dirty) : dirty;
+      if (!RETURN_DOM && !SAFE_FOR_TEMPLATES && !WHOLE_DOCUMENT &&
+      // eslint-disable-next-line unicorn/prefer-includes
+      dirty.indexOf('<') === -1) {
+        return trustedTypesPolicy && RETURN_TRUSTED_TYPE ? trustedTypesPolicy.createHTML(dirty) : dirty;
       }
 
       /* Initialize the document to work on */
@@ -9113,11 +4458,13 @@ function createDOMPurify() {
       }
 
       if (RETURN_DOM_IMPORT) {
-        /* AdoptNode() is not used because internal state is not reset
-               (e.g. the past names map of a HTMLFormElement), this is safe
-               in theory but we would rather not risk another attack vector.
-               The state that is cloned by importNode() is explicitly defined
-               by the specs. */
+        /*
+          AdoptNode() is not used because internal state is not reset
+          (e.g. the past names map of a HTMLFormElement), this is safe
+          in theory but we would rather not risk another attack vector.
+          The state that is cloned by importNode() is explicitly defined
+          by the specs.
+        */
         returnNode = importNode.call(originalDocument, returnNode, true);
       }
 
@@ -9234,12 +4581,12 @@ var purify = createDOMPurify();
 
 const parse$1 = (markdown) => {
   if (!markdown) {
-    return html`
+    return html$3`
       ${nothing}
     `;
   }
 
-  return html`
+  return html$3`
     ${unsafeHTML(purify.sanitize(marked_1(markdown)))}
   `;
 };
@@ -9301,11 +4648,11 @@ class DemoReadme extends defaultValue(doNotSetUndefinedValue(LitElement)) {
       this.lastSrc = src;
       md = text$1(src)
           .then(text => parse$1(text))
-          .catch(e => html `<span>Error while loading ${src}</span>`);
+          .catch(e => html$3 `<span>Error while loading ${src}</span>`);
     }
 
-    return html `
-      ${until(md, html`<span>Loading...</span>`)}
+    return html$3 `
+      ${until(md, html$3`<span>Loading...</span>`)}
     `;
   }
 
@@ -9345,79 +4692,6 @@ function __decorate(decorators, target, key, desc) {
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 }
-
-/**
- * @license
- * Copyright (c) 2018 The Polymer Project Authors. All rights reserved.
- * This code may only be used under the BSD style license found at
- * http://polymer.github.io/LICENSE.txt
- * The complete set of authors may be found at
- * http://polymer.github.io/AUTHORS.txt
- * The complete set of contributors may be found at
- * http://polymer.github.io/CONTRIBUTORS.txt
- * Code distributed by Google as part of the polymer project is also
- * subject to an additional IP rights grant found at
- * http://polymer.github.io/PATENTS.txt
- */
-/**
- * Stores the StyleInfo object applied to a given AttributePart.
- * Used to unset existing values when a new StyleInfo object is applied.
- */
-const styleMapCache = new WeakMap();
-/**
- * A directive that applies CSS properties to an element.
- *
- * `styleMap` can only be used in the `style` attribute and must be the only
- * expression in the attribute. It takes the property names in the `styleInfo`
- * object and adds the property values as CSS propertes. Property names with
- * dashes (`-`) are assumed to be valid CSS property names and set on the
- * element's style object using `setProperty()`. Names without dashes are
- * assumed to be camelCased JavaScript property names and set on the element's
- * style object using property assignment, allowing the style object to
- * translate JavaScript-style names to CSS property names.
- *
- * For example `styleMap({backgroundColor: 'red', 'border-top': '5px', '--size':
- * '0'})` sets the `background-color`, `border-top` and `--size` properties.
- *
- * @param styleInfo {StyleInfo}
- */
-const styleMap = directive((styleInfo) => (part) => {
-    if (!(part instanceof AttributePart) || (part instanceof PropertyPart) ||
-        part.committer.name !== 'style' || part.committer.parts.length > 1) {
-        throw new Error('The `styleMap` directive must be used in the style attribute ' +
-            'and must be the only part in the attribute.');
-    }
-    const { committer } = part;
-    const { style } = committer.element;
-    // Handle static styles the first time we see a Part
-    if (!styleMapCache.has(part)) {
-        style.cssText = committer.strings.join(' ');
-    }
-    // Remove old properties that no longer exist in styleInfo
-    const oldInfo = styleMapCache.get(part);
-    for (const name in oldInfo) {
-        if (!(name in styleInfo)) {
-            if (name.indexOf('-') === -1) {
-                // tslint:disable-next-line:no-any
-                style[name] = null;
-            }
-            else {
-                style.removeProperty(name);
-            }
-        }
-    }
-    // Add or update properties
-    for (const name in styleInfo) {
-        if (name.indexOf('-') === -1) {
-            // tslint:disable-next-line:no-any
-            style[name] = styleInfo[name];
-        }
-        else {
-            style.setProperty(name, styleInfo[name]);
-        }
-    }
-    styleMapCache.set(part, styleInfo);
-});
 
 /**
  * A custom element similar to the HTML5 `<details>` element.
@@ -9571,7 +4845,7 @@ let ExpansionPanel = class ExpansionPanel extends LitElement {
     `;
     }
     render() {
-        return html `
+        return html$3 `
       <div role="heading">
         <div
           role="button"
@@ -9762,7 +5036,7 @@ let FancyAccordion = class FancyAccordion extends LitElement {
     `;
     }
     render() {
-        return html `
+        return html$3 `
       <slot></slot>
     `;
     }
@@ -9953,11 +5227,11 @@ class DemoFancyList extends LitElement {
 
 
   render() {
-    return html `
+    return html$3 `
      <d3-fetch .url="${this.src}" @data-changed="${this.onDataChanged}"></d3-fetch>
      <fancy-accordion .openedIndex="${this.openedIndex}">
        ${(this.list || []).filter(l => l.name).map((l, i) => {
-         return html `<expansion-panel .opened="${i === 0}" data-name="${l.name}">
+         return html$3 `<expansion-panel .opened="${i === 0}" data-name="${l.name}">
            <div slot="header">${l.name}</div>
            <div class="md">${parse$1(l.description)}</div>
          </expansion-panel>`;
@@ -10038,7 +5312,7 @@ class DemoContainer extends LitElement {
 
 
   render() {
-    return html `
+    return html$3 `
      <header>
         <slot name="header"></slot>
       </header>
@@ -10087,81 +5361,6 @@ const hasHostTemplate = (name) => {
 const isEmptyArray = (array) => array.length === 0;
 const normalizeType = (type = '') => type.replace(' | undefined', '').replace(' | null', '');
 
-/**
- * @license
- * Copyright (c) 2018 The Polymer Project Authors. All rights reserved.
- * This code may only be used under the BSD style license found at
- * http://polymer.github.io/LICENSE.txt
- * The complete set of authors may be found at
- * http://polymer.github.io/AUTHORS.txt
- * The complete set of contributors may be found at
- * http://polymer.github.io/CONTRIBUTORS.txt
- * Code distributed by Google as part of the polymer project is also
- * subject to an additional IP rights grant found at
- * http://polymer.github.io/PATENTS.txt
- */
-const templateCaches$1 = new WeakMap();
-/**
- * Enables fast switching between multiple templates by caching the DOM nodes
- * and TemplateInstances produced by the templates.
- *
- * Example:
- *
- * ```
- * let checked = false;
- *
- * html`
- *   ${cache(checked ? html`input is checked` : html`input is not checked`)}
- * `
- * ```
- */
-const cache$2 = directive((value) => (part) => {
-    if (!(part instanceof NodePart)) {
-        throw new Error('cache can only be used in text bindings');
-    }
-    let templateCache = templateCaches$1.get(part);
-    if (templateCache === undefined) {
-        templateCache = new WeakMap();
-        templateCaches$1.set(part, templateCache);
-    }
-    const previousValue = part.value;
-    // First, can we update the current TemplateInstance, or do we need to move
-    // the current nodes into the cache?
-    if (previousValue instanceof TemplateInstance) {
-        if (value instanceof TemplateResult &&
-            previousValue.template === part.options.templateFactory(value)) {
-            // Same Template, just trigger an update of the TemplateInstance
-            part.setValue(value);
-            return;
-        }
-        else {
-            // Not the same Template, move the nodes from the DOM into the cache.
-            let cachedTemplate = templateCache.get(previousValue.template);
-            if (cachedTemplate === undefined) {
-                cachedTemplate = {
-                    instance: previousValue,
-                    nodes: document.createDocumentFragment(),
-                };
-                templateCache.set(previousValue.template, cachedTemplate);
-            }
-            reparentNodes(cachedTemplate.nodes, part.startNode.nextSibling, part.endNode);
-        }
-    }
-    // Next, can we reuse nodes from the cache?
-    if (value instanceof TemplateResult) {
-        const template = part.options.templateFactory(value);
-        const cachedTemplate = templateCache.get(template);
-        if (cachedTemplate !== undefined) {
-            // Move nodes out of cache
-            part.setValue(cachedTemplate.nodes);
-            part.commit();
-            // Set the Part value to the TemplateInstance so it'll update it.
-            part.value = cachedTemplate.instance;
-        }
-    }
-    part.setValue(value);
-});
-
 const EMPTY_ELEMENT = {
     name: '',
     description: '',
@@ -10173,14 +5372,1233 @@ const EMPTY_ELEMENT = {
     cssProperties: []
 };
 
+function _toConsumableArray$1$1(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
+
+var hasOwnProperty$2 = Object.hasOwnProperty;
+var setPrototypeOf$1 = Object.setPrototypeOf;
+var isFrozen$1 = Object.isFrozen;
+var objectKeys$1 = Object.keys;
+var freeze$1 = Object.freeze;
+var seal$1 = Object.seal; // eslint-disable-line import/no-mutable-exports
+
+var _ref$1 = typeof Reflect !== 'undefined' && Reflect;
+var apply$1 = _ref$1.apply;
+var construct$1 = _ref$1.construct;
+
+if (!apply$1) {
+  apply$1 = function apply(fun, thisValue, args) {
+    return fun.apply(thisValue, args);
+  };
+}
+
+if (!freeze$1) {
+  freeze$1 = function freeze(x) {
+    return x;
+  };
+}
+
+if (!seal$1) {
+  seal$1 = function seal(x) {
+    return x;
+  };
+}
+
+if (!construct$1) {
+  construct$1 = function construct(Func, args) {
+    return new (Function.prototype.bind.apply(Func, [null].concat(_toConsumableArray$1$1(args))))();
+  };
+}
+
+var arrayForEach$1 = unapply$1(Array.prototype.forEach);
+var arrayIndexOf$1 = unapply$1(Array.prototype.indexOf);
+var arrayJoin$1 = unapply$1(Array.prototype.join);
+var arrayPop$1 = unapply$1(Array.prototype.pop);
+var arrayPush$1 = unapply$1(Array.prototype.push);
+var arraySlice$1 = unapply$1(Array.prototype.slice);
+
+var stringToLowerCase$1 = unapply$1(String.prototype.toLowerCase);
+var stringMatch$1 = unapply$1(String.prototype.match);
+var stringReplace$1 = unapply$1(String.prototype.replace);
+var stringIndexOf$1 = unapply$1(String.prototype.indexOf);
+var stringTrim$1 = unapply$1(String.prototype.trim);
+
+var regExpTest$1 = unapply$1(RegExp.prototype.test);
+var regExpCreate$1 = unconstruct$1(RegExp);
+
+var typeErrorCreate$1 = unconstruct$1(TypeError);
+
+function unapply$1(func) {
+  return function (thisArg) {
+    for (var _len = arguments.length, args = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
+      args[_key - 1] = arguments[_key];
+    }
+
+    return apply$1(func, thisArg, args);
+  };
+}
+
+function unconstruct$1(func) {
+  return function () {
+    for (var _len2 = arguments.length, args = Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
+      args[_key2] = arguments[_key2];
+    }
+
+    return construct$1(func, args);
+  };
+}
+
+/* Add properties to a lookup table */
+function addToSet$1(set, array) {
+  if (setPrototypeOf$1) {
+    // Make 'in' and truthy checks like Boolean(set.constructor)
+    // independent of any properties defined on Object.prototype.
+    // Prevent prototype setters from intercepting set as a this value.
+    setPrototypeOf$1(set, null);
+  }
+
+  var l = array.length;
+  while (l--) {
+    var element = array[l];
+    if (typeof element === 'string') {
+      var lcElement = stringToLowerCase$1(element);
+      if (lcElement !== element) {
+        // Config presets (e.g. tags.js, attrs.js) are immutable.
+        if (!isFrozen$1(array)) {
+          array[l] = lcElement;
+        }
+
+        element = lcElement;
+      }
+    }
+
+    set[element] = true;
+  }
+
+  return set;
+}
+
+/* Shallow clone an object */
+function clone$1(object) {
+  var newObject = {};
+
+  var property = void 0;
+  for (property in object) {
+    if (apply$1(hasOwnProperty$2, object, [property])) {
+      newObject[property] = object[property];
+    }
+  }
+
+  return newObject;
+}
+
+var html$2 = freeze$1(['a', 'abbr', 'acronym', 'address', 'area', 'article', 'aside', 'audio', 'b', 'bdi', 'bdo', 'big', 'blink', 'blockquote', 'body', 'br', 'button', 'canvas', 'caption', 'center', 'cite', 'code', 'col', 'colgroup', 'content', 'data', 'datalist', 'dd', 'decorator', 'del', 'details', 'dfn', 'dir', 'div', 'dl', 'dt', 'element', 'em', 'fieldset', 'figcaption', 'figure', 'font', 'footer', 'form', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'head', 'header', 'hgroup', 'hr', 'html', 'i', 'img', 'input', 'ins', 'kbd', 'label', 'legend', 'li', 'main', 'map', 'mark', 'marquee', 'menu', 'menuitem', 'meter', 'nav', 'nobr', 'ol', 'optgroup', 'option', 'output', 'p', 'picture', 'pre', 'progress', 'q', 'rp', 'rt', 'ruby', 's', 'samp', 'section', 'select', 'shadow', 'small', 'source', 'spacer', 'span', 'strike', 'strong', 'style', 'sub', 'summary', 'sup', 'table', 'tbody', 'td', 'template', 'textarea', 'tfoot', 'th', 'thead', 'time', 'tr', 'track', 'tt', 'u', 'ul', 'var', 'video', 'wbr']);
+
+// SVG
+var svg$2 = freeze$1(['svg', 'a', 'altglyph', 'altglyphdef', 'altglyphitem', 'animatecolor', 'animatemotion', 'animatetransform', 'audio', 'canvas', 'circle', 'clippath', 'defs', 'desc', 'ellipse', 'filter', 'font', 'g', 'glyph', 'glyphref', 'hkern', 'image', 'line', 'lineargradient', 'marker', 'mask', 'metadata', 'mpath', 'path', 'pattern', 'polygon', 'polyline', 'radialgradient', 'rect', 'stop', 'style', 'switch', 'symbol', 'text', 'textpath', 'title', 'tref', 'tspan', 'video', 'view', 'vkern']);
+
+var svgFilters$1 = freeze$1(['feBlend', 'feColorMatrix', 'feComponentTransfer', 'feComposite', 'feConvolveMatrix', 'feDiffuseLighting', 'feDisplacementMap', 'feDistantLight', 'feFlood', 'feFuncA', 'feFuncB', 'feFuncG', 'feFuncR', 'feGaussianBlur', 'feMerge', 'feMergeNode', 'feMorphology', 'feOffset', 'fePointLight', 'feSpecularLighting', 'feSpotLight', 'feTile', 'feTurbulence']);
+
+var mathMl$2 = freeze$1(['math', 'menclose', 'merror', 'mfenced', 'mfrac', 'mglyph', 'mi', 'mlabeledtr', 'mmultiscripts', 'mn', 'mo', 'mover', 'mpadded', 'mphantom', 'mroot', 'mrow', 'ms', 'mspace', 'msqrt', 'mstyle', 'msub', 'msup', 'msubsup', 'mtable', 'mtd', 'mtext', 'mtr', 'munder', 'munderover']);
+
+var text$2 = freeze$1(['#text']);
+
+var html$1$1 = freeze$1(['accept', 'action', 'align', 'alt', 'autocomplete', 'background', 'bgcolor', 'border', 'cellpadding', 'cellspacing', 'checked', 'cite', 'class', 'clear', 'color', 'cols', 'colspan', 'controls', 'coords', 'crossorigin', 'datetime', 'default', 'dir', 'disabled', 'download', 'enctype', 'face', 'for', 'headers', 'height', 'hidden', 'high', 'href', 'hreflang', 'id', 'integrity', 'ismap', 'label', 'lang', 'list', 'loop', 'low', 'max', 'maxlength', 'media', 'method', 'min', 'minlength', 'multiple', 'name', 'noshade', 'novalidate', 'nowrap', 'open', 'optimum', 'pattern', 'placeholder', 'poster', 'preload', 'pubdate', 'radiogroup', 'readonly', 'rel', 'required', 'rev', 'reversed', 'role', 'rows', 'rowspan', 'spellcheck', 'scope', 'selected', 'shape', 'size', 'sizes', 'span', 'srclang', 'start', 'src', 'srcset', 'step', 'style', 'summary', 'tabindex', 'title', 'type', 'usemap', 'valign', 'value', 'width', 'xmlns']);
+
+var svg$1$1 = freeze$1(['accent-height', 'accumulate', 'additive', 'alignment-baseline', 'ascent', 'attributename', 'attributetype', 'azimuth', 'basefrequency', 'baseline-shift', 'begin', 'bias', 'by', 'class', 'clip', 'clip-path', 'clip-rule', 'color', 'color-interpolation', 'color-interpolation-filters', 'color-profile', 'color-rendering', 'cx', 'cy', 'd', 'dx', 'dy', 'diffuseconstant', 'direction', 'display', 'divisor', 'dur', 'edgemode', 'elevation', 'end', 'fill', 'fill-opacity', 'fill-rule', 'filter', 'filterunits', 'flood-color', 'flood-opacity', 'font-family', 'font-size', 'font-size-adjust', 'font-stretch', 'font-style', 'font-variant', 'font-weight', 'fx', 'fy', 'g1', 'g2', 'glyph-name', 'glyphref', 'gradientunits', 'gradienttransform', 'height', 'href', 'id', 'image-rendering', 'in', 'in2', 'k', 'k1', 'k2', 'k3', 'k4', 'kerning', 'keypoints', 'keysplines', 'keytimes', 'lang', 'lengthadjust', 'letter-spacing', 'kernelmatrix', 'kernelunitlength', 'lighting-color', 'local', 'marker-end', 'marker-mid', 'marker-start', 'markerheight', 'markerunits', 'markerwidth', 'maskcontentunits', 'maskunits', 'max', 'mask', 'media', 'method', 'mode', 'min', 'name', 'numoctaves', 'offset', 'operator', 'opacity', 'order', 'orient', 'orientation', 'origin', 'overflow', 'paint-order', 'path', 'pathlength', 'patterncontentunits', 'patterntransform', 'patternunits', 'points', 'preservealpha', 'preserveaspectratio', 'primitiveunits', 'r', 'rx', 'ry', 'radius', 'refx', 'refy', 'repeatcount', 'repeatdur', 'restart', 'result', 'rotate', 'scale', 'seed', 'shape-rendering', 'specularconstant', 'specularexponent', 'spreadmethod', 'stddeviation', 'stitchtiles', 'stop-color', 'stop-opacity', 'stroke-dasharray', 'stroke-dashoffset', 'stroke-linecap', 'stroke-linejoin', 'stroke-miterlimit', 'stroke-opacity', 'stroke', 'stroke-width', 'style', 'surfacescale', 'tabindex', 'targetx', 'targety', 'transform', 'text-anchor', 'text-decoration', 'text-rendering', 'textlength', 'type', 'u1', 'u2', 'unicode', 'values', 'viewbox', 'visibility', 'version', 'vert-adv-y', 'vert-origin-x', 'vert-origin-y', 'width', 'word-spacing', 'wrap', 'writing-mode', 'xchannelselector', 'ychannelselector', 'x', 'x1', 'x2', 'xmlns', 'y', 'y1', 'y2', 'z', 'zoomandpan']);
+
+var mathMl$1$1 = freeze$1(['accent', 'accentunder', 'align', 'bevelled', 'close', 'columnsalign', 'columnlines', 'columnspan', 'denomalign', 'depth', 'dir', 'display', 'displaystyle', 'encoding', 'fence', 'frame', 'height', 'href', 'id', 'largeop', 'length', 'linethickness', 'lspace', 'lquote', 'mathbackground', 'mathcolor', 'mathsize', 'mathvariant', 'maxsize', 'minsize', 'movablelimits', 'notation', 'numalign', 'open', 'rowalign', 'rowlines', 'rowspacing', 'rowspan', 'rspace', 'rquote', 'scriptlevel', 'scriptminsize', 'scriptsizemultiplier', 'selection', 'separator', 'separators', 'stretchy', 'subscriptshift', 'supscriptshift', 'symmetric', 'voffset', 'width', 'xmlns']);
+
+var xml$1 = freeze$1(['xlink:href', 'xml:id', 'xlink:title', 'xml:space', 'xmlns:xlink']);
+
+var MUSTACHE_EXPR$1 = seal$1(/\{\{[\s\S]*|[\s\S]*\}\}/gm); // Specify template detection regex for SAFE_FOR_TEMPLATES mode
+var ERB_EXPR$1 = seal$1(/<%[\s\S]*|[\s\S]*%>/gm);
+var DATA_ATTR$1 = seal$1(/^data-[\-\w.\u00B7-\uFFFF]/); // eslint-disable-line no-useless-escape
+var ARIA_ATTR$1 = seal$1(/^aria-[\-\w]+$/); // eslint-disable-line no-useless-escape
+var IS_ALLOWED_URI$1 = seal$1(/^(?:(?:(?:f|ht)tps?|mailto|tel|callto|cid|xmpp):|[^a-z]|[a-z+.\-]+(?:[^a-z+.\-:]|$))/i // eslint-disable-line no-useless-escape
+);
+var IS_SCRIPT_OR_DATA$1 = seal$1(/^(?:\w+script|data):/i);
+var ATTR_WHITESPACE$1 = seal$1(/[\u0000-\u0020\u00A0\u1680\u180E\u2000-\u2029\u205f\u3000]/g // eslint-disable-line no-control-regex
+);
+
+var _typeof$1 = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
+function _toConsumableArray$2(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
+
+var getGlobal$1 = function getGlobal() {
+  return typeof window === 'undefined' ? null : window;
+};
+
+/**
+ * Creates a no-op policy for internal use only.
+ * Don't export this function outside this module!
+ * @param {?TrustedTypePolicyFactory} trustedTypes The policy factory.
+ * @param {Document} document The document object (to determine policy name suffix)
+ * @return {?TrustedTypePolicy} The policy created (or null, if Trusted Types
+ * are not supported).
+ */
+var _createTrustedTypesPolicy$1 = function _createTrustedTypesPolicy(trustedTypes, document) {
+  if ((typeof trustedTypes === 'undefined' ? 'undefined' : _typeof$1(trustedTypes)) !== 'object' || typeof trustedTypes.createPolicy !== 'function') {
+    return null;
+  }
+
+  // Allow the callers to control the unique policy name
+  // by adding a data-tt-policy-suffix to the script element with the DOMPurify.
+  // Policy creation with duplicate names throws in Trusted Types.
+  var suffix = null;
+  var ATTR_NAME = 'data-tt-policy-suffix';
+  if (document.currentScript && document.currentScript.hasAttribute(ATTR_NAME)) {
+    suffix = document.currentScript.getAttribute(ATTR_NAME);
+  }
+
+  var policyName = 'dompurify' + (suffix ? '#' + suffix : '');
+
+  try {
+    return trustedTypes.createPolicy(policyName, {
+      createHTML: function createHTML(html$$1) {
+        return html$$1;
+      }
+    });
+  } catch (error) {
+    // Policy creation failed (most likely another DOMPurify script has
+    // already run). Skip creating the policy, as this will only cause errors
+    // if TT are enforced.
+    console.warn('TrustedTypes policy ' + policyName + ' could not be created.');
+    return null;
+  }
+};
+
+function createDOMPurify$1() {
+  var window = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : getGlobal$1();
+
+  var DOMPurify = function DOMPurify(root) {
+    return createDOMPurify$1(root);
+  };
+
+  /**
+   * Version label, exposed for easier checks
+   * if DOMPurify is up to date or not
+   */
+  DOMPurify.version = '2.0.8';
+
+  /**
+   * Array of elements that DOMPurify removed during sanitation.
+   * Empty if nothing was removed.
+   */
+  DOMPurify.removed = [];
+
+  if (!window || !window.document || window.document.nodeType !== 9) {
+    // Not running in a browser, provide a factory function
+    // so that you can pass your own Window
+    DOMPurify.isSupported = false;
+
+    return DOMPurify;
+  }
+
+  var originalDocument = window.document;
+  var useDOMParser = false;
+  var removeTitle = false;
+
+  var document = window.document;
+  var DocumentFragment = window.DocumentFragment,
+      HTMLTemplateElement = window.HTMLTemplateElement,
+      Node = window.Node,
+      NodeFilter = window.NodeFilter,
+      _window$NamedNodeMap = window.NamedNodeMap,
+      NamedNodeMap = _window$NamedNodeMap === undefined ? window.NamedNodeMap || window.MozNamedAttrMap : _window$NamedNodeMap,
+      Text = window.Text,
+      Comment = window.Comment,
+      DOMParser = window.DOMParser,
+      trustedTypes = window.trustedTypes;
+
+  // As per issue #47, the web-components registry is inherited by a
+  // new document created via createHTMLDocument. As per the spec
+  // (http://w3c.github.io/webcomponents/spec/custom/#creating-and-passing-registries)
+  // a new empty registry is used when creating a template contents owner
+  // document, so we use that as our parent document to ensure nothing
+  // is inherited.
+
+  if (typeof HTMLTemplateElement === 'function') {
+    var template = document.createElement('template');
+    if (template.content && template.content.ownerDocument) {
+      document = template.content.ownerDocument;
+    }
+  }
+
+  var trustedTypesPolicy = _createTrustedTypesPolicy$1(trustedTypes, originalDocument);
+  var emptyHTML = trustedTypesPolicy ? trustedTypesPolicy.createHTML('') : '';
+
+  var _document = document,
+      implementation = _document.implementation,
+      createNodeIterator = _document.createNodeIterator,
+      getElementsByTagName = _document.getElementsByTagName,
+      createDocumentFragment = _document.createDocumentFragment;
+  var importNode = originalDocument.importNode;
+
+
+  var hooks = {};
+
+  /**
+   * Expose whether this browser supports running the full DOMPurify.
+   */
+  DOMPurify.isSupported = implementation && typeof implementation.createHTMLDocument !== 'undefined' && document.documentMode !== 9;
+
+  var MUSTACHE_EXPR$$1 = MUSTACHE_EXPR$1,
+      ERB_EXPR$$1 = ERB_EXPR$1,
+      DATA_ATTR$$1 = DATA_ATTR$1,
+      ARIA_ATTR$$1 = ARIA_ATTR$1,
+      IS_SCRIPT_OR_DATA$$1 = IS_SCRIPT_OR_DATA$1,
+      ATTR_WHITESPACE$$1 = ATTR_WHITESPACE$1;
+  var IS_ALLOWED_URI$$1 = IS_ALLOWED_URI$1;
+
+  /**
+   * We consider the elements and attributes below to be safe. Ideally
+   * don't add any new ones but feel free to remove unwanted ones.
+   */
+
+  /* allowed element names */
+
+  var ALLOWED_TAGS = null;
+  var DEFAULT_ALLOWED_TAGS = addToSet$1({}, [].concat(_toConsumableArray$2(html$2), _toConsumableArray$2(svg$2), _toConsumableArray$2(svgFilters$1), _toConsumableArray$2(mathMl$2), _toConsumableArray$2(text$2)));
+
+  /* Allowed attribute names */
+  var ALLOWED_ATTR = null;
+  var DEFAULT_ALLOWED_ATTR = addToSet$1({}, [].concat(_toConsumableArray$2(html$1$1), _toConsumableArray$2(svg$1$1), _toConsumableArray$2(mathMl$1$1), _toConsumableArray$2(xml$1)));
+
+  /* Explicitly forbidden tags (overrides ALLOWED_TAGS/ADD_TAGS) */
+  var FORBID_TAGS = null;
+
+  /* Explicitly forbidden attributes (overrides ALLOWED_ATTR/ADD_ATTR) */
+  var FORBID_ATTR = null;
+
+  /* Decide if ARIA attributes are okay */
+  var ALLOW_ARIA_ATTR = true;
+
+  /* Decide if custom data attributes are okay */
+  var ALLOW_DATA_ATTR = true;
+
+  /* Decide if unknown protocols are okay */
+  var ALLOW_UNKNOWN_PROTOCOLS = false;
+
+  /* Output should be safe for jQuery's $() factory? */
+  var SAFE_FOR_JQUERY = false;
+
+  /* Output should be safe for common template engines.
+   * This means, DOMPurify removes data attributes, mustaches and ERB
+   */
+  var SAFE_FOR_TEMPLATES = false;
+
+  /* Decide if document with <html>... should be returned */
+  var WHOLE_DOCUMENT = false;
+
+  /* Track whether config is already set on this instance of DOMPurify. */
+  var SET_CONFIG = false;
+
+  /* Decide if all elements (e.g. style, script) must be children of
+   * document.body. By default, browsers might move them to document.head */
+  var FORCE_BODY = false;
+
+  /* Decide if a DOM `HTMLBodyElement` should be returned, instead of a html
+   * string (or a TrustedHTML object if Trusted Types are supported).
+   * If `WHOLE_DOCUMENT` is enabled a `HTMLHtmlElement` will be returned instead
+   */
+  var RETURN_DOM = false;
+
+  /* Decide if a DOM `DocumentFragment` should be returned, instead of a html
+   * string  (or a TrustedHTML object if Trusted Types are supported) */
+  var RETURN_DOM_FRAGMENT = false;
+
+  /* If `RETURN_DOM` or `RETURN_DOM_FRAGMENT` is enabled, decide if the returned DOM
+   * `Node` is imported into the current `Document`. If this flag is not enabled the
+   * `Node` will belong (its ownerDocument) to a fresh `HTMLDocument`, created by
+   * DOMPurify. */
+  var RETURN_DOM_IMPORT = false;
+
+  /* Try to return a Trusted Type object instead of a string, retrun a string in
+   * case Trusted Types are not supported  */
+  var RETURN_TRUSTED_TYPE = false;
+
+  /* Output should be free from DOM clobbering attacks? */
+  var SANITIZE_DOM = true;
+
+  /* Keep element content when removing element? */
+  var KEEP_CONTENT = true;
+
+  /* If a `Node` is passed to sanitize(), then performs sanitization in-place instead
+   * of importing it into a new Document and returning a sanitized copy */
+  var IN_PLACE = false;
+
+  /* Allow usage of profiles like html, svg and mathMl */
+  var USE_PROFILES = {};
+
+  /* Tags to ignore content of when KEEP_CONTENT is true */
+  var FORBID_CONTENTS = addToSet$1({}, ['annotation-xml', 'audio', 'colgroup', 'desc', 'foreignobject', 'head', 'iframe', 'math', 'mi', 'mn', 'mo', 'ms', 'mtext', 'noembed', 'noframes', 'plaintext', 'script', 'style', 'svg', 'template', 'thead', 'title', 'video', 'xmp']);
+
+  /* Tags that are safe for data: URIs */
+  var DATA_URI_TAGS = addToSet$1({}, ['audio', 'video', 'img', 'source', 'image']);
+
+  /* Attributes safe for values like "javascript:" */
+  var URI_SAFE_ATTRIBUTES = null;
+  var DEFAULT_URI_SAFE_ATTRIBUTES = addToSet$1({}, ['alt', 'class', 'for', 'id', 'label', 'name', 'pattern', 'placeholder', 'summary', 'title', 'value', 'style', 'xmlns']);
+
+  /* Keep a reference to config to pass to hooks */
+  var CONFIG = null;
+
+  /* Ideally, do not touch anything below this line */
+  /* ______________________________________________ */
+
+  var formElement = document.createElement('form');
+
+  /**
+   * _parseConfig
+   *
+   * @param  {Object} cfg optional config literal
+   */
+  // eslint-disable-next-line complexity
+  var _parseConfig = function _parseConfig(cfg) {
+    if (CONFIG && CONFIG === cfg) {
+      return;
+    }
+
+    /* Shield configuration object from tampering */
+    if (!cfg || (typeof cfg === 'undefined' ? 'undefined' : _typeof$1(cfg)) !== 'object') {
+      cfg = {};
+    }
+
+    /* Set configuration parameters */
+    ALLOWED_TAGS = 'ALLOWED_TAGS' in cfg ? addToSet$1({}, cfg.ALLOWED_TAGS) : DEFAULT_ALLOWED_TAGS;
+    ALLOWED_ATTR = 'ALLOWED_ATTR' in cfg ? addToSet$1({}, cfg.ALLOWED_ATTR) : DEFAULT_ALLOWED_ATTR;
+    URI_SAFE_ATTRIBUTES = 'ADD_URI_SAFE_ATTR' in cfg ? addToSet$1(clone$1(DEFAULT_URI_SAFE_ATTRIBUTES), cfg.ADD_URI_SAFE_ATTR) : DEFAULT_URI_SAFE_ATTRIBUTES;
+    FORBID_TAGS = 'FORBID_TAGS' in cfg ? addToSet$1({}, cfg.FORBID_TAGS) : {};
+    FORBID_ATTR = 'FORBID_ATTR' in cfg ? addToSet$1({}, cfg.FORBID_ATTR) : {};
+    USE_PROFILES = 'USE_PROFILES' in cfg ? cfg.USE_PROFILES : false;
+    ALLOW_ARIA_ATTR = cfg.ALLOW_ARIA_ATTR !== false; // Default true
+    ALLOW_DATA_ATTR = cfg.ALLOW_DATA_ATTR !== false; // Default true
+    ALLOW_UNKNOWN_PROTOCOLS = cfg.ALLOW_UNKNOWN_PROTOCOLS || false; // Default false
+    SAFE_FOR_JQUERY = cfg.SAFE_FOR_JQUERY || false; // Default false
+    SAFE_FOR_TEMPLATES = cfg.SAFE_FOR_TEMPLATES || false; // Default false
+    WHOLE_DOCUMENT = cfg.WHOLE_DOCUMENT || false; // Default false
+    RETURN_DOM = cfg.RETURN_DOM || false; // Default false
+    RETURN_DOM_FRAGMENT = cfg.RETURN_DOM_FRAGMENT || false; // Default false
+    RETURN_DOM_IMPORT = cfg.RETURN_DOM_IMPORT || false; // Default false
+    RETURN_TRUSTED_TYPE = cfg.RETURN_TRUSTED_TYPE || false; // Default false
+    FORCE_BODY = cfg.FORCE_BODY || false; // Default false
+    SANITIZE_DOM = cfg.SANITIZE_DOM !== false; // Default true
+    KEEP_CONTENT = cfg.KEEP_CONTENT !== false; // Default true
+    IN_PLACE = cfg.IN_PLACE || false; // Default false
+    IS_ALLOWED_URI$$1 = cfg.ALLOWED_URI_REGEXP || IS_ALLOWED_URI$$1;
+    if (SAFE_FOR_TEMPLATES) {
+      ALLOW_DATA_ATTR = false;
+    }
+
+    if (RETURN_DOM_FRAGMENT) {
+      RETURN_DOM = true;
+    }
+
+    /* Parse profile info */
+    if (USE_PROFILES) {
+      ALLOWED_TAGS = addToSet$1({}, [].concat(_toConsumableArray$2(text$2)));
+      ALLOWED_ATTR = [];
+      if (USE_PROFILES.html === true) {
+        addToSet$1(ALLOWED_TAGS, html$2);
+        addToSet$1(ALLOWED_ATTR, html$1$1);
+      }
+
+      if (USE_PROFILES.svg === true) {
+        addToSet$1(ALLOWED_TAGS, svg$2);
+        addToSet$1(ALLOWED_ATTR, svg$1$1);
+        addToSet$1(ALLOWED_ATTR, xml$1);
+      }
+
+      if (USE_PROFILES.svgFilters === true) {
+        addToSet$1(ALLOWED_TAGS, svgFilters$1);
+        addToSet$1(ALLOWED_ATTR, svg$1$1);
+        addToSet$1(ALLOWED_ATTR, xml$1);
+      }
+
+      if (USE_PROFILES.mathMl === true) {
+        addToSet$1(ALLOWED_TAGS, mathMl$2);
+        addToSet$1(ALLOWED_ATTR, mathMl$1$1);
+        addToSet$1(ALLOWED_ATTR, xml$1);
+      }
+    }
+
+    /* Merge configuration parameters */
+    if (cfg.ADD_TAGS) {
+      if (ALLOWED_TAGS === DEFAULT_ALLOWED_TAGS) {
+        ALLOWED_TAGS = clone$1(ALLOWED_TAGS);
+      }
+
+      addToSet$1(ALLOWED_TAGS, cfg.ADD_TAGS);
+    }
+
+    if (cfg.ADD_ATTR) {
+      if (ALLOWED_ATTR === DEFAULT_ALLOWED_ATTR) {
+        ALLOWED_ATTR = clone$1(ALLOWED_ATTR);
+      }
+
+      addToSet$1(ALLOWED_ATTR, cfg.ADD_ATTR);
+    }
+
+    if (cfg.ADD_URI_SAFE_ATTR) {
+      addToSet$1(URI_SAFE_ATTRIBUTES, cfg.ADD_URI_SAFE_ATTR);
+    }
+
+    /* Add #text in case KEEP_CONTENT is set to true */
+    if (KEEP_CONTENT) {
+      ALLOWED_TAGS['#text'] = true;
+    }
+
+    /* Add html, head and body to ALLOWED_TAGS in case WHOLE_DOCUMENT is true */
+    if (WHOLE_DOCUMENT) {
+      addToSet$1(ALLOWED_TAGS, ['html', 'head', 'body']);
+    }
+
+    /* Add tbody to ALLOWED_TAGS in case tables are permitted, see #286, #365 */
+    if (ALLOWED_TAGS.table) {
+      addToSet$1(ALLOWED_TAGS, ['tbody']);
+      delete FORBID_TAGS.tbody;
+    }
+
+    // Prevent further manipulation of configuration.
+    // Not available in IE8, Safari 5, etc.
+    if (freeze$1) {
+      freeze$1(cfg);
+    }
+
+    CONFIG = cfg;
+  };
+
+  /**
+   * _forceRemove
+   *
+   * @param  {Node} node a DOM node
+   */
+  var _forceRemove = function _forceRemove(node) {
+    arrayPush$1(DOMPurify.removed, { element: node });
+    try {
+      node.parentNode.removeChild(node);
+    } catch (error) {
+      node.outerHTML = emptyHTML;
+    }
+  };
+
+  /**
+   * _removeAttribute
+   *
+   * @param  {String} name an Attribute name
+   * @param  {Node} node a DOM node
+   */
+  var _removeAttribute = function _removeAttribute(name, node) {
+    try {
+      arrayPush$1(DOMPurify.removed, {
+        attribute: node.getAttributeNode(name),
+        from: node
+      });
+    } catch (error) {
+      arrayPush$1(DOMPurify.removed, {
+        attribute: null,
+        from: node
+      });
+    }
+
+    node.removeAttribute(name);
+  };
+
+  /**
+   * _initDocument
+   *
+   * @param  {String} dirty a string of dirty markup
+   * @return {Document} a DOM, filled with the dirty markup
+   */
+  var _initDocument = function _initDocument(dirty) {
+    /* Create a HTML document */
+    var doc = void 0;
+    var leadingWhitespace = void 0;
+
+    if (FORCE_BODY) {
+      dirty = '<remove></remove>' + dirty;
+    } else {
+      /* If FORCE_BODY isn't used, leading whitespace needs to be preserved manually */
+      var matches = stringMatch$1(dirty, /^[\s]+/);
+      leadingWhitespace = matches && matches[0];
+    }
+
+    var dirtyPayload = trustedTypesPolicy ? trustedTypesPolicy.createHTML(dirty) : dirty;
+    /* Use DOMParser to workaround Firefox bug (see comment below) */
+    if (useDOMParser) {
+      try {
+        doc = new DOMParser().parseFromString(dirtyPayload, 'text/html');
+      } catch (error) {}
+    }
+
+    /* Remove title to fix a mXSS bug in older MS Edge */
+    if (removeTitle) {
+      addToSet$1(FORBID_TAGS, ['title']);
+    }
+
+    /* Otherwise use createHTMLDocument, because DOMParser is unsafe in
+    Safari (see comment below) */
+    if (!doc || !doc.documentElement) {
+      doc = implementation.createHTMLDocument('');
+      var _doc = doc,
+          body = _doc.body;
+
+      body.parentNode.removeChild(body.parentNode.firstElementChild);
+      body.outerHTML = dirtyPayload;
+    }
+
+    if (dirty && leadingWhitespace) {
+      doc.body.insertBefore(document.createTextNode(leadingWhitespace), doc.body.childNodes[0] || null);
+    }
+
+    /* Work on whole document or just its body */
+    return getElementsByTagName.call(doc, WHOLE_DOCUMENT ? 'html' : 'body')[0];
+  };
+
+  // Firefox uses a different parser for innerHTML rather than
+  // DOMParser (see https://bugzilla.mozilla.org/show_bug.cgi?id=1205631)
+  // which means that you *must* use DOMParser, otherwise the output may
+  // not be safe if used in a document.write context later.
+  //
+  // So we feature detect the Firefox bug and use the DOMParser if necessary.
+  //
+  // Chrome 77 and other versions ship an mXSS bug that caused a bypass to
+  // happen. We now check for the mXSS trigger and react accordingly.
+  if (DOMPurify.isSupported) {
+    (function () {
+      try {
+        var doc = _initDocument('<svg><p><textarea><img src="</textarea><img src=x abc=1//">');
+        if (doc.querySelector('svg img')) {
+          useDOMParser = true;
+        }
+      } catch (error) {}
+    })();
+
+    (function () {
+      try {
+        var doc = _initDocument('<x/><title>&lt;/title&gt;&lt;img&gt;');
+        if (regExpTest$1(/<\/title/, doc.querySelector('title').innerHTML)) {
+          removeTitle = true;
+        }
+      } catch (error) {}
+    })();
+  }
+
+  /**
+   * _createIterator
+   *
+   * @param  {Document} root document/fragment to create iterator for
+   * @return {Iterator} iterator instance
+   */
+  var _createIterator = function _createIterator(root) {
+    return createNodeIterator.call(root.ownerDocument || root, root, NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_COMMENT | NodeFilter.SHOW_TEXT, function () {
+      return NodeFilter.FILTER_ACCEPT;
+    }, false);
+  };
+
+  /**
+   * _isClobbered
+   *
+   * @param  {Node} elm element to check for clobbering attacks
+   * @return {Boolean} true if clobbered, false if safe
+   */
+  var _isClobbered = function _isClobbered(elm) {
+    if (elm instanceof Text || elm instanceof Comment) {
+      return false;
+    }
+
+    if (typeof elm.nodeName !== 'string' || typeof elm.textContent !== 'string' || typeof elm.removeChild !== 'function' || !(elm.attributes instanceof NamedNodeMap) || typeof elm.removeAttribute !== 'function' || typeof elm.setAttribute !== 'function' || typeof elm.namespaceURI !== 'string') {
+      return true;
+    }
+
+    return false;
+  };
+
+  /**
+   * _isNode
+   *
+   * @param  {Node} obj object to check whether it's a DOM node
+   * @return {Boolean} true is object is a DOM node
+   */
+  var _isNode = function _isNode(obj) {
+    return (typeof Node === 'undefined' ? 'undefined' : _typeof$1(Node)) === 'object' ? obj instanceof Node : obj && (typeof obj === 'undefined' ? 'undefined' : _typeof$1(obj)) === 'object' && typeof obj.nodeType === 'number' && typeof obj.nodeName === 'string';
+  };
+
+  /**
+   * _executeHook
+   * Execute user configurable hooks
+   *
+   * @param  {String} entryPoint  Name of the hook's entry point
+   * @param  {Node} currentNode node to work on with the hook
+   * @param  {Object} data additional hook parameters
+   */
+  var _executeHook = function _executeHook(entryPoint, currentNode, data) {
+    if (!hooks[entryPoint]) {
+      return;
+    }
+
+    arrayForEach$1(hooks[entryPoint], function (hook) {
+      hook.call(DOMPurify, currentNode, data, CONFIG);
+    });
+  };
+
+  /**
+   * _sanitizeElements
+   *
+   * @protect nodeName
+   * @protect textContent
+   * @protect removeChild
+   *
+   * @param   {Node} currentNode to check for permission to exist
+   * @return  {Boolean} true if node was killed, false if left alive
+   */
+  // eslint-disable-next-line complexity
+  var _sanitizeElements = function _sanitizeElements(currentNode) {
+    var content = void 0;
+
+    /* Execute a hook if present */
+    _executeHook('beforeSanitizeElements', currentNode, null);
+
+    /* Check if element is clobbered or can clobber */
+    if (_isClobbered(currentNode)) {
+      _forceRemove(currentNode);
+      return true;
+    }
+
+    /* Now let's check the element's type and name */
+    var tagName = stringToLowerCase$1(currentNode.nodeName);
+
+    /* Execute a hook if present */
+    _executeHook('uponSanitizeElement', currentNode, {
+      tagName: tagName,
+      allowedTags: ALLOWED_TAGS
+    });
+
+    /* Take care of an mXSS pattern using p, br inside svg, math */
+    if ((tagName === 'svg' || tagName === 'math') && currentNode.querySelectorAll('p, br').length !== 0) {
+      _forceRemove(currentNode);
+      return true;
+    }
+
+    /* Remove element if anything forbids its presence */
+    if (!ALLOWED_TAGS[tagName] || FORBID_TAGS[tagName]) {
+      /* Keep content except for black-listed elements */
+      if (KEEP_CONTENT && !FORBID_CONTENTS[tagName] && typeof currentNode.insertAdjacentHTML === 'function') {
+        try {
+          var htmlToInsert = currentNode.innerHTML;
+          currentNode.insertAdjacentHTML('AfterEnd', trustedTypesPolicy ? trustedTypesPolicy.createHTML(htmlToInsert) : htmlToInsert);
+        } catch (error) {}
+      }
+
+      _forceRemove(currentNode);
+      return true;
+    }
+
+    /* Remove in case a noscript/noembed XSS is suspected */
+    if (tagName === 'noscript' && regExpTest$1(/<\/noscript/i, currentNode.innerHTML)) {
+      _forceRemove(currentNode);
+      return true;
+    }
+
+    if (tagName === 'noembed' && regExpTest$1(/<\/noembed/i, currentNode.innerHTML)) {
+      _forceRemove(currentNode);
+      return true;
+    }
+
+    /* Convert markup to cover jQuery behavior */
+    if (SAFE_FOR_JQUERY && !currentNode.firstElementChild && (!currentNode.content || !currentNode.content.firstElementChild) && regExpTest$1(/</g, currentNode.textContent)) {
+      arrayPush$1(DOMPurify.removed, { element: currentNode.cloneNode() });
+      if (currentNode.innerHTML) {
+        currentNode.innerHTML = stringReplace$1(currentNode.innerHTML, /</g, '&lt;');
+      } else {
+        currentNode.innerHTML = stringReplace$1(currentNode.textContent, /</g, '&lt;');
+      }
+    }
+
+    /* Sanitize element content to be template-safe */
+    if (SAFE_FOR_TEMPLATES && currentNode.nodeType === 3) {
+      /* Get the element's text content */
+      content = currentNode.textContent;
+      content = stringReplace$1(content, MUSTACHE_EXPR$$1, ' ');
+      content = stringReplace$1(content, ERB_EXPR$$1, ' ');
+      if (currentNode.textContent !== content) {
+        arrayPush$1(DOMPurify.removed, { element: currentNode.cloneNode() });
+        currentNode.textContent = content;
+      }
+    }
+
+    /* Execute a hook if present */
+    _executeHook('afterSanitizeElements', currentNode, null);
+
+    return false;
+  };
+
+  /**
+   * _isValidAttribute
+   *
+   * @param  {string} lcTag Lowercase tag name of containing element.
+   * @param  {string} lcName Lowercase attribute name.
+   * @param  {string} value Attribute value.
+   * @return {Boolean} Returns true if `value` is valid, otherwise false.
+   */
+  // eslint-disable-next-line complexity
+  var _isValidAttribute = function _isValidAttribute(lcTag, lcName, value) {
+    /* Make sure attribute cannot clobber */
+    if (SANITIZE_DOM && (lcName === 'id' || lcName === 'name') && (value in document || value in formElement)) {
+      return false;
+    }
+
+    /* Allow valid data-* attributes: At least one character after "-"
+        (https://html.spec.whatwg.org/multipage/dom.html#embedding-custom-non-visible-data-with-the-data-*-attributes)
+        XML-compatible (https://html.spec.whatwg.org/multipage/infrastructure.html#xml-compatible and http://www.w3.org/TR/xml/#d0e804)
+        We don't need to check the value; it's always URI safe. */
+    if (ALLOW_DATA_ATTR && regExpTest$1(DATA_ATTR$$1, lcName)) ; else if (ALLOW_ARIA_ATTR && regExpTest$1(ARIA_ATTR$$1, lcName)) ; else if (!ALLOWED_ATTR[lcName] || FORBID_ATTR[lcName]) {
+      return false;
+
+      /* Check value is safe. First, is attr inert? If so, is safe */
+    } else if (URI_SAFE_ATTRIBUTES[lcName]) ; else if (regExpTest$1(IS_ALLOWED_URI$$1, stringReplace$1(value, ATTR_WHITESPACE$$1, ''))) ; else if ((lcName === 'src' || lcName === 'xlink:href' || lcName === 'href') && lcTag !== 'script' && stringIndexOf$1(value, 'data:') === 0 && DATA_URI_TAGS[lcTag]) ; else if (ALLOW_UNKNOWN_PROTOCOLS && !regExpTest$1(IS_SCRIPT_OR_DATA$$1, stringReplace$1(value, ATTR_WHITESPACE$$1, ''))) ; else if (!value) ; else {
+      return false;
+    }
+
+    return true;
+  };
+
+  /**
+   * _sanitizeAttributes
+   *
+   * @protect attributes
+   * @protect nodeName
+   * @protect removeAttribute
+   * @protect setAttribute
+   *
+   * @param  {Node} currentNode to sanitize
+   */
+  // eslint-disable-next-line complexity
+  var _sanitizeAttributes = function _sanitizeAttributes(currentNode) {
+    var attr = void 0;
+    var value = void 0;
+    var lcName = void 0;
+    var idAttr = void 0;
+    var l = void 0;
+    /* Execute a hook if present */
+    _executeHook('beforeSanitizeAttributes', currentNode, null);
+
+    var attributes = currentNode.attributes;
+
+    /* Check if we have attributes; if not we might have a text node */
+
+    if (!attributes) {
+      return;
+    }
+
+    var hookEvent = {
+      attrName: '',
+      attrValue: '',
+      keepAttr: true,
+      allowedAttributes: ALLOWED_ATTR
+    };
+    l = attributes.length;
+
+    /* Go backwards over all attributes; safely remove bad ones */
+    while (l--) {
+      attr = attributes[l];
+      var _attr = attr,
+          name = _attr.name,
+          namespaceURI = _attr.namespaceURI;
+
+      value = stringTrim$1(attr.value);
+      lcName = stringToLowerCase$1(name);
+
+      /* Execute a hook if present */
+      hookEvent.attrName = lcName;
+      hookEvent.attrValue = value;
+      hookEvent.keepAttr = true;
+      hookEvent.forceKeepAttr = undefined; // Allows developers to see this is a property they can set
+      _executeHook('uponSanitizeAttribute', currentNode, hookEvent);
+      value = hookEvent.attrValue;
+      /* Did the hooks approve of the attribute? */
+      if (hookEvent.forceKeepAttr) {
+        continue;
+      }
+
+      /* Remove attribute */
+      // Safari (iOS + Mac), last tested v8.0.5, crashes if you try to
+      // remove a "name" attribute from an <img> tag that has an "id"
+      // attribute at the time.
+      if (lcName === 'name' && currentNode.nodeName === 'IMG' && attributes.id) {
+        idAttr = attributes.id;
+        attributes = arraySlice$1(attributes, []);
+        _removeAttribute('id', currentNode);
+        _removeAttribute(name, currentNode);
+        if (arrayIndexOf$1(attributes, idAttr) > l) {
+          currentNode.setAttribute('id', idAttr.value);
+        }
+      } else if (
+      // This works around a bug in Safari, where input[type=file]
+      // cannot be dynamically set after type has been removed
+      currentNode.nodeName === 'INPUT' && lcName === 'type' && value === 'file' && hookEvent.keepAttr && (ALLOWED_ATTR[lcName] || !FORBID_ATTR[lcName])) {
+        continue;
+      } else {
+        // This avoids a crash in Safari v9.0 with double-ids.
+        // The trick is to first set the id to be empty and then to
+        // remove the attribute
+        if (name === 'id') {
+          currentNode.setAttribute(name, '');
+        }
+
+        _removeAttribute(name, currentNode);
+      }
+
+      /* Did the hooks approve of the attribute? */
+      if (!hookEvent.keepAttr) {
+        continue;
+      }
+
+      /* Work around a security issue in jQuery 3.0 */
+      if (SAFE_FOR_JQUERY && regExpTest$1(/\/>/i, value)) {
+        _removeAttribute(name, currentNode);
+        continue;
+      }
+
+      /* Take care of an mXSS pattern using namespace switches */
+      if (regExpTest$1(/svg|math/i, currentNode.namespaceURI) && regExpTest$1(regExpCreate$1('</(' + arrayJoin$1(objectKeys$1(FORBID_CONTENTS), '|') + ')', 'i'), value)) {
+        _removeAttribute(name, currentNode);
+        continue;
+      }
+
+      /* Sanitize attribute content to be template-safe */
+      if (SAFE_FOR_TEMPLATES) {
+        value = stringReplace$1(value, MUSTACHE_EXPR$$1, ' ');
+        value = stringReplace$1(value, ERB_EXPR$$1, ' ');
+      }
+
+      /* Is `value` valid for this attribute? */
+      var lcTag = currentNode.nodeName.toLowerCase();
+      if (!_isValidAttribute(lcTag, lcName, value)) {
+        continue;
+      }
+
+      /* Handle invalid data-* attribute set by try-catching it */
+      try {
+        if (namespaceURI) {
+          currentNode.setAttributeNS(namespaceURI, name, value);
+        } else {
+          /* Fallback to setAttribute() for browser-unrecognized namespaces e.g. "x-schema". */
+          currentNode.setAttribute(name, value);
+        }
+
+        arrayPop$1(DOMPurify.removed);
+      } catch (error) {}
+    }
+
+    /* Execute a hook if present */
+    _executeHook('afterSanitizeAttributes', currentNode, null);
+  };
+
+  /**
+   * _sanitizeShadowDOM
+   *
+   * @param  {DocumentFragment} fragment to iterate over recursively
+   */
+  var _sanitizeShadowDOM = function _sanitizeShadowDOM(fragment) {
+    var shadowNode = void 0;
+    var shadowIterator = _createIterator(fragment);
+
+    /* Execute a hook if present */
+    _executeHook('beforeSanitizeShadowDOM', fragment, null);
+
+    while (shadowNode = shadowIterator.nextNode()) {
+      /* Execute a hook if present */
+      _executeHook('uponSanitizeShadowNode', shadowNode, null);
+
+      /* Sanitize tags and elements */
+      if (_sanitizeElements(shadowNode)) {
+        continue;
+      }
+
+      /* Deep shadow DOM detected */
+      if (shadowNode.content instanceof DocumentFragment) {
+        _sanitizeShadowDOM(shadowNode.content);
+      }
+
+      /* Check attributes, sanitize if necessary */
+      _sanitizeAttributes(shadowNode);
+    }
+
+    /* Execute a hook if present */
+    _executeHook('afterSanitizeShadowDOM', fragment, null);
+  };
+
+  /**
+   * Sanitize
+   * Public method providing core sanitation functionality
+   *
+   * @param {String|Node} dirty string or DOM node
+   * @param {Object} configuration object
+   */
+  // eslint-disable-next-line complexity
+  DOMPurify.sanitize = function (dirty, cfg) {
+    var body = void 0;
+    var importedNode = void 0;
+    var currentNode = void 0;
+    var oldNode = void 0;
+    var returnNode = void 0;
+    /* Make sure we have a string to sanitize.
+      DO NOT return early, as this will return the wrong type if
+      the user has requested a DOM object rather than a string */
+    if (!dirty) {
+      dirty = '<!-->';
+    }
+
+    /* Stringify, in case dirty is an object */
+    if (typeof dirty !== 'string' && !_isNode(dirty)) {
+      // eslint-disable-next-line no-negated-condition
+      if (typeof dirty.toString !== 'function') {
+        throw typeErrorCreate$1('toString is not a function');
+      } else {
+        dirty = dirty.toString();
+        if (typeof dirty !== 'string') {
+          throw typeErrorCreate$1('dirty is not a string, aborting');
+        }
+      }
+    }
+
+    /* Check we can run. Otherwise fall back or ignore */
+    if (!DOMPurify.isSupported) {
+      if (_typeof$1(window.toStaticHTML) === 'object' || typeof window.toStaticHTML === 'function') {
+        if (typeof dirty === 'string') {
+          return window.toStaticHTML(dirty);
+        }
+
+        if (_isNode(dirty)) {
+          return window.toStaticHTML(dirty.outerHTML);
+        }
+      }
+
+      return dirty;
+    }
+
+    /* Assign config vars */
+    if (!SET_CONFIG) {
+      _parseConfig(cfg);
+    }
+
+    /* Clean up removed elements */
+    DOMPurify.removed = [];
+
+    /* Check if dirty is correctly typed for IN_PLACE */
+    if (typeof dirty === 'string') {
+      IN_PLACE = false;
+    }
+
+    if (IN_PLACE) ; else if (dirty instanceof Node) {
+      /* If dirty is a DOM element, append to an empty document to avoid
+         elements being stripped by the parser */
+      body = _initDocument('<!-->');
+      importedNode = body.ownerDocument.importNode(dirty, true);
+      if (importedNode.nodeType === 1 && importedNode.nodeName === 'BODY') {
+        /* Node is already a body, use as is */
+        body = importedNode;
+      } else if (importedNode.nodeName === 'HTML') {
+        body = importedNode;
+      } else {
+        // eslint-disable-next-line unicorn/prefer-node-append
+        body.appendChild(importedNode);
+      }
+    } else {
+      /* Exit directly if we have nothing to do */
+      if (!RETURN_DOM && !SAFE_FOR_TEMPLATES && !WHOLE_DOCUMENT && RETURN_TRUSTED_TYPE && dirty.indexOf('<') === -1) {
+        return trustedTypesPolicy ? trustedTypesPolicy.createHTML(dirty) : dirty;
+      }
+
+      /* Initialize the document to work on */
+      body = _initDocument(dirty);
+
+      /* Check we have a DOM node from the data */
+      if (!body) {
+        return RETURN_DOM ? null : emptyHTML;
+      }
+    }
+
+    /* Remove first element node (ours) if FORCE_BODY is set */
+    if (body && FORCE_BODY) {
+      _forceRemove(body.firstChild);
+    }
+
+    /* Get node iterator */
+    var nodeIterator = _createIterator(IN_PLACE ? dirty : body);
+
+    /* Now start iterating over the created document */
+    while (currentNode = nodeIterator.nextNode()) {
+      /* Fix IE's strange behavior with manipulated textNodes #89 */
+      if (currentNode.nodeType === 3 && currentNode === oldNode) {
+        continue;
+      }
+
+      /* Sanitize tags and elements */
+      if (_sanitizeElements(currentNode)) {
+        continue;
+      }
+
+      /* Shadow DOM detected, sanitize it */
+      if (currentNode.content instanceof DocumentFragment) {
+        _sanitizeShadowDOM(currentNode.content);
+      }
+
+      /* Check attributes, sanitize if necessary */
+      _sanitizeAttributes(currentNode);
+
+      oldNode = currentNode;
+    }
+
+    oldNode = null;
+
+    /* If we sanitized `dirty` in-place, return it. */
+    if (IN_PLACE) {
+      return dirty;
+    }
+
+    /* Return sanitized string or DOM */
+    if (RETURN_DOM) {
+      if (RETURN_DOM_FRAGMENT) {
+        returnNode = createDocumentFragment.call(body.ownerDocument);
+
+        while (body.firstChild) {
+          // eslint-disable-next-line unicorn/prefer-node-append
+          returnNode.appendChild(body.firstChild);
+        }
+      } else {
+        returnNode = body;
+      }
+
+      if (RETURN_DOM_IMPORT) {
+        /* AdoptNode() is not used because internal state is not reset
+               (e.g. the past names map of a HTMLFormElement), this is safe
+               in theory but we would rather not risk another attack vector.
+               The state that is cloned by importNode() is explicitly defined
+               by the specs. */
+        returnNode = importNode.call(originalDocument, returnNode, true);
+      }
+
+      return returnNode;
+    }
+
+    var serializedHTML = WHOLE_DOCUMENT ? body.outerHTML : body.innerHTML;
+
+    /* Sanitize final string template-safe */
+    if (SAFE_FOR_TEMPLATES) {
+      serializedHTML = stringReplace$1(serializedHTML, MUSTACHE_EXPR$$1, ' ');
+      serializedHTML = stringReplace$1(serializedHTML, ERB_EXPR$$1, ' ');
+    }
+
+    return trustedTypesPolicy && RETURN_TRUSTED_TYPE ? trustedTypesPolicy.createHTML(serializedHTML) : serializedHTML;
+  };
+
+  /**
+   * Public method to set the configuration once
+   * setConfig
+   *
+   * @param {Object} cfg configuration object
+   */
+  DOMPurify.setConfig = function (cfg) {
+    _parseConfig(cfg);
+    SET_CONFIG = true;
+  };
+
+  /**
+   * Public method to remove the configuration
+   * clearConfig
+   *
+   */
+  DOMPurify.clearConfig = function () {
+    CONFIG = null;
+    SET_CONFIG = false;
+  };
+
+  /**
+   * Public method to check if an attribute value is valid.
+   * Uses last set config, if any. Otherwise, uses config defaults.
+   * isValidAttribute
+   *
+   * @param  {string} tag Tag name of containing element.
+   * @param  {string} attr Attribute name.
+   * @param  {string} value Attribute value.
+   * @return {Boolean} Returns true if `value` is valid. Otherwise, returns false.
+   */
+  DOMPurify.isValidAttribute = function (tag, attr, value) {
+    /* Initialize shared config vars if necessary. */
+    if (!CONFIG) {
+      _parseConfig({});
+    }
+
+    var lcTag = stringToLowerCase$1(tag);
+    var lcName = stringToLowerCase$1(attr);
+    return _isValidAttribute(lcTag, lcName, value);
+  };
+
+  /**
+   * AddHook
+   * Public method to add DOMPurify hooks
+   *
+   * @param {String} entryPoint entry point for the hook to add
+   * @param {Function} hookFunction function to execute
+   */
+  DOMPurify.addHook = function (entryPoint, hookFunction) {
+    if (typeof hookFunction !== 'function') {
+      return;
+    }
+
+    hooks[entryPoint] = hooks[entryPoint] || [];
+    arrayPush$1(hooks[entryPoint], hookFunction);
+  };
+
+  /**
+   * RemoveHook
+   * Public method to remove a DOMPurify hook at a given entryPoint
+   * (pops it from the stack of hooks if more are present)
+   *
+   * @param {String} entryPoint entry point for the hook to remove
+   */
+  DOMPurify.removeHook = function (entryPoint) {
+    if (hooks[entryPoint]) {
+      arrayPop$1(hooks[entryPoint]);
+    }
+  };
+
+  /**
+   * RemoveHooks
+   * Public method to remove all DOMPurify hooks at a given entryPoint
+   *
+   * @param  {String} entryPoint entry point for the hooks to remove
+   */
+  DOMPurify.removeHooks = function (entryPoint) {
+    if (hooks[entryPoint]) {
+      hooks[entryPoint] = [];
+    }
+  };
+
+  /**
+   * RemoveAllHooks
+   * Public method to remove all DOMPurify hooks
+   *
+   */
+  DOMPurify.removeAllHooks = function () {
+    hooks = {};
+  };
+
+  return DOMPurify;
+}
+
+var purify$1 = createDOMPurify$1();
+
 const parse$2 = (markdown) => {
     if (!markdown) {
-        return html `
+        return html$3 `
       ${nothing}
     `;
     }
-    return html `
-    ${unsafeHTML(purify.sanitize(marked_1(markdown)))}
+    return html$3 `
+    ${unsafeHTML(purify$1.sanitize(marked_1(markdown)))}
   `;
 };
 
@@ -10200,7 +6618,7 @@ let ApiViewerPanel = class ApiViewerPanel extends LitElement {
     `;
     }
     render() {
-        return html `
+        return html$3 `
       <slot></slot>
     `;
     }
@@ -10312,7 +6730,7 @@ let ApiViewerTab = class ApiViewerTab extends LitElement {
     `;
     }
     render() {
-        return html `
+        return html$3 `
       ${this.heading}
     `;
     }
@@ -10401,7 +6819,7 @@ let ApiViewerTabs = class ApiViewerTabs extends LitElement {
     `;
     }
     render() {
-        return html `
+        return html$3 `
       <div class="tabs">
         <slot name="tab"></slot>
       </div>
@@ -10557,7 +6975,7 @@ const processAttrs = (attrs, props) => {
     return attrs.filter(({ name }) => !props.some(prop => prop.attribute === name || prop.name === name));
 };
 const renderItem = (name, description, valueType, attribute, value) => {
-    return html `
+    return html$3 `
     <div part="docs-item">
       <div part="docs-row">
         <div part="docs-column">
@@ -10566,7 +6984,7 @@ const renderItem = (name, description, valueType, attribute, value) => {
         </div>
         ${attribute === undefined
         ? nothing
-        : html `
+        : html$3 `
               <div part="docs-column">
                 <div part="docs-label">Attribute</div>
                 <div part="docs-value">${attribute}</div>
@@ -10574,14 +6992,14 @@ const renderItem = (name, description, valueType, attribute, value) => {
             `}
         ${valueType === undefined
         ? nothing
-        : html `
+        : html$3 `
               <div part="docs-column" class="column-type">
                 <div part="docs-label">Type</div>
                 <div part="docs-value">
                   ${valueType}
                   ${value === undefined
             ? nothing
-            : html `
+            : html$3 `
                         = <span class="accent">${value}</span>
                       `}
                 </div>
@@ -10597,7 +7015,7 @@ const renderItem = (name, description, valueType, attribute, value) => {
 };
 const renderTab = (heading, count, content) => {
     const hidden = count === 0;
-    return html `
+    return html$3 `
     <api-viewer-tab
       heading="${heading}"
       slot="tab"
@@ -10636,33 +7054,33 @@ let ApiViewerDocs = class ApiViewerDocs extends LitElement {
             cssParts
         ].every(isEmptyArray);
         return emptyDocs
-            ? html `
+            ? html$3 `
           <div part="warning">
             The element &lt;${this.name}&gt; does not provide any documented
             API.
           </div>
         `
-            : html `
+            : html$3 `
           <api-viewer-tabs>
-            ${renderTab('Properties', properties.length, html `
+            ${renderTab('Properties', properties.length, html$3 `
                 ${properties.map(prop => {
                 const { name, description, type, attribute } = prop;
                 return renderItem(name, description, type, attribute, prop.default);
             })}
               `)}
-            ${renderTab('Attributes', attributes.length, html `
+            ${renderTab('Attributes', attributes.length, html$3 `
                 ${attributes.map(({ name, description, type }) => renderItem(name, description, type))}
               `)}
-            ${renderTab('Slots', slots.length, html `
+            ${renderTab('Slots', slots.length, html$3 `
                 ${slots.map(({ name, description }) => renderItem(name, description))}
               `)}
-            ${renderTab('Events', events.length, html `
+            ${renderTab('Events', events.length, html$3 `
                 ${events.map(({ name, description }) => renderItem(name, description))}
               `)}
-            ${renderTab('CSS Custom Properties', cssProps.length, html `
+            ${renderTab('CSS Custom Properties', cssProps.length, html$3 `
                 ${cssProps.map(({ name, description }) => renderItem(name, description))}
               `)}
-            ${renderTab('CSS Shadow Parts', cssParts.length, html `
+            ${renderTab('CSS Shadow Parts', cssParts.length, html$3 `
                 ${cssParts.map(({ name, description }) => renderItem(name, description))}
               `)}
           </api-viewer-tabs>
@@ -10821,7 +7239,7 @@ const getInputType = (type) => {
 };
 const cssPropRenderer = (knob, id) => {
     const { name, value } = knob;
-    return html `
+    return html$3 `
     <input
       id="${id}"
       type="text"
@@ -10836,7 +7254,7 @@ const propRenderer = (knob, id) => {
     const inputType = getInputType(type);
     let input;
     if (value === undefined) {
-        input = html `
+        input = html$3 `
       <input
         id="${id}"
         type="${inputType}"
@@ -10847,7 +7265,7 @@ const propRenderer = (knob, id) => {
     `;
     }
     else if (normalizeType(type) === 'boolean') {
-        input = html `
+        input = html$3 `
       <input
         id="${id}"
         type="checkbox"
@@ -10859,7 +7277,7 @@ const propRenderer = (knob, id) => {
     `;
     }
     else {
-        input = html `
+        input = html$3 `
       <input
         id="${id}"
         type="${inputType}"
@@ -10874,7 +7292,7 @@ const propRenderer = (knob, id) => {
 };
 const slotRenderer = (knob, id) => {
     const { name, content } = knob;
-    return html `
+    return html$3 `
     <input
       id="${id}"
       type="text"
@@ -10890,7 +7308,7 @@ const renderKnobs = (items, type, renderer) => {
         const { name } = item;
         const id = `${type}-${name || 'default'}`;
         const label = type === 'slot' ? getSlotTitle(name) : name;
-        return html `
+        return html$3 `
       <tr>
         <td>
           <label for="${id}" part="knob-label">${label}</label>
@@ -10899,18 +7317,18 @@ const renderKnobs = (items, type, renderer) => {
       </tr>
     `;
     });
-    return html `
+    return html$3 `
     <table>
       ${rows}
     </table>
   `;
 };
 
-function escape$5(value) {
+function escape(value) {
     return value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 var htmlRender = {
-    text: function (chunk) { return escape$5(chunk); },
+    text: function (chunk) { return escape(chunk); },
     join: function (chunks) { return chunks.join(''); },
     wrap: function (className, chunk) { return "<span class=\"" + className + "\">" + chunk + "</span>"; }
 };
@@ -11522,7 +7940,7 @@ function highlightAuto(options, render, text, languageSubset) {
     }
     return result;
 }
-var defaults$6 = {
+var defaults = {
     classPrefix: 'hljs-',
     //tabReplace: undefined,
     useBr: false,
@@ -11531,7 +7949,7 @@ function init(render, options) {
     if (options === void 0) { options = {}; }
     return {
         render: render,
-        options: __assign({}, defaults$6, options)
+        options: __assign({}, defaults, options)
     };
 }
 function process(_a, source, lang) {
@@ -11739,7 +8157,7 @@ const renderSnippet = (tag, values, slots, cssProps) => {
         markup += `${INDENT}}\n</style>`;
     }
     const { value } = process(highlighter, markup, ['xml', 'css']);
-    return html `
+    return html$3 `
     <pre><code>${unsafeHTML(value)}</code></pre>
   `;
 };
@@ -11763,7 +8181,7 @@ let ApiViewerDemoSnippet = class ApiViewerDemoSnippet extends LitElement {
         ];
     }
     render() {
-        return html `
+        return html$3 `
       ${renderSnippet(this.tag, this.knobs, this.slots, this.cssProps)}
     `;
     }
@@ -11795,9 +8213,9 @@ const renderDetail = (detail) => {
     return JSON.stringify(detail).replace('"undefined"', 'undefined');
 };
 const renderEvents = (log) => {
-    return html `
+    return html$3 `
     ${log.map(e => {
-        return html `
+        return html$3 `
         <p part="event-record">
           event: "${e.type}". detail: ${renderDetail(e.detail)}
         </p>
@@ -11815,7 +8233,7 @@ let ApiViewerDemoEvents = class ApiViewerDemoEvents extends LitElement {
     }
     render() {
         const { log } = this;
-        return html `
+        return html$3 `
       <button
         @click="${this._onClearClick}"
         ?hidden="${!log.length}"
@@ -11825,7 +8243,7 @@ let ApiViewerDemoEvents = class ApiViewerDemoEvents extends LitElement {
       </button>
       ${cache$2(log.length
             ? renderEvents(log)
-            : html `
+            : html$3 `
               <p part="event-record">
                 Interact with component to see the event log.
               </p>
@@ -11889,7 +8307,7 @@ let ApiViewerDemoLayout = class ApiViewerDemoLayout extends LitElement {
         const noCss = isEmptyArray(this.cssProps);
         const noSlots = isEmptyArray(this.slots);
         const noKnobs = isEmptyArray(this.props) && noSlots;
-        return html `
+        return html$3 `
       <div part="demo-output" @rendered="${this._onRendered}">
         ${renderer(this.tag, this.knobs, this.processedSlots, this.processedCss)}
       </div>
@@ -12183,7 +8601,7 @@ let ApiViewerDemo = class ApiViewerDemo extends LitElement {
     }
     async renderDemoLayout(whenDefined) {
         await whenDefined;
-        return html `
+        return html$3 `
       <api-viewer-demo-layout
         .tag="${this.name}"
         .props="${this.props}"
@@ -12202,8 +8620,8 @@ let ApiViewerDemo = class ApiViewerDemo extends LitElement {
             this.lastName = name;
             this.whenDefined = customElements.whenDefined(name);
         }
-        return html `
-      ${until(this.renderDemoLayout(this.whenDefined), html `
+        return html$3 `
+      ${until(this.renderDemoLayout(this.whenDefined), html$3 `
           <div part="warning">
             Element "${this.name}" is not defined. Have you imported it?
           </div>
@@ -12247,7 +8665,7 @@ let ApiViewerContent = class ApiViewerContent extends LitElement {
         const { name, description, properties, attributes, slots, events, cssParts, cssProperties } = { ...EMPTY_ELEMENT, ...(elements[selected] || {}) };
         // TODO: analyzer should sort CSS custom properties
         const cssProps = (cssProperties || []).sort((a, b) => a.name > b.name ? 1 : -1);
-        return html `
+        return html$3 `
       <header part="header">
         <div class="tag-name">&lt;${name}&gt;</div>
         <nav>
@@ -12279,7 +8697,7 @@ let ApiViewerContent = class ApiViewerContent extends LitElement {
               part="select"
             >
               ${elements.map((tag, idx) => {
-            return html `
+            return html$3 `
                   <option value="${idx}">${tag.name}</option>
                 `;
         })}
@@ -12288,7 +8706,7 @@ let ApiViewerContent = class ApiViewerContent extends LitElement {
         </nav>
       </header>
       ${cache$2(section === 'docs'
-            ? html `
+            ? html$3 `
               <div ?hidden="${description === ''}" part="docs-description">
                 ${parse$2(description)}
               </div>
@@ -12302,7 +8720,7 @@ let ApiViewerContent = class ApiViewerContent extends LitElement {
                 .cssProps="${cssProps}"
               ></api-viewer-docs>
             `
-            : html `
+            : html$3 `
               <api-viewer-demo
                 .name="${name}"
                 .props="${properties}"
@@ -12354,14 +8772,14 @@ async function renderDocs(jsonFetched, section, selected) {
     const elements = await jsonFetched;
     const index = elements.findIndex(el => el.name === selected);
     return elements.length
-        ? html `
+        ? html$3 `
         <api-viewer-content
           .elements="${elements}"
           .section="${section}"
           .selected="${index >= 0 ? index : 0}"
         ></api-viewer-content>
       `
-        : html `
+        : html$3 `
         <div part="warning">
           No custom elements found in the JSON file.
         </div>
@@ -12379,7 +8797,7 @@ class ApiViewerBase extends LitElement {
             this.lastSrc = src;
             this.jsonFetched = fetchJson(src);
         }
-        return html `
+        return html$3 `
       ${until(renderDocs(this.jsonFetched, this.section, this.selected))}
     `;
     }
@@ -12715,9 +9133,9 @@ class DemoApiViewer extends ApiViewer {
 
 customElements.define('demo-api-viewer', DemoApiViewer);
 
-const github = html`<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>`;
+const github = html$3`<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>`;
 
-const preignition = html `
+const preignition = html$3 `
 <svg  xmlns="http://www.w3.org/2000/svg" width="100px" height="100px" viewBox="0 -100 934 934" >
     <style>
   .logo-light {

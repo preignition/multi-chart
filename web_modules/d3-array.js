@@ -1,5 +1,5 @@
-import { t as tickStep, s as sequence, b as bisectRight, q as quantile, a as ascending, m as min } from './common/quantile-a7047d6c.js';
-export { a as ascending, b as bisect, c as bisectLeft, b as bisectRight, d as bisector, e as max, m as min, q as quantile, f as quantileSorted, g as quickselect, s as range, i as tickIncrement, t as tickStep, h as ticks } from './common/quantile-a7047d6c.js';
+import { t as ticks, b as bisectRight, q as quantile, a as ascending, m as min } from './common/range-7ed04597.js';
+export { a as ascending, b as bisect, d as bisectCenter, c as bisectLeft, b as bisectRight, e as bisector, f as max, m as min, q as quantile, g as quantileSorted, h as quickselect, s as range, i as tickIncrement, j as tickStep, t as ticks } from './common/range-7ed04597.js';
 
 function count(values, valueof) {
   let count = 0;
@@ -126,6 +126,67 @@ function extent(values, valueof) {
   return [min, max];
 }
 
+// https://github.com/python/cpython/blob/a74eea238f5baba15797e2e8b570d153bc8690a7/Modules/mathmodule.c#L1423
+class Adder {
+  constructor() {
+    this._partials = new Float64Array(32);
+    this._n = 0;
+  }
+  add(x) {
+    const p = this._partials;
+    let i = 0;
+    for (let j = 0; j < this._n && j < 32; j++) {
+      const y = p[j],
+        hi = x + y,
+        lo = Math.abs(x) < Math.abs(y) ? x - (hi - y) : y - (hi - x);
+      if (lo) p[i++] = lo;
+      x = hi;
+    }
+    p[i] = x;
+    this._n = i + 1;
+    return this;
+  }
+  valueOf() {
+    const p = this._partials;
+    let n = this._n, x, y, lo, hi = 0;
+    if (n > 0) {
+      hi = p[--n];
+      while (n > 0) {
+        x = hi;
+        y = p[--n];
+        hi = x + y;
+        lo = y - (hi - x);
+        if (lo) break;
+      }
+      if (n > 0 && ((lo < 0 && p[n - 1] < 0) || (lo > 0 && p[n - 1] > 0))) {
+        y = lo * 2;
+        x = hi + y;
+        if (y == x - hi) hi = x;
+      }
+    }
+    return hi;
+  }
+}
+
+function fsum(values, valueof) {
+  const adder = new Adder();
+  if (valueof === undefined) {
+    for (let value of values) {
+      if (value = +value) {
+        adder.add(value);
+      }
+    }
+  } else {
+    let index = -1;
+    for (let value of values) {
+      if (value = +valueof(value, ++index, values)) {
+        adder.add(value);
+      }
+    }
+  }
+  return +adder;
+}
+
 function identity(x) {
   return x;
 }
@@ -144,6 +205,19 @@ function rollup(values, reduce, ...keys) {
 
 function rollups(values, reduce, ...keys) {
   return nest(values, Array.from, reduce, keys);
+}
+
+function index(values, ...keys) {
+  return nest(values, identity, unique, keys);
+}
+
+function indexes(values, ...keys) {
+  return nest(values, Array.from, unique, keys);
+}
+
+function unique(values) {
+  if (values.length !== 1) throw new Error("duplicate key");
+  return values[0];
 }
 
 function nest(values, map, reduce, keys) {
@@ -203,8 +277,8 @@ function bin() {
 
     // Convert number of thresholds into uniform thresholds.
     if (!Array.isArray(tz)) {
-      tz = tickStep(x0, x1, tz);
-      tz = sequence(Math.ceil(x0 / tz) * tz, x1, tz); // exclusive
+      tz = ticks(x0, x1, tz);
+      if (tz[tz.length - 1] === x1) tz.pop(); // exclusive
     }
 
     // Remove any thresholds outside the domain.
@@ -451,19 +525,18 @@ function scan(values, compare) {
   return index < 0 ? undefined : index;
 }
 
-function shuffle(array, i0 = 0, i1 = array.length) {
-  var m = i1 - (i0 = +i0),
-      t,
-      i;
+var shuffle = shuffler(Math.random);
 
-  while (m) {
-    i = Math.random() * m-- | 0;
-    t = array[m + i0];
-    array[m + i0] = array[i + i0];
-    array[i + i0] = t;
-  }
-
-  return array;
+function shuffler(random) {
+  return function shuffle(array, i0 = 0, i1 = array.length) {
+    let m = i1 - (i0 = +i0);
+    while (m) {
+      const i = random() * m-- | 0, t = array[m + i0];
+      array[m + i0] = array[i + i0];
+      array[i + i0] = t;
+    }
+    return array;
+  };
 }
 
 function sum(values, valueof) {
@@ -503,4 +576,4 @@ function zip() {
   return transpose(arguments);
 }
 
-export { bin, count, cross, cumsum, descending, deviation, extent, greatest, greatestIndex, group, groups, bin as histogram, least, leastIndex, maxIndex, mean, median, merge, minIndex, pairs, permute, rollup, rollups, scan, shuffle, sum, freedmanDiaconis as thresholdFreedmanDiaconis, scott as thresholdScott, sturges as thresholdSturges, transpose, variance, zip };
+export { Adder, bin, count, cross, cumsum, descending, deviation, extent, fsum, greatest, greatestIndex, group, groups, bin as histogram, index, indexes, least, leastIndex, maxIndex, mean, median, merge, minIndex, pairs, permute, rollup, rollups, scan, shuffle, shuffler, sum, freedmanDiaconis as thresholdFreedmanDiaconis, scott as thresholdScott, sturges as thresholdSturges, transpose, variance, zip };

@@ -53,7 +53,27 @@ const props = {
    * `continuous` true to set continuous ordinal domain for this group
    * For instance, time series are continusou
    */
-  continuous: { type: Boolean }
+  continuous: { type: Boolean },
+
+  /*
+   * `adjustOrdinalDomain` a function to re-adjust  ordinal domain
+   * for instance when time axis is too small
+   */
+  adjustOrdinalDomain: {
+    type: Function,
+    attribute: 'adjust-ordinal-domain',
+    value: () => (domain) => domain
+   },
+
+   /*
+    * `ordinalScaleInterval` interval for the ordinal scale. 
+    * This is usefull when we have a timescale and set the interval as
+    * time.timeDay 
+    */
+   ordinalScaleInterval: {
+     attribute: 'ordinal-scale-interval',
+     type: Object,
+   },
 };
 
 // Note(cg): setting default values for some properties .

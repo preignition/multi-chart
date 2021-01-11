@@ -143,7 +143,12 @@ DrawableSerie(
     const xScale = this.xScale;
     // we might have an x-scale that does not have a bandwidth, e.g. when we have date on x-axis and use a timeScale
     if (!bandwidth) {
-      bandwidth = scaleBand().domain(data[0].map((d, i) => this.xScale(d[3] || i))).range(this.xScale.range()).padding(0.2).bandwidth;
+      if (xScale.interval && xScale.interval.range) {
+        const d = xScale.domain();
+        bandwidth = scaleBand().domain(xScale.interval.range(d[0], d[1])).range(xScale.range()).padding(0.2).bandwidth;
+      } else {
+        bandwidth = scaleBand().domain(data[0].map((d, i) => xScale(d[3] || i))).range(xScale.range()).padding(0.2).bandwidth;
+      }
       align = bandwidth() / 2;
     }
 

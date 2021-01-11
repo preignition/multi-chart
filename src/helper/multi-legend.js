@@ -176,8 +176,8 @@ DispatchSVG(
   }
 
   update(props) {
-    super.update(props);
     this.relayTo(props, 'd3-legend');
+    super.update(props);
   }
 
   updated(props) {
@@ -206,16 +206,15 @@ DispatchSVG(
   }
 
   draw() {
-    if (!this._isDrawn) {
-      setTimeout(() => {
-        // Note(cg): async as we need to make sure legend is drawn before we can calculate real size and adjust position.
-        // this.selectShadow('#legend').call(this.legend);
-        select(this.$.legend).call(this.legend);
-        setTimeout(() => { this.setPosition(); }, 400);
-      }, 50);
-    } else {
+    setTimeout(() => {
+      // Note(cg): async as we need to make sure legend is drawn before we can calculate real size and adjust position.
+      select(this.$.legend).call(this.legend);
       setTimeout(() => { this.setPosition(); }, 60);
-    }
+    }, 50);
+    // if (!this._isDrawn) {
+    // } else {
+    //   setTimeout(() => { this.setPosition(); }, 60);
+    // }
   }
 
   setLegend(legend) {
@@ -232,7 +231,6 @@ DispatchSVG(
 
   setPosition() {
 
-    // const legendEl = this.queryShadow('#legend');
     const legendEl = this.$.legend;
     const size = legendEl.getBoundingClientRect();
     //if (!size.width || !size.height || !this.svgHost) {

@@ -70,10 +70,9 @@ shapeNames.forEach(name => {
     static get properties() {
       return props;
     }
+  };
+});
 
-  }
-
-})
 // console.info(classes);
 export const Pie = classes.pie;
 export const Arc = classes.arc;

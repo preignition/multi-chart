@@ -24,7 +24,8 @@ const TrackHover = dedupingMixin(superClass => {
          */
         trackHover: {
           type: Boolean,
-          value: false
+          value: false,
+          attribute: 'track-hover'
         },
 
         /* 
@@ -34,7 +35,6 @@ const TrackHover = dedupingMixin(superClass => {
         hovered: {
           type: String,
           notify: true,
-          observer: '_observerHovered'
         },
       };
     }
@@ -70,6 +70,13 @@ const TrackHover = dedupingMixin(superClass => {
 
     getKey(d) {
       return d.data ? d.data.key : d.key ? d.key : d;
+    }
+
+    updated(props) {
+      if (props.has('hovered')) {
+        this._observerHovered(this.hovered);
+      }
+      super.updated(props);
     }
 
     /* 

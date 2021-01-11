@@ -1,4 +1,4 @@
-import { R as Rgb, r as rgbConvert, d as define, e as extend, C as Color, l as brighter, m as darker, n as nogamma, h as hue } from './rgb-784c3fe6.js';
+import { R as Rgb, r as rgbConvert, d as define, e as extend, C as Color, l as brighter, m as darker, n as nogamma, h as hue } from './rgb-3745d8f7.js';
 
 var deg2rad = Math.PI / 180;
 var rad2deg = 180 / Math.PI;

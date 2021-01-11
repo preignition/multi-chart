@@ -4,7 +4,8 @@ import { select } from 'd3-selection'
 /**
  * ##  DispatchSVG
  * 
- * dispatch template elements marked as slot-svg="svgID" to svgHost
+ * dispatch template elements marked as slot-svg="svgID" to svgHost.to
+ * Is mixed to multi-drawble;
  * 
  */
 
@@ -58,17 +59,17 @@ const DispatchSVG = dedupingMixin(superClass => {
             const position = node.dataset.multiPosition;
             const appended = [...parent.childNodes].some(n => {
               if (node.dataset.multiPosition >= position) {
-                parent.insertBefore(node,n);
+                parent.insertBefore(node, n);
                 return true;
               }
-            })
+            });
             if (!appended) {
               parent.appendChild(node);
             }
 
             // parent.appendChild(node);
             // Note(cg): reorder according to multi-position
-            return
+            return;
             // select(targetNode).selectAll('>*').sort((a,b) => a.dataset.multiPosition - b.dataset.multiPosition);
             // return;
           }
@@ -76,6 +77,7 @@ const DispatchSVG = dedupingMixin(superClass => {
         });
         this.setHostStyle(host, old);
       }
+      // Note(cg): .
       if (host === null && old) {
         Object.keys(this._hostedNodes).forEach(k => {
           this.renderRoot.appendChild(this._hostedNodes[k]);
@@ -97,7 +99,7 @@ const DispatchSVG = dedupingMixin(superClass => {
         const name = this.constructor.name;
         host = this.getRootHost(host);
         if (!host.renderRoot.querySelector(`style[id=${name}]`)) {
-          const st = document.createElement('style')
+          const st = document.createElement('style');
           st.id = name;
           st.innerHTML = this.constructor.hostStyles.cssText;
           host.renderRoot.appendChild(st);

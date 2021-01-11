@@ -25,8 +25,16 @@ const Registerable = superClass => {
      *
      */
     get registerEventDispatch() {
-      return 'multi-register'
+      return 'multi-register';
     }
+
+    /* 
+     * `unregisterEventDispatch`  the name of the event to be fired when disconnected. 
+     *
+     */
+    // get unregisterEventDispatch() {
+    //   return 'multi-unregister';
+    // }
 
     // Note(cg): some registerable (in particular multi-data-group) need to register before
     // Othewise, multi-data-mixin_onMultiRegister fail to correctly proceed with onRegister 
@@ -82,12 +90,19 @@ const Registerable = superClass => {
 
     connectedCallback() {
       super.connectedCallback();
-      if (this.registerAtConnected) {
+      if (this.registerAtConnected || this._registerableWasDisconnected) {
+        delete this._registerableWasDisconnected;
         this.dispatchEvent(new CustomEvent(this.registerEventDispatch, { detail: this.group, bubbles: true, composed: true }));
       }
     }
 
     disconnectedCallback() {
+      // Note(cg): this is already detached from DOM. event will not bubble up.
+      // fireing on parentNode.host will 
+      // if (this.unregisterEventDispatch && this.parentNode && this.parentNode.host) {
+      //   this.parentNode.host.dispatchEvent(new CustomEvent(this.unregisterEventDispatch, { detail: this.group, disconnected: this, bubbles: true, composed: true }));
+      // }
+      this._registerableWasDisconnected = true;
       this.postRemove && this.postRemove();
       super.disconnectedCallback();
     }

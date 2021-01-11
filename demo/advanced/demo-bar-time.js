@@ -42,9 +42,7 @@ class Chart extends LitElement {
         .bottomPadding="${this.padding}"
         bottom-scale-type="time"
         .bottomTickFormat="${timeFormat(this.timeFormat)}"
-        
-        stacked
-
+        .ordinalScaleInterval="${this.scaleInterval}"
         .data="${this.data}"
         .log="${this.log}"
         .keys="${this.keys}"
@@ -71,7 +69,7 @@ class Chart extends LitElement {
       stacked: { type: Boolean },
       keyAccessor: { type: Function },
       value: { type: Function },
-      
+      scaleInterval: {type: Object},
       timeFormat: { type: String },
       colorScale: { type: Function }
 
@@ -82,12 +80,19 @@ class Chart extends LitElement {
     super()
     this.colorScale = scales.scaleOrdinal().range(["#98abc5", "#8a89a6", "#7b6888", "#6b486b", "#a05d56", "#d0743c", "#ff8c00"]);
     this.rightMargin = 150;
-    this.data = timeData(30);
+    const data = timeData(30);
+    // Note(cg): we remove some values.
+    delete data[2];
+    delete data[3];
+    delete data[4];
+    delete data[5];
+    this.data = data;
     this.keys = ['count']
 
-    this.value = (d,key) => {return d.value.count}
+    this.scaleInterval = time.timeDay
+    this.value = (d, key) => {return  d && d.value.count || 0}
     this.timeFormat = '%d %b'
-    this.keyAccessor = d => d.key;
+    this.keyAccessor = d => d && d.key;
     this.padding = 0.1
   }
 }

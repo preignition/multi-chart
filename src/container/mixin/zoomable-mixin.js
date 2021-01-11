@@ -1,6 +1,6 @@
 import { default as zoomableProperty } from '../properties/zoomable.js';
-import { event as d3Event } from 'd3-selection'
-import { zoom } from 'd3-zoom'
+import { select } from 'd3-selection';
+import { zoom } from 'd3-zoom';
 // import { selectMixin } from '/web_modules/@preignition/preignition-mixin.js';
 
 /**
@@ -14,7 +14,7 @@ import { zoom } from 'd3-zoom'
  */
 const Zoomable = superClass => {
 
-  return class extends superClass { 
+  return class extends superClass {
 
     static get properties() {
 
@@ -24,7 +24,7 @@ const Zoomable = superClass => {
 
         ...zoomableProperty,
 
-        /* 
+        /*
          * `enableZoom` set true to enable zoom behaviors
          */
         enableZoom: {
@@ -54,18 +54,18 @@ const Zoomable = superClass => {
     }
 
     get zoomedEl() {
-      return this.selectShadow('#slot-zoom');
+      return select(this.renderRoot.querySelector('#slot-zoom'));
       // return d3.select(this.renderRoot.querySelector('#slot-zoom'));
     }
 
     _observeEnableZoom(enable) {
       if (enable) {
-        const zoomed = () => {
-          this.zoomedEl.attr('transform', d3Event.transform);
+        const zoomed = ({transform}) => {
+          this.zoomedEl.attr('transform', transform);
         };
 
         this._zoom = zoom().on('zoom', zoomed);
-        this.selectShadow('#svg').call(this._zoom);
+        select(this.renderRoot.querySelector('#svg')).call(this._zoom);
         // d3.select(this.$.svg).call(this._zoom);
 
       }
@@ -78,7 +78,7 @@ const Zoomable = superClass => {
 };
 
 
-/* 
+/*
  * @mixinFunction
  */
 export { Zoomable };

@@ -230,6 +230,7 @@ function image(input, init) {
 
 function responseJson(response) {
   if (!response.ok) throw new Error(response.status + " " + response.statusText);
+  if (response.status === 204 || response.status === 205) return;
   return response.json();
 }
 
@@ -238,11 +239,8 @@ function json(input, init) {
 }
 
 function parser(type) {
-  return function(input, init)  {
-    return text(input, init).then(function(text) {
-      return (new DOMParser).parseFromString(text, type);
-    });
-  };
+  return (input, init) => text(input, init)
+    .then(text => (new DOMParser).parseFromString(text, type));
 }
 
 var xml = parser("application/xml");

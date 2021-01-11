@@ -1,16 +1,15 @@
-import { R as Rgb, r as rgbConvert, d as define, e as extend, C as Color, h as hue$1, b as hsl$2, n as nogamma } from './common/rgb-784c3fe6.js';
-export { f as interpolateBasis, g as interpolateBasisClosed, i as interpolateRgb, j as interpolateRgbBasis, k as interpolateRgbBasisClosed } from './common/rgb-784c3fe6.js';
-import { r as rad2deg, d as deg2rad } from './common/cubehelix-7c1e0943.js';
-export { c as interpolateCubehelix, a as interpolateCubehelixLong } from './common/cubehelix-7c1e0943.js';
-export { i as interpolate, a as interpolateArray, d as interpolateDate, n as interpolateNumberArray, o as interpolateObject } from './common/value-dabe3913.js';
-export { r as interpolateNumber, i as interpolateString } from './common/string-31fe99e6.js';
-export { i as interpolateRound } from './common/round-d8c44152.js';
-export { a as interpolateTransformCss, i as interpolateTransformSvg } from './common/index-e6098f30.js';
-export { i as interpolateZoom } from './common/zoom-9daf9ec9.js';
-export { p as piecewise } from './common/piecewise-a8ee545c.js';
+import { R as Rgb, r as rgbConvert, d as define, e as extend, C as Color, h as hue$1, b as hsl$2, n as nogamma } from './common/rgb-33c8dfa4.js';
+export { f as interpolateBasis, g as interpolateBasisClosed, i as interpolateRgb, j as interpolateRgbBasis, k as interpolateRgbBasisClosed } from './common/rgb-33c8dfa4.js';
+import { d as degrees, r as radians } from './common/cubehelix-9882d89c.js';
+export { c as interpolateCubehelix, a as interpolateCubehelixLong } from './common/cubehelix-9882d89c.js';
+export { i as interpolate, a as interpolateArray, d as interpolateDate, n as interpolateNumberArray, o as interpolateObject } from './common/value-742aec79.js';
+export { i as interpolateNumber, a as interpolateString } from './common/string-25a4a3cd.js';
+export { i as interpolateRound, p as piecewise } from './common/piecewise-d26459b5.js';
+export { a as interpolateTransformCss, i as interpolateTransformSvg } from './common/index-181a2926.js';
+export { i as interpolateZoom } from './common/zoom-db875aa0.js';
 
 // https://observablehq.com/@mbostock/lab-and-rgb
-var K = 18,
+const K = 18,
     Xn = 0.96422,
     Yn = 1,
     Zn = 0.82521,
@@ -88,7 +87,7 @@ function hclConvert(o) {
   if (o instanceof Hcl) return new Hcl(o.h, o.c, o.l, o.opacity);
   if (!(o instanceof Lab)) o = labConvert(o);
   if (o.a === 0 && o.b === 0) return new Hcl(NaN, 0 < o.l && o.l < 100 ? 0 : NaN, o.l, o.opacity);
-  var h = Math.atan2(o.b, o.a) * rad2deg;
+  var h = Math.atan2(o.b, o.a) * degrees;
   return new Hcl(h < 0 ? h + 360 : h, Math.sqrt(o.a * o.a + o.b * o.b), o.l, o.opacity);
 }
 
@@ -105,7 +104,7 @@ function Hcl(h, c, l, opacity) {
 
 function hcl2lab(o) {
   if (isNaN(o.h)) return new Lab(o.l, 0, 0, o.opacity);
-  var h = o.h * deg2rad;
+  var h = o.h * radians;
   return new Lab(o.l, Math.cos(h) * o.c, Math.sin(h) * o.c, o.opacity);
 }
 

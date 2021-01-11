@@ -1,23 +1,28 @@
-import { e as event, d as customEvent } from './common/index-7aa57c77.js';
-import { s as select } from './common/select-83157f23.js';
-import { m as mouse, t as touch } from './common/touch-7b99ad4f.js';
-import { d as dispatch, i as interrupt } from './common/index-6c8f896b.js';
-import './common/rgb-784c3fe6.js';
-import './common/string-31fe99e6.js';
-import './common/index-e6098f30.js';
-import { i as interpolateZoom } from './common/zoom-9daf9ec9.js';
-import { d as dragDisable, y as yesdrag } from './common/nodrag-ba55fe44.js';
+import { d as dispatch, i as interrupt } from './common/index-95163be1.js';
+import './common/index-eb5ccfed.js';
+import { s as select } from './common/select-2cd9107d.js';
+import { p as pointer } from './common/pointer-8013620e.js';
+import { d as dragDisable, y as yesdrag } from './common/nodrag-9d6cb879.js';
+import './common/rgb-33c8dfa4.js';
+import './common/string-25a4a3cd.js';
+import './common/index-181a2926.js';
+import { i as interpolateZoom } from './common/zoom-db875aa0.js';
 
-function constant(x) {
-  return function() {
-    return x;
-  };
-}
+var constant = x => () => x;
 
-function ZoomEvent(target, type, transform) {
-  this.target = target;
-  this.type = type;
-  this.transform = transform;
+function ZoomEvent(type, {
+  sourceEvent,
+  target,
+  transform,
+  dispatch
+}) {
+  Object.defineProperties(this, {
+    type: {value: type, enumerable: true, configurable: true},
+    sourceEvent: {value: sourceEvent, enumerable: true, configurable: true},
+    target: {value: target, enumerable: true, configurable: true},
+    transform: {value: transform, enumerable: true, configurable: true},
+    _: {value: dispatch}
+  });
 }
 
 function Transform(k, x, y) {
@@ -72,18 +77,19 @@ function transform(node) {
   return node.__zoom;
 }
 
-function nopropagation() {
+function nopropagation(event) {
   event.stopImmediatePropagation();
 }
 
-function noevent() {
+function noevent(event) {
   event.preventDefault();
   event.stopImmediatePropagation();
 }
 
 // Ignore right-click, since that should open the context menu.
-function defaultFilter() {
-  return !event.ctrlKey && !event.button;
+// except for pinch-to-zoom, which is sent as a wheel+ctrlKey event
+function defaultFilter(event) {
+  return (!event.ctrlKey || event.type === 'wheel') && !event.button;
 }
 
 function defaultExtent() {
@@ -103,8 +109,8 @@ function defaultTransform() {
   return this.__zoom || identity;
 }
 
-function defaultWheelDelta() {
-  return -event.deltaY * (event.deltaMode === 1 ? 0.05 : event.deltaMode ? 1 : 0.002);
+function defaultWheelDelta(event) {
+  return -event.deltaY * (event.deltaMode === 1 ? 0.05 : event.deltaMode ? 1 : 0.002) * (event.ctrlKey ? 10 : 1);
 }
 
 function defaultTouchable() {
@@ -134,10 +140,12 @@ function zoom() {
       interpolate = interpolateZoom,
       listeners = dispatch("start", "zoom", "end"),
       touchstarting,
+      touchfirst,
       touchending,
       touchDelay = 500,
       wheelDelay = 150,
-      clickDistance2 = 0;
+      clickDistance2 = 0,
+      tapDistance = 10;
 
   function zoom(selection) {
     selection
@@ -149,34 +157,34 @@ function zoom() {
         .on("touchstart.zoom", touchstarted)
         .on("touchmove.zoom", touchmoved)
         .on("touchend.zoom touchcancel.zoom", touchended)
-        .style("touch-action", "none")
         .style("-webkit-tap-highlight-color", "rgba(0,0,0,0)");
   }
 
-  zoom.transform = function(collection, transform, point) {
+  zoom.transform = function(collection, transform, point, event) {
     var selection = collection.selection ? collection.selection() : collection;
     selection.property("__zoom", defaultTransform);
     if (collection !== selection) {
-      schedule(collection, transform, point);
+      schedule(collection, transform, point, event);
     } else {
       selection.interrupt().each(function() {
         gesture(this, arguments)
-            .start()
-            .zoom(null, typeof transform === "function" ? transform.apply(this, arguments) : transform)
-            .end();
+          .event(event)
+          .start()
+          .zoom(null, typeof transform === "function" ? transform.apply(this, arguments) : transform)
+          .end();
       });
     }
   };
 
-  zoom.scaleBy = function(selection, k, p) {
+  zoom.scaleBy = function(selection, k, p, event) {
     zoom.scaleTo(selection, function() {
       var k0 = this.__zoom.k,
           k1 = typeof k === "function" ? k.apply(this, arguments) : k;
       return k0 * k1;
-    }, p);
+    }, p, event);
   };
 
-  zoom.scaleTo = function(selection, k, p) {
+  zoom.scaleTo = function(selection, k, p, event) {
     zoom.transform(selection, function() {
       var e = extent.apply(this, arguments),
           t0 = this.__zoom,
@@ -184,19 +192,19 @@ function zoom() {
           p1 = t0.invert(p0),
           k1 = typeof k === "function" ? k.apply(this, arguments) : k;
       return constrain(translate(scale(t0, k1), p0, p1), e, translateExtent);
-    }, p);
+    }, p, event);
   };
 
-  zoom.translateBy = function(selection, x, y) {
+  zoom.translateBy = function(selection, x, y, event) {
     zoom.transform(selection, function() {
       return constrain(this.__zoom.translate(
         typeof x === "function" ? x.apply(this, arguments) : x,
         typeof y === "function" ? y.apply(this, arguments) : y
       ), extent.apply(this, arguments), translateExtent);
-    });
+    }, null, event);
   };
 
-  zoom.translateTo = function(selection, x, y, p) {
+  zoom.translateTo = function(selection, x, y, p, event) {
     zoom.transform(selection, function() {
       var e = extent.apply(this, arguments),
           t = this.__zoom,
@@ -205,7 +213,7 @@ function zoom() {
         typeof x === "function" ? -x.apply(this, arguments) : -x,
         typeof y === "function" ? -y.apply(this, arguments) : -y
       ), e, translateExtent);
-    }, p);
+    }, p, event);
   };
 
   function scale(transform, k) {
@@ -222,14 +230,14 @@ function zoom() {
     return [(+extent[0][0] + +extent[1][0]) / 2, (+extent[0][1] + +extent[1][1]) / 2];
   }
 
-  function schedule(transition, transform, point) {
+  function schedule(transition, transform, point, event) {
     transition
-        .on("start.zoom", function() { gesture(this, arguments).start(); })
-        .on("interrupt.zoom end.zoom", function() { gesture(this, arguments).end(); })
+        .on("start.zoom", function() { gesture(this, arguments).event(event).start(); })
+        .on("interrupt.zoom end.zoom", function() { gesture(this, arguments).event(event).end(); })
         .tween("zoom", function() {
           var that = this,
               args = arguments,
-              g = gesture(that, args),
+              g = gesture(that, args).event(event),
               e = extent.apply(that, args),
               p = point == null ? centroid(e) : typeof point === "function" ? point.apply(that, args) : point,
               w = Math.max(e[1][0] - e[0][0], e[1][1] - e[0][1]),
@@ -252,11 +260,16 @@ function zoom() {
     this.that = that;
     this.args = args;
     this.active = 0;
+    this.sourceEvent = null;
     this.extent = extent.apply(that, args);
     this.taps = 0;
   }
 
   Gesture.prototype = {
+    event: function(event) {
+      if (event) this.sourceEvent = event;
+      return this;
+    },
     start: function() {
       if (++this.active === 1) {
         this.that.__zooming = this;
@@ -280,16 +293,28 @@ function zoom() {
       return this;
     },
     emit: function(type) {
-      customEvent(new ZoomEvent(zoom, type, this.that.__zoom), listeners.apply, listeners, [type, this.that, this.args]);
+      var d = select(this.that).datum();
+      listeners.call(
+        type,
+        this.that,
+        new ZoomEvent(type, {
+          sourceEvent: this.sourceEvent,
+          target: zoom,
+          type,
+          transform: this.that.__zoom,
+          dispatch: listeners
+        }),
+        d
+      );
     }
   };
 
-  function wheeled() {
+  function wheeled(event, ...args) {
     if (!filter.apply(this, arguments)) return;
-    var g = gesture(this, arguments),
+    var g = gesture(this, args).event(event),
         t = this.__zoom,
         k = Math.max(scaleExtent[0], Math.min(scaleExtent[1], t.k * Math.pow(2, wheelDelta.apply(this, arguments)))),
-        p = mouse(this);
+        p = pointer(event);
 
     // If the mouse is in the same location as before, reuse it.
     // If there were recent wheel events, reset the wheel idle timeout.
@@ -310,7 +335,7 @@ function zoom() {
       g.start();
     }
 
-    noevent();
+    noevent(event);
     g.wheel = setTimeout(wheelidled, wheelDelay);
     g.zoom("mouse", constrain(translate(scale(t, k), g.mouse[0], g.mouse[1]), g.extent, translateExtent));
 
@@ -320,60 +345,62 @@ function zoom() {
     }
   }
 
-  function mousedowned() {
+  function mousedowned(event, ...args) {
     if (touchending || !filter.apply(this, arguments)) return;
-    var g = gesture(this, arguments, true),
+    var g = gesture(this, args, true).event(event),
         v = select(event.view).on("mousemove.zoom", mousemoved, true).on("mouseup.zoom", mouseupped, true),
-        p = mouse(this),
+        p = pointer(event, currentTarget),
+        currentTarget = event.currentTarget,
         x0 = event.clientX,
         y0 = event.clientY;
 
     dragDisable(event.view);
-    nopropagation();
+    nopropagation(event);
     g.mouse = [p, this.__zoom.invert(p)];
     interrupt(this);
     g.start();
 
-    function mousemoved() {
-      noevent();
+    function mousemoved(event) {
+      noevent(event);
       if (!g.moved) {
         var dx = event.clientX - x0, dy = event.clientY - y0;
         g.moved = dx * dx + dy * dy > clickDistance2;
       }
-      g.zoom("mouse", constrain(translate(g.that.__zoom, g.mouse[0] = mouse(g.that), g.mouse[1]), g.extent, translateExtent));
+      g.event(event)
+       .zoom("mouse", constrain(translate(g.that.__zoom, g.mouse[0] = pointer(event, currentTarget), g.mouse[1]), g.extent, translateExtent));
     }
 
-    function mouseupped() {
+    function mouseupped(event) {
       v.on("mousemove.zoom mouseup.zoom", null);
       yesdrag(event.view, g.moved);
-      noevent();
-      g.end();
+      noevent(event);
+      g.event(event).end();
     }
   }
 
-  function dblclicked() {
+  function dblclicked(event, ...args) {
     if (!filter.apply(this, arguments)) return;
     var t0 = this.__zoom,
-        p0 = mouse(this),
+        p0 = pointer(event.changedTouches ? event.changedTouches[0] : event, this),
         p1 = t0.invert(p0),
         k1 = t0.k * (event.shiftKey ? 0.5 : 2),
-        t1 = constrain(translate(scale(t0, k1), p0, p1), extent.apply(this, arguments), translateExtent);
+        t1 = constrain(translate(scale(t0, k1), p0, p1), extent.apply(this, args), translateExtent);
 
-    noevent();
-    if (duration > 0) select(this).transition().duration(duration).call(schedule, t1, p0);
-    else select(this).call(zoom.transform, t1);
+    noevent(event);
+    if (duration > 0) select(this).transition().duration(duration).call(schedule, t1, p0, event);
+    else select(this).call(zoom.transform, t1, p0, event);
   }
 
-  function touchstarted() {
+  function touchstarted(event, ...args) {
     if (!filter.apply(this, arguments)) return;
     var touches = event.touches,
         n = touches.length,
-        g = gesture(this, arguments, event.changedTouches.length === n),
+        g = gesture(this, args, event.changedTouches.length === n).event(event),
         started, i, t, p;
 
-    nopropagation();
+    nopropagation(event);
     for (i = 0; i < n; ++i) {
-      t = touches[i], p = touch(this, touches, t.identifier);
+      t = touches[i], p = pointer(t, this);
       p = [p, this.__zoom.invert(p), t.identifier];
       if (!g.touch0) g.touch0 = p, started = true, g.taps = 1 + !!touchstarting;
       else if (!g.touch1 && g.touch0[2] !== p[2]) g.touch1 = p, g.taps = 0;
@@ -382,23 +409,21 @@ function zoom() {
     if (touchstarting) touchstarting = clearTimeout(touchstarting);
 
     if (started) {
-      if (g.taps < 2) touchstarting = setTimeout(function() { touchstarting = null; }, touchDelay);
+      if (g.taps < 2) touchfirst = p[0], touchstarting = setTimeout(function() { touchstarting = null; }, touchDelay);
       interrupt(this);
       g.start();
     }
   }
 
-  function touchmoved() {
+  function touchmoved(event, ...args) {
     if (!this.__zooming) return;
-    var g = gesture(this, arguments),
+    var g = gesture(this, args).event(event),
         touches = event.changedTouches,
         n = touches.length, i, t, p, l;
 
-    noevent();
-    if (touchstarting) touchstarting = clearTimeout(touchstarting);
-    g.taps = 0;
+    noevent(event);
     for (i = 0; i < n; ++i) {
-      t = touches[i], p = touch(this, touches, t.identifier);
+      t = touches[i], p = pointer(t, this);
       if (g.touch0 && g.touch0[2] === t.identifier) g.touch0[0] = p;
       else if (g.touch1 && g.touch1[2] === t.identifier) g.touch1[0] = p;
     }
@@ -414,16 +439,17 @@ function zoom() {
     }
     else if (g.touch0) p = g.touch0[0], l = g.touch0[1];
     else return;
+
     g.zoom("touch", constrain(translate(t, p, l), g.extent, translateExtent));
   }
 
-  function touchended() {
+  function touchended(event, ...args) {
     if (!this.__zooming) return;
-    var g = gesture(this, arguments),
+    var g = gesture(this, args).event(event),
         touches = event.changedTouches,
         n = touches.length, i, t;
 
-    nopropagation();
+    nopropagation(event);
     if (touchending) clearTimeout(touchending);
     touchending = setTimeout(function() { touchending = null; }, touchDelay);
     for (i = 0; i < n; ++i) {
@@ -437,8 +463,11 @@ function zoom() {
       g.end();
       // If this was a dbltap, reroute to the (optional) dblclick.zoom handler.
       if (g.taps === 2) {
-        var p = select(this).on("dblclick.zoom");
-        if (p) p.apply(this, arguments);
+        t = pointer(t, this);
+        if (Math.hypot(touchfirst[0] - t[0], touchfirst[1] - t[1]) < tapDistance) {
+          var p = select(this).on("dblclick.zoom");
+          if (p) p.apply(this, arguments);
+        }
       }
     }
   }
@@ -486,6 +515,10 @@ function zoom() {
 
   zoom.clickDistance = function(_) {
     return arguments.length ? (clickDistance2 = (_ = +_) * _, zoom) : Math.sqrt(clickDistance2);
+  };
+
+  zoom.tapDistance = function(_) {
+    return arguments.length ? (tapDistance = +_, zoom) : tapDistance;
   };
 
   return zoom;

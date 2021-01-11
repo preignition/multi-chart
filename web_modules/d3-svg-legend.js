@@ -1,859 +1,5 @@
-import './common/rgb-784c3fe6.js';
-import { a as cubehelixLong } from './common/cubehelix-7c1e0943.js';
-import { i as interpolateValue } from './common/value-dabe3913.js';
-import { r as reinterpolate } from './common/string-31fe99e6.js';
-import { i as interpolateRound } from './common/round-d8c44152.js';
-import './common/utcYear-07e3c0ef.js';
-import './common/defaultLocale-723337ea.js';
-
-var xhtml = "http://www.w3.org/1999/xhtml";
-
-var namespaces = {
-  svg: "http://www.w3.org/2000/svg",
-  xhtml: xhtml,
-  xlink: "http://www.w3.org/1999/xlink",
-  xml: "http://www.w3.org/XML/1998/namespace",
-  xmlns: "http://www.w3.org/2000/xmlns/"
-};
-
-function namespace(name) {
-  var prefix = name += "", i = prefix.indexOf(":");
-  if (i >= 0 && (prefix = name.slice(0, i)) !== "xmlns") name = name.slice(i + 1);
-  return namespaces.hasOwnProperty(prefix) ? {space: namespaces[prefix], local: name} : name;
-}
-
-function creatorInherit(name) {
-  return function() {
-    var document = this.ownerDocument,
-        uri = this.namespaceURI;
-    return uri === xhtml && document.documentElement.namespaceURI === xhtml
-        ? document.createElement(name)
-        : document.createElementNS(uri, name);
-  };
-}
-
-function creatorFixed(fullname) {
-  return function() {
-    return this.ownerDocument.createElementNS(fullname.space, fullname.local);
-  };
-}
-
-function creator(name) {
-  var fullname = namespace(name);
-  return (fullname.local
-      ? creatorFixed
-      : creatorInherit)(fullname);
-}
-
-var matcher = function(selector) {
-  return function() {
-    return this.matches(selector);
-  };
-};
-
-if (typeof document !== "undefined") {
-  var element = document.documentElement;
-  if (!element.matches) {
-    var vendorMatches = element.webkitMatchesSelector
-        || element.msMatchesSelector
-        || element.mozMatchesSelector
-        || element.oMatchesSelector;
-    matcher = function(selector) {
-      return function() {
-        return vendorMatches.call(this, selector);
-      };
-    };
-  }
-}
-
-var matcher$1 = matcher;
-
-var filterEvents = {};
-
-if (typeof document !== "undefined") {
-  var element$1 = document.documentElement;
-  if (!("onmouseenter" in element$1)) {
-    filterEvents = {mouseenter: "mouseover", mouseleave: "mouseout"};
-  }
-}
-
-function filterContextListener(listener, index, group) {
-  listener = contextListener(listener, index, group);
-  return function(event) {
-    var related = event.relatedTarget;
-    if (!related || (related !== this && !(related.compareDocumentPosition(this) & 8))) {
-      listener.call(this, event);
-    }
-  };
-}
-
-function contextListener(listener, index, group) {
-  return function(event1) {
-    try {
-      listener.call(this, this.__data__, index, group);
-    } finally {
-    }
-  };
-}
-
-function parseTypenames(typenames) {
-  return typenames.trim().split(/^|\s+/).map(function(t) {
-    var name = "", i = t.indexOf(".");
-    if (i >= 0) name = t.slice(i + 1), t = t.slice(0, i);
-    return {type: t, name: name};
-  });
-}
-
-function onRemove(typename) {
-  return function() {
-    var on = this.__on;
-    if (!on) return;
-    for (var j = 0, i = -1, m = on.length, o; j < m; ++j) {
-      if (o = on[j], (!typename.type || o.type === typename.type) && o.name === typename.name) {
-        this.removeEventListener(o.type, o.listener, o.capture);
-      } else {
-        on[++i] = o;
-      }
-    }
-    if (++i) on.length = i;
-    else delete this.__on;
-  };
-}
-
-function onAdd(typename, value, capture) {
-  var wrap = filterEvents.hasOwnProperty(typename.type) ? filterContextListener : contextListener;
-  return function(d, i, group) {
-    var on = this.__on, o, listener = wrap(value, i, group);
-    if (on) for (var j = 0, m = on.length; j < m; ++j) {
-      if ((o = on[j]).type === typename.type && o.name === typename.name) {
-        this.removeEventListener(o.type, o.listener, o.capture);
-        this.addEventListener(o.type, o.listener = listener, o.capture = capture);
-        o.value = value;
-        return;
-      }
-    }
-    this.addEventListener(typename.type, listener, capture);
-    o = {type: typename.type, name: typename.name, value: value, listener: listener, capture: capture};
-    if (!on) this.__on = [o];
-    else on.push(o);
-  };
-}
-
-function selection_on(typename, value, capture) {
-  var typenames = parseTypenames(typename + ""), i, n = typenames.length, t;
-
-  if (arguments.length < 2) {
-    var on = this.node().__on;
-    if (on) for (var j = 0, m = on.length, o; j < m; ++j) {
-      for (i = 0, o = on[j]; i < n; ++i) {
-        if ((t = typenames[i]).type === o.type && t.name === o.name) {
-          return o.value;
-        }
-      }
-    }
-    return;
-  }
-
-  on = value ? onAdd : onRemove;
-  if (capture == null) capture = false;
-  for (i = 0; i < n; ++i) this.each(on(typenames[i], value, capture));
-  return this;
-}
-
-function none() {}
-
-function selector(selector) {
-  return selector == null ? none : function() {
-    return this.querySelector(selector);
-  };
-}
-
-function selection_select(select) {
-  if (typeof select !== "function") select = selector(select);
-
-  for (var groups = this._groups, m = groups.length, subgroups = new Array(m), j = 0; j < m; ++j) {
-    for (var group = groups[j], n = group.length, subgroup = subgroups[j] = new Array(n), node, subnode, i = 0; i < n; ++i) {
-      if ((node = group[i]) && (subnode = select.call(node, node.__data__, i, group))) {
-        if ("__data__" in node) subnode.__data__ = node.__data__;
-        subgroup[i] = subnode;
-      }
-    }
-  }
-
-  return new Selection(subgroups, this._parents);
-}
-
-function empty() {
-  return [];
-}
-
-function selectorAll(selector) {
-  return selector == null ? empty : function() {
-    return this.querySelectorAll(selector);
-  };
-}
-
-function selection_selectAll(select) {
-  if (typeof select !== "function") select = selectorAll(select);
-
-  for (var groups = this._groups, m = groups.length, subgroups = [], parents = [], j = 0; j < m; ++j) {
-    for (var group = groups[j], n = group.length, node, i = 0; i < n; ++i) {
-      if (node = group[i]) {
-        subgroups.push(select.call(node, node.__data__, i, group));
-        parents.push(node);
-      }
-    }
-  }
-
-  return new Selection(subgroups, parents);
-}
-
-function selection_filter(match) {
-  if (typeof match !== "function") match = matcher$1(match);
-
-  for (var groups = this._groups, m = groups.length, subgroups = new Array(m), j = 0; j < m; ++j) {
-    for (var group = groups[j], n = group.length, subgroup = subgroups[j] = [], node, i = 0; i < n; ++i) {
-      if ((node = group[i]) && match.call(node, node.__data__, i, group)) {
-        subgroup.push(node);
-      }
-    }
-  }
-
-  return new Selection(subgroups, this._parents);
-}
-
-function sparse(update) {
-  return new Array(update.length);
-}
-
-function selection_enter() {
-  return new Selection(this._enter || this._groups.map(sparse), this._parents);
-}
-
-function EnterNode(parent, datum) {
-  this.ownerDocument = parent.ownerDocument;
-  this.namespaceURI = parent.namespaceURI;
-  this._next = null;
-  this._parent = parent;
-  this.__data__ = datum;
-}
-
-EnterNode.prototype = {
-  constructor: EnterNode,
-  appendChild: function(child) { return this._parent.insertBefore(child, this._next); },
-  insertBefore: function(child, next) { return this._parent.insertBefore(child, next); },
-  querySelector: function(selector) { return this._parent.querySelector(selector); },
-  querySelectorAll: function(selector) { return this._parent.querySelectorAll(selector); }
-};
-
-function constant(x) {
-  return function() {
-    return x;
-  };
-}
-
-var keyPrefix = "$"; // Protect against keys like “__proto__”.
-
-function bindIndex(parent, group, enter, update, exit, data) {
-  var i = 0,
-      node,
-      groupLength = group.length,
-      dataLength = data.length;
-
-  // Put any non-null nodes that fit into update.
-  // Put any null nodes into enter.
-  // Put any remaining data into enter.
-  for (; i < dataLength; ++i) {
-    if (node = group[i]) {
-      node.__data__ = data[i];
-      update[i] = node;
-    } else {
-      enter[i] = new EnterNode(parent, data[i]);
-    }
-  }
-
-  // Put any non-null nodes that don’t fit into exit.
-  for (; i < groupLength; ++i) {
-    if (node = group[i]) {
-      exit[i] = node;
-    }
-  }
-}
-
-function bindKey(parent, group, enter, update, exit, data, key) {
-  var i,
-      node,
-      nodeByKeyValue = {},
-      groupLength = group.length,
-      dataLength = data.length,
-      keyValues = new Array(groupLength),
-      keyValue;
-
-  // Compute the key for each node.
-  // If multiple nodes have the same key, the duplicates are added to exit.
-  for (i = 0; i < groupLength; ++i) {
-    if (node = group[i]) {
-      keyValues[i] = keyValue = keyPrefix + key.call(node, node.__data__, i, group);
-      if (keyValue in nodeByKeyValue) {
-        exit[i] = node;
-      } else {
-        nodeByKeyValue[keyValue] = node;
-      }
-    }
-  }
-
-  // Compute the key for each datum.
-  // If there a node associated with this key, join and add it to update.
-  // If there is not (or the key is a duplicate), add it to enter.
-  for (i = 0; i < dataLength; ++i) {
-    keyValue = keyPrefix + key.call(parent, data[i], i, data);
-    if (node = nodeByKeyValue[keyValue]) {
-      update[i] = node;
-      node.__data__ = data[i];
-      nodeByKeyValue[keyValue] = null;
-    } else {
-      enter[i] = new EnterNode(parent, data[i]);
-    }
-  }
-
-  // Add any remaining nodes that were not bound to data to exit.
-  for (i = 0; i < groupLength; ++i) {
-    if ((node = group[i]) && (nodeByKeyValue[keyValues[i]] === node)) {
-      exit[i] = node;
-    }
-  }
-}
-
-function selection_data(value, key) {
-  if (!value) {
-    data = new Array(this.size()), j = -1;
-    this.each(function(d) { data[++j] = d; });
-    return data;
-  }
-
-  var bind = key ? bindKey : bindIndex,
-      parents = this._parents,
-      groups = this._groups;
-
-  if (typeof value !== "function") value = constant(value);
-
-  for (var m = groups.length, update = new Array(m), enter = new Array(m), exit = new Array(m), j = 0; j < m; ++j) {
-    var parent = parents[j],
-        group = groups[j],
-        groupLength = group.length,
-        data = value.call(parent, parent && parent.__data__, j, parents),
-        dataLength = data.length,
-        enterGroup = enter[j] = new Array(dataLength),
-        updateGroup = update[j] = new Array(dataLength),
-        exitGroup = exit[j] = new Array(groupLength);
-
-    bind(parent, group, enterGroup, updateGroup, exitGroup, data, key);
-
-    // Now connect the enter nodes to their following update node, such that
-    // appendChild can insert the materialized enter node before this node,
-    // rather than at the end of the parent node.
-    for (var i0 = 0, i1 = 0, previous, next; i0 < dataLength; ++i0) {
-      if (previous = enterGroup[i0]) {
-        if (i0 >= i1) i1 = i0 + 1;
-        while (!(next = updateGroup[i1]) && ++i1 < dataLength);
-        previous._next = next || null;
-      }
-    }
-  }
-
-  update = new Selection(update, parents);
-  update._enter = enter;
-  update._exit = exit;
-  return update;
-}
-
-function selection_exit() {
-  return new Selection(this._exit || this._groups.map(sparse), this._parents);
-}
-
-function selection_merge(selection) {
-
-  for (var groups0 = this._groups, groups1 = selection._groups, m0 = groups0.length, m1 = groups1.length, m = Math.min(m0, m1), merges = new Array(m0), j = 0; j < m; ++j) {
-    for (var group0 = groups0[j], group1 = groups1[j], n = group0.length, merge = merges[j] = new Array(n), node, i = 0; i < n; ++i) {
-      if (node = group0[i] || group1[i]) {
-        merge[i] = node;
-      }
-    }
-  }
-
-  for (; j < m0; ++j) {
-    merges[j] = groups0[j];
-  }
-
-  return new Selection(merges, this._parents);
-}
-
-function selection_order() {
-
-  for (var groups = this._groups, j = -1, m = groups.length; ++j < m;) {
-    for (var group = groups[j], i = group.length - 1, next = group[i], node; --i >= 0;) {
-      if (node = group[i]) {
-        if (next && next !== node.nextSibling) next.parentNode.insertBefore(node, next);
-        next = node;
-      }
-    }
-  }
-
-  return this;
-}
-
-function selection_sort(compare) {
-  if (!compare) compare = ascending;
-
-  function compareNode(a, b) {
-    return a && b ? compare(a.__data__, b.__data__) : !a - !b;
-  }
-
-  for (var groups = this._groups, m = groups.length, sortgroups = new Array(m), j = 0; j < m; ++j) {
-    for (var group = groups[j], n = group.length, sortgroup = sortgroups[j] = new Array(n), node, i = 0; i < n; ++i) {
-      if (node = group[i]) {
-        sortgroup[i] = node;
-      }
-    }
-    sortgroup.sort(compareNode);
-  }
-
-  return new Selection(sortgroups, this._parents).order();
-}
-
-function ascending(a, b) {
-  return a < b ? -1 : a > b ? 1 : a >= b ? 0 : NaN;
-}
-
-function selection_call() {
-  var callback = arguments[0];
-  arguments[0] = this;
-  callback.apply(null, arguments);
-  return this;
-}
-
-function selection_nodes() {
-  var nodes = new Array(this.size()), i = -1;
-  this.each(function() { nodes[++i] = this; });
-  return nodes;
-}
-
-function selection_node() {
-
-  for (var groups = this._groups, j = 0, m = groups.length; j < m; ++j) {
-    for (var group = groups[j], i = 0, n = group.length; i < n; ++i) {
-      var node = group[i];
-      if (node) return node;
-    }
-  }
-
-  return null;
-}
-
-function selection_size() {
-  var size = 0;
-  this.each(function() { ++size; });
-  return size;
-}
-
-function selection_empty() {
-  return !this.node();
-}
-
-function selection_each(callback) {
-
-  for (var groups = this._groups, j = 0, m = groups.length; j < m; ++j) {
-    for (var group = groups[j], i = 0, n = group.length, node; i < n; ++i) {
-      if (node = group[i]) callback.call(node, node.__data__, i, group);
-    }
-  }
-
-  return this;
-}
-
-function attrRemove(name) {
-  return function() {
-    this.removeAttribute(name);
-  };
-}
-
-function attrRemoveNS(fullname) {
-  return function() {
-    this.removeAttributeNS(fullname.space, fullname.local);
-  };
-}
-
-function attrConstant(name, value) {
-  return function() {
-    this.setAttribute(name, value);
-  };
-}
-
-function attrConstantNS(fullname, value) {
-  return function() {
-    this.setAttributeNS(fullname.space, fullname.local, value);
-  };
-}
-
-function attrFunction(name, value) {
-  return function() {
-    var v = value.apply(this, arguments);
-    if (v == null) this.removeAttribute(name);
-    else this.setAttribute(name, v);
-  };
-}
-
-function attrFunctionNS(fullname, value) {
-  return function() {
-    var v = value.apply(this, arguments);
-    if (v == null) this.removeAttributeNS(fullname.space, fullname.local);
-    else this.setAttributeNS(fullname.space, fullname.local, v);
-  };
-}
-
-function selection_attr(name, value) {
-  var fullname = namespace(name);
-
-  if (arguments.length < 2) {
-    var node = this.node();
-    return fullname.local
-        ? node.getAttributeNS(fullname.space, fullname.local)
-        : node.getAttribute(fullname);
-  }
-
-  return this.each((value == null
-      ? (fullname.local ? attrRemoveNS : attrRemove) : (typeof value === "function"
-      ? (fullname.local ? attrFunctionNS : attrFunction)
-      : (fullname.local ? attrConstantNS : attrConstant)))(fullname, value));
-}
-
-function defaultView(node) {
-  return (node.ownerDocument && node.ownerDocument.defaultView) // node is a Node
-      || (node.document && node) // node is a Window
-      || node.defaultView; // node is a Document
-}
-
-function styleRemove(name) {
-  return function() {
-    this.style.removeProperty(name);
-  };
-}
-
-function styleConstant(name, value, priority) {
-  return function() {
-    this.style.setProperty(name, value, priority);
-  };
-}
-
-function styleFunction(name, value, priority) {
-  return function() {
-    var v = value.apply(this, arguments);
-    if (v == null) this.style.removeProperty(name);
-    else this.style.setProperty(name, v, priority);
-  };
-}
-
-function selection_style(name, value, priority) {
-  var node;
-  return arguments.length > 1
-      ? this.each((value == null
-            ? styleRemove : typeof value === "function"
-            ? styleFunction
-            : styleConstant)(name, value, priority == null ? "" : priority))
-      : defaultView(node = this.node())
-          .getComputedStyle(node, null)
-          .getPropertyValue(name);
-}
-
-function propertyRemove(name) {
-  return function() {
-    delete this[name];
-  };
-}
-
-function propertyConstant(name, value) {
-  return function() {
-    this[name] = value;
-  };
-}
-
-function propertyFunction(name, value) {
-  return function() {
-    var v = value.apply(this, arguments);
-    if (v == null) delete this[name];
-    else this[name] = v;
-  };
-}
-
-function selection_property(name, value) {
-  return arguments.length > 1
-      ? this.each((value == null
-          ? propertyRemove : typeof value === "function"
-          ? propertyFunction
-          : propertyConstant)(name, value))
-      : this.node()[name];
-}
-
-function classArray(string) {
-  return string.trim().split(/^|\s+/);
-}
-
-function classList(node) {
-  return node.classList || new ClassList(node);
-}
-
-function ClassList(node) {
-  this._node = node;
-  this._names = classArray(node.getAttribute("class") || "");
-}
-
-ClassList.prototype = {
-  add: function(name) {
-    var i = this._names.indexOf(name);
-    if (i < 0) {
-      this._names.push(name);
-      this._node.setAttribute("class", this._names.join(" "));
-    }
-  },
-  remove: function(name) {
-    var i = this._names.indexOf(name);
-    if (i >= 0) {
-      this._names.splice(i, 1);
-      this._node.setAttribute("class", this._names.join(" "));
-    }
-  },
-  contains: function(name) {
-    return this._names.indexOf(name) >= 0;
-  }
-};
-
-function classedAdd(node, names) {
-  var list = classList(node), i = -1, n = names.length;
-  while (++i < n) list.add(names[i]);
-}
-
-function classedRemove(node, names) {
-  var list = classList(node), i = -1, n = names.length;
-  while (++i < n) list.remove(names[i]);
-}
-
-function classedTrue(names) {
-  return function() {
-    classedAdd(this, names);
-  };
-}
-
-function classedFalse(names) {
-  return function() {
-    classedRemove(this, names);
-  };
-}
-
-function classedFunction(names, value) {
-  return function() {
-    (value.apply(this, arguments) ? classedAdd : classedRemove)(this, names);
-  };
-}
-
-function selection_classed(name, value) {
-  var names = classArray(name + "");
-
-  if (arguments.length < 2) {
-    var list = classList(this.node()), i = -1, n = names.length;
-    while (++i < n) if (!list.contains(names[i])) return false;
-    return true;
-  }
-
-  return this.each((typeof value === "function"
-      ? classedFunction : value
-      ? classedTrue
-      : classedFalse)(names, value));
-}
-
-function textRemove() {
-  this.textContent = "";
-}
-
-function textConstant(value) {
-  return function() {
-    this.textContent = value;
-  };
-}
-
-function textFunction(value) {
-  return function() {
-    var v = value.apply(this, arguments);
-    this.textContent = v == null ? "" : v;
-  };
-}
-
-function selection_text(value) {
-  return arguments.length
-      ? this.each(value == null
-          ? textRemove : (typeof value === "function"
-          ? textFunction
-          : textConstant)(value))
-      : this.node().textContent;
-}
-
-function htmlRemove() {
-  this.innerHTML = "";
-}
-
-function htmlConstant(value) {
-  return function() {
-    this.innerHTML = value;
-  };
-}
-
-function htmlFunction(value) {
-  return function() {
-    var v = value.apply(this, arguments);
-    this.innerHTML = v == null ? "" : v;
-  };
-}
-
-function selection_html(value) {
-  return arguments.length
-      ? this.each(value == null
-          ? htmlRemove : (typeof value === "function"
-          ? htmlFunction
-          : htmlConstant)(value))
-      : this.node().innerHTML;
-}
-
-function raise() {
-  if (this.nextSibling) this.parentNode.appendChild(this);
-}
-
-function selection_raise() {
-  return this.each(raise);
-}
-
-function lower() {
-  if (this.previousSibling) this.parentNode.insertBefore(this, this.parentNode.firstChild);
-}
-
-function selection_lower() {
-  return this.each(lower);
-}
-
-function selection_append(name) {
-  var create = typeof name === "function" ? name : creator(name);
-  return this.select(function() {
-    return this.appendChild(create.apply(this, arguments));
-  });
-}
-
-function constantNull() {
-  return null;
-}
-
-function selection_insert(name, before) {
-  var create = typeof name === "function" ? name : creator(name),
-      select = before == null ? constantNull : typeof before === "function" ? before : selector(before);
-  return this.select(function() {
-    return this.insertBefore(create.apply(this, arguments), select.apply(this, arguments) || null);
-  });
-}
-
-function remove() {
-  var parent = this.parentNode;
-  if (parent) parent.removeChild(this);
-}
-
-function selection_remove() {
-  return this.each(remove);
-}
-
-function selection_datum(value) {
-  return arguments.length
-      ? this.property("__data__", value)
-      : this.node().__data__;
-}
-
-function dispatchEvent(node, type, params) {
-  var window = defaultView(node),
-      event = window.CustomEvent;
-
-  if (event) {
-    event = new event(type, params);
-  } else {
-    event = window.document.createEvent("Event");
-    if (params) event.initEvent(type, params.bubbles, params.cancelable), event.detail = params.detail;
-    else event.initEvent(type, false, false);
-  }
-
-  node.dispatchEvent(event);
-}
-
-function dispatchConstant(type, params) {
-  return function() {
-    return dispatchEvent(this, type, params);
-  };
-}
-
-function dispatchFunction(type, params) {
-  return function() {
-    return dispatchEvent(this, type, params.apply(this, arguments));
-  };
-}
-
-function selection_dispatch(type, params) {
-  return this.each((typeof params === "function"
-      ? dispatchFunction
-      : dispatchConstant)(type, params));
-}
-
-var root = [null];
-
-function Selection(groups, parents) {
-  this._groups = groups;
-  this._parents = parents;
-}
-
-function selection() {
-  return new Selection([[document.documentElement]], root);
-}
-
-Selection.prototype = selection.prototype = {
-  constructor: Selection,
-  select: selection_select,
-  selectAll: selection_selectAll,
-  filter: selection_filter,
-  data: selection_data,
-  enter: selection_enter,
-  exit: selection_exit,
-  merge: selection_merge,
-  order: selection_order,
-  sort: selection_sort,
-  call: selection_call,
-  nodes: selection_nodes,
-  node: selection_node,
-  size: selection_size,
-  empty: selection_empty,
-  each: selection_each,
-  attr: selection_attr,
-  style: selection_style,
-  property: selection_property,
-  classed: selection_classed,
-  text: selection_text,
-  html: selection_html,
-  raise: selection_raise,
-  lower: selection_lower,
-  append: selection_append,
-  insert: selection_insert,
-  remove: selection_remove,
-  datum: selection_datum,
-  on: selection_on,
-  dispatch: selection_dispatch
-};
-
-function select(selector) {
-  return typeof selector === "string"
-      ? new Selection([[document.querySelector(selector)]], [document.documentElement])
-      : new Selection([[selector]], root);
-}
+import './common/index-eb5ccfed.js';
+import { s as select } from './common/select-2cd9107d.js';
 
 // Computes the decimal coefficient and exponent of the specified number x with
 // significant digits p, where x is positive and p is in [1, 21] or undefined.
@@ -1157,6 +303,302 @@ function defaultLocale(definition) {
   return locale;
 }
 
+function precisionFixed(step) {
+  return Math.max(0, -exponent(Math.abs(step)));
+}
+
+function precisionPrefix(step, value) {
+  return Math.max(0, Math.max(-8, Math.min(8, Math.floor(exponent(value) / 3))) * 3 - exponent(Math.abs(step)));
+}
+
+function precisionRound(step, max) {
+  step = Math.abs(step), max = Math.abs(max) - step;
+  return Math.max(0, exponent(max) - exponent(step)) + 1;
+}
+
+const d3_identity = d => d;
+
+const d3_reverse = arr => {
+  const mirror = [];
+  for (let i = 0, l = arr.length; i < l; i++) {
+    mirror[i] = arr[l - i - 1];
+  }
+  return mirror
+};
+
+//Text wrapping code adapted from Mike Bostock
+const d3_textWrapping = (text, width) => {
+  text.each(function() {
+    var text = select(this),
+      words = text
+        .text()
+        .split(/\s+/)
+        .reverse(),
+      word,
+      line = [],
+      lineHeight = 1.2, //ems
+      y = text.attr("y"),
+      dy = parseFloat(text.attr("dy")) || 0,
+      tspan = text
+        .text(null)
+        .append("tspan")
+        .attr("x", 0)
+        .attr("dy", dy + "em");
+
+    while ((word = words.pop())) {
+      line.push(word);
+      tspan.text(line.join(" "));
+      if (tspan.node().getComputedTextLength() > width && line.length > 1) {
+        line.pop();
+        tspan.text(line.join(" "));
+        line = [word];
+        tspan = text
+          .append("tspan")
+          .attr("x", 0)
+          .attr("dy", lineHeight + dy + "em")
+          .text(word);
+      }
+    }
+  });
+};
+
+const d3_mergeLabels = (gen = [], labels, domain, range, labelDelimiter) => {
+  if (typeof labels === "object") {
+    if (labels.length === 0) return gen
+
+    let i = labels.length;
+    for (; i < gen.length; i++) {
+      labels.push(gen[i]);
+    }
+    return labels
+  } else if (typeof labels === "function") {
+    const customLabels = [];
+    const genLength = gen.length;
+    for (let i = 0; i < genLength; i++) {
+      customLabels.push(
+        labels({
+          i,
+          genLength,
+          generatedLabels: gen,
+          domain,
+          range,
+          labelDelimiter
+        })
+      );
+    }
+    return customLabels
+  }
+
+  return gen
+};
+
+const d3_linearLegend = (scale, cells, labelFormat) => {
+  let data = [];
+
+  if (cells.length > 1) {
+    data = cells;
+  } else {
+    const domain = scale.domain(),
+      increment = (domain[domain.length - 1] - domain[0]) / (cells - 1);
+    let i = 0;
+
+    for (; i < cells; i++) {
+      data.push(domain[0] + i * increment);
+    }
+  }
+
+  const labels = data.map(labelFormat);
+  return {
+    data: data,
+    labels: labels,
+    feature: d => scale(d)
+  }
+};
+
+const d3_quantLegend = (scale, labelFormat, labelDelimiter) => {
+  const labels = scale.range().map(d => {
+    const invert = scale.invertExtent(d);
+    return (
+      labelFormat(invert[0]) +
+      " " +
+      labelDelimiter +
+      " " +
+      labelFormat(invert[1])
+    )
+  });
+
+  return {
+    data: scale.range(),
+    labels: labels,
+    feature: d3_identity
+  }
+};
+
+const d3_ordinalLegend = scale => ({
+  data: scale.domain(),
+  labels: scale.domain(),
+  feature: d => scale(d)
+});
+
+const d3_cellOver = (cellDispatcher, d, obj) => {
+  cellDispatcher.call("cellover", obj, d);
+};
+
+const d3_cellOut = (cellDispatcher, d, obj) => {
+  cellDispatcher.call("cellout", obj, d);
+};
+
+const d3_cellClick = (cellDispatcher, d, obj) => {
+  cellDispatcher.call("cellclick", obj, d);
+};
+
+var helper = {
+  d3_drawShapes: (
+    shape,
+    shapes,
+    shapeHeight,
+    shapeWidth,
+    shapeRadius,
+    path
+  ) => {
+    if (shape === "rect") {
+      shapes.attr("height", shapeHeight).attr("width", shapeWidth);
+    } else if (shape === "circle") {
+      shapes.attr("r", shapeRadius);
+    } else if (shape === "line") {
+      shapes
+        .attr("x1", 0)
+        .attr("x2", shapeWidth)
+        .attr("y1", 0)
+        .attr("y2", 0);
+    } else if (shape === "path") {
+      shapes.attr("d", path);
+    }
+  },
+
+  d3_addText: function(svg, enter, labels, classPrefix, labelWidth) {
+    return Promise.all(labels).then(resolvedLabels => {
+      enter.append("text").attr("class", classPrefix + "label");
+      const text = svg
+        .selectAll(`g.${classPrefix}cell text.${classPrefix}label`)
+        .data(resolvedLabels)
+        .text(d3_identity);
+
+      text.exit().remove();
+
+      if (labelWidth) {
+        svg
+          .selectAll(`g.${classPrefix}cell text.${classPrefix}label`)
+          .call(d3_textWrapping, labelWidth);
+      }
+      return text
+    })
+  },
+
+  d3_calcType: function(
+    scale,
+    ascending,
+    cells,
+    labels,
+    labelFormat,
+    labelDelimiter
+  ) {
+    const type = scale.invertExtent
+      ? d3_quantLegend(scale, labelFormat, labelDelimiter)
+      : scale.ticks
+        ? d3_linearLegend(scale, cells, labelFormat)
+        : d3_ordinalLegend(scale);
+
+    //for d3.scaleSequential that doesn't have a range function
+    const range = (scale.range && scale.range()) || scale.domain();
+    type.labels = d3_mergeLabels(
+      type.labels,
+      labels,
+      scale.domain(),
+      range,
+      labelDelimiter
+    );
+
+    if (ascending) {
+      type.labels = d3_reverse(type.labels);
+      type.data = d3_reverse(type.data);
+    }
+
+    return type
+  },
+
+  d3_filterCells: (type, cellFilter) => {
+    let filterCells = type.data
+      .map((d, i) => ({ data: d, label: type.labels[i] }))
+      .filter(cellFilter);
+    const dataValues = filterCells.map(d => d.data);
+    const labelValues = filterCells.map(d => d.label);
+    type.data = type.data.filter(d => dataValues.indexOf(d) !== -1);
+    type.labels = type.labels.filter(d => labelValues.indexOf(d) !== -1);
+    return type
+  },
+
+  d3_placement: (orient, cell, cellTrans, text, textTrans, labelAlign) => {
+    cell.attr("transform", cellTrans);
+    text.attr("transform", textTrans);
+    if (orient === "horizontal") {
+      text.style("text-anchor", labelAlign);
+    }
+  },
+
+  d3_addEvents: function(cells, dispatcher) {
+    cells
+      .on("mouseover.legend", function(d) {
+        d3_cellOver(dispatcher, d, this);
+      })
+      .on("mouseout.legend", function(d) {
+        d3_cellOut(dispatcher, d, this);
+      })
+      .on("click.legend", function(d) {
+        d3_cellClick(dispatcher, d, this);
+      });
+  },
+
+  d3_title: (svg, title, classPrefix, titleWidth) => {
+    if (title !== "") {
+      const titleText = svg.selectAll("text." + classPrefix + "legendTitle");
+
+      titleText
+        .data([title])
+        .enter()
+        .append("text")
+        .attr("class", classPrefix + "legendTitle");
+
+      svg.selectAll("text." + classPrefix + "legendTitle").text(title);
+
+      if (titleWidth) {
+        svg
+          .selectAll("text." + classPrefix + "legendTitle")
+          .call(d3_textWrapping, titleWidth);
+      }
+
+      const cellsSvg = svg.select("." + classPrefix + "legendCells");
+      const yOffset = svg
+          .select("." + classPrefix + "legendTitle")
+          .nodes()
+          .map(d => d.getBBox().height)[0],
+        xOffset = -cellsSvg.nodes().map(function(d) {
+          return d.getBBox().x
+        })[0];
+      cellsSvg.attr("transform", "translate(" + xOffset + "," + yOffset + ")");
+    }
+  },
+
+  d3_defaultLocale: {
+    format,
+    formatPrefix
+  },
+
+  d3_defaultFormatSpecifier: ".01f",
+
+  d3_defaultDelimiter: "to"
+};
+
 var noop = {value: function() {}};
 
 function dispatch() {
@@ -1171,7 +613,7 @@ function Dispatch(_) {
   this._ = _;
 }
 
-function parseTypenames$1(typenames, types) {
+function parseTypenames(typenames, types) {
   return typenames.trim().split(/^|\s+/).map(function(t) {
     var name = "", i = t.indexOf(".");
     if (i >= 0) name = t.slice(i + 1), t = t.slice(0, i);
@@ -1184,7 +626,7 @@ Dispatch.prototype = dispatch.prototype = {
   constructor: Dispatch,
   on: function(typename, callback) {
     var _ = this._,
-        T = parseTypenames$1(typename + "", _),
+        T = parseTypenames(typename + "", _),
         t,
         i = -1,
         n = T.length;
@@ -1240,7 +682,7 @@ function set(type, name, callback) {
   return type;
 }
 
-function ascending$1(a, b) {
+function ascending(a, b) {
   return a < b ? -1 : a > b ? 1 : a >= b ? 0 : NaN;
 }
 
@@ -1272,53 +714,38 @@ function bisector(compare) {
 
 function ascendingComparator(f) {
   return function(d, x) {
-    return ascending$1(f(d), x);
+    return ascending(f(d), x);
   };
 }
 
-var ascendingBisect = bisector(ascending$1);
+var ascendingBisect = bisector(ascending);
 var bisectRight = ascendingBisect.right;
+
+function sequence(start, stop, step) {
+  start = +start, stop = +stop, step = (n = arguments.length) < 2 ? (stop = start, start = 0, 1) : n < 3 ? 1 : +step;
+
+  var i = -1,
+      n = Math.max(0, Math.ceil((stop - start) / step)) | 0,
+      range = new Array(n);
+
+  while (++i < n) {
+    range[i] = start + i * step;
+  }
+
+  return range;
+}
 
 var e10 = Math.sqrt(50),
     e5 = Math.sqrt(10),
     e2 = Math.sqrt(2);
 
 function ticks(start, stop, count) {
-  var reverse,
-      i = -1,
-      n,
-      ticks,
-      step;
-
-  stop = +stop, start = +start, count = +count;
-  if (start === stop && count > 0) return [start];
-  if (reverse = stop < start) n = start, start = stop, stop = n;
-  if ((step = tickIncrement(start, stop, count)) === 0 || !isFinite(step)) return [];
-
-  if (step > 0) {
-    start = Math.ceil(start / step);
-    stop = Math.floor(stop / step);
-    ticks = new Array(n = Math.ceil(stop - start + 1));
-    while (++i < n) ticks[i] = (start + i) * step;
-  } else {
-    start = Math.floor(start * step);
-    stop = Math.ceil(stop * step);
-    ticks = new Array(n = Math.ceil(start - stop + 1));
-    while (++i < n) ticks[i] = (start - i) / step;
-  }
-
-  if (reverse) ticks.reverse();
-
-  return ticks;
-}
-
-function tickIncrement(start, stop, count) {
-  var step = (stop - start) / Math.max(0, count),
-      power = Math.floor(Math.log(step) / Math.LN10),
-      error = step / Math.pow(10, power);
-  return power >= 0
-      ? (error >= e10 ? 10 : error >= e5 ? 5 : error >= e2 ? 2 : 1) * Math.pow(10, power)
-      : -Math.pow(10, -power) / (error >= e10 ? 10 : error >= e5 ? 5 : error >= e2 ? 2 : 1);
+  var step = tickStep(start, stop, count);
+  return sequence(
+    Math.ceil(start / step) * step,
+    Math.floor(stop / step) * step + step / 2, // inclusive
+    step
+  );
 }
 
 function tickStep(start, stop, count) {
@@ -1329,6 +756,42 @@ function tickStep(start, stop, count) {
   else if (error >= e5) step1 *= 5;
   else if (error >= e2) step1 *= 2;
   return stop < start ? -step1 : step1;
+}
+
+function max(array, f) {
+  var i = -1,
+      n = array.length,
+      a,
+      b;
+
+  if (f == null) {
+    while (++i < n) if ((b = array[i]) != null && b >= b) { a = b; break; }
+    while (++i < n) if ((b = array[i]) != null && b > a) a = b;
+  }
+
+  else {
+    while (++i < n) if ((b = f(array[i], i, array)) != null && b >= b) { a = b; break; }
+    while (++i < n) if ((b = f(array[i], i, array)) != null && b > a) a = b;
+  }
+
+  return a;
+}
+
+function sum(array, f) {
+  var s = 0,
+      n = array.length,
+      a,
+      i = -1;
+
+  if (f == null) {
+    while (++i < n) if (a = +array[i]) s += a; // Note: zero and null are equivalent.
+  }
+
+  else {
+    while (++i < n) if (a = +f(array[i], i, array)) s += a;
+  }
+
+  return s;
 }
 
 var prefix = "$";
@@ -1445,532 +908,6 @@ var array = Array.prototype;
 
 var map$1 = array.map;
 var slice = array.slice;
-
-function constant$1(x) {
-  return function() {
-    return x;
-  };
-}
-
-function number(x) {
-  return +x;
-}
-
-var unit = [0, 1];
-
-function deinterpolateLinear(a, b) {
-  return (b -= (a = +a))
-      ? function(x) { return (x - a) / b; }
-      : constant$1(b);
-}
-
-function deinterpolateClamp(deinterpolate) {
-  return function(a, b) {
-    var d = deinterpolate(a = +a, b = +b);
-    return function(x) { return x <= a ? 0 : x >= b ? 1 : d(x); };
-  };
-}
-
-function reinterpolateClamp(reinterpolate) {
-  return function(a, b) {
-    var r = reinterpolate(a = +a, b = +b);
-    return function(t) { return t <= 0 ? a : t >= 1 ? b : r(t); };
-  };
-}
-
-function bimap(domain, range, deinterpolate, reinterpolate) {
-  var d0 = domain[0], d1 = domain[1], r0 = range[0], r1 = range[1];
-  if (d1 < d0) d0 = deinterpolate(d1, d0), r0 = reinterpolate(r1, r0);
-  else d0 = deinterpolate(d0, d1), r0 = reinterpolate(r0, r1);
-  return function(x) { return r0(d0(x)); };
-}
-
-function polymap(domain, range, deinterpolate, reinterpolate) {
-  var j = Math.min(domain.length, range.length) - 1,
-      d = new Array(j),
-      r = new Array(j),
-      i = -1;
-
-  // Reverse descending domains.
-  if (domain[j] < domain[0]) {
-    domain = domain.slice().reverse();
-    range = range.slice().reverse();
-  }
-
-  while (++i < j) {
-    d[i] = deinterpolate(domain[i], domain[i + 1]);
-    r[i] = reinterpolate(range[i], range[i + 1]);
-  }
-
-  return function(x) {
-    var i = bisectRight(domain, x, 1, j) - 1;
-    return r[i](d[i](x));
-  };
-}
-
-function copy(source, target) {
-  return target
-      .domain(source.domain())
-      .range(source.range())
-      .interpolate(source.interpolate())
-      .clamp(source.clamp());
-}
-
-// deinterpolate(a, b)(x) takes a domain value x in [a,b] and returns the corresponding parameter t in [0,1].
-// reinterpolate(a, b)(t) takes a parameter t in [0,1] and returns the corresponding domain value x in [a,b].
-function continuous(deinterpolate, reinterpolate) {
-  var domain = unit,
-      range = unit,
-      interpolate = interpolateValue,
-      clamp = false,
-      piecewise,
-      output,
-      input;
-
-  function rescale() {
-    piecewise = Math.min(domain.length, range.length) > 2 ? polymap : bimap;
-    output = input = null;
-    return scale;
-  }
-
-  function scale(x) {
-    return (output || (output = piecewise(domain, range, clamp ? deinterpolateClamp(deinterpolate) : deinterpolate, interpolate)))(+x);
-  }
-
-  scale.invert = function(y) {
-    return (input || (input = piecewise(range, domain, deinterpolateLinear, clamp ? reinterpolateClamp(reinterpolate) : reinterpolate)))(+y);
-  };
-
-  scale.domain = function(_) {
-    return arguments.length ? (domain = map$1.call(_, number), rescale()) : domain.slice();
-  };
-
-  scale.range = function(_) {
-    return arguments.length ? (range = slice.call(_), rescale()) : range.slice();
-  };
-
-  scale.rangeRound = function(_) {
-    return range = slice.call(_), interpolate = interpolateRound, rescale();
-  };
-
-  scale.clamp = function(_) {
-    return arguments.length ? (clamp = !!_, rescale()) : clamp;
-  };
-
-  scale.interpolate = function(_) {
-    return arguments.length ? (interpolate = _, rescale()) : interpolate;
-  };
-
-  return rescale();
-}
-
-// Computes the decimal coefficient and exponent of the specified number x with
-// significant digits p, where x is positive and p is in [1, 21] or undefined.
-// For example, formatDecimal(1.23) returns ["123", 0].
-function formatDecimal$1(x, p) {
-  if ((i = (x = p ? x.toExponential(p - 1) : x.toExponential()).indexOf("e")) < 0) return null; // NaN, ±Infinity
-  var i, coefficient = x.slice(0, i);
-
-  // The string returned by toExponential either has the form \d\.\d+e[-+]\d+
-  // (e.g., 1.2e+3) or the form \de[-+]\d+ (e.g., 1e+3).
-  return [
-    coefficient.length > 1 ? coefficient[0] + coefficient.slice(2) : coefficient,
-    +x.slice(i + 1)
-  ];
-}
-
-function exponent$1(x) {
-  return x = formatDecimal$1(Math.abs(x)), x ? x[1] : NaN;
-}
-
-function formatGroup$1(grouping, thousands) {
-  return function(value, width) {
-    var i = value.length,
-        t = [],
-        j = 0,
-        g = grouping[0],
-        length = 0;
-
-    while (i > 0 && g > 0) {
-      if (length + g + 1 > width) g = Math.max(1, width - length);
-      t.push(value.substring(i -= g, i + g));
-      if ((length += g + 1) > width) break;
-      g = grouping[j = (j + 1) % grouping.length];
-    }
-
-    return t.reverse().join(thousands);
-  };
-}
-
-function formatNumerals(numerals) {
-  return function(value) {
-    return value.replace(/[0-9]/g, function(i) {
-      return numerals[+i];
-    });
-  };
-}
-
-// [[fill]align][sign][symbol][0][width][,][.precision][~][type]
-var re$1 = /^(?:(.)?([<>=^]))?([+\-( ])?([$#])?(0)?(\d+)?(,)?(\.\d+)?(~)?([a-z%])?$/i;
-
-function formatSpecifier$1(specifier) {
-  if (!(match = re$1.exec(specifier))) throw new Error("invalid format: " + specifier);
-  var match;
-  return new FormatSpecifier$1({
-    fill: match[1],
-    align: match[2],
-    sign: match[3],
-    symbol: match[4],
-    zero: match[5],
-    width: match[6],
-    comma: match[7],
-    precision: match[8] && match[8].slice(1),
-    trim: match[9],
-    type: match[10]
-  });
-}
-
-formatSpecifier$1.prototype = FormatSpecifier$1.prototype; // instanceof
-
-function FormatSpecifier$1(specifier) {
-  this.fill = specifier.fill === undefined ? " " : specifier.fill + "";
-  this.align = specifier.align === undefined ? ">" : specifier.align + "";
-  this.sign = specifier.sign === undefined ? "-" : specifier.sign + "";
-  this.symbol = specifier.symbol === undefined ? "" : specifier.symbol + "";
-  this.zero = !!specifier.zero;
-  this.width = specifier.width === undefined ? undefined : +specifier.width;
-  this.comma = !!specifier.comma;
-  this.precision = specifier.precision === undefined ? undefined : +specifier.precision;
-  this.trim = !!specifier.trim;
-  this.type = specifier.type === undefined ? "" : specifier.type + "";
-}
-
-FormatSpecifier$1.prototype.toString = function() {
-  return this.fill
-      + this.align
-      + this.sign
-      + this.symbol
-      + (this.zero ? "0" : "")
-      + (this.width === undefined ? "" : Math.max(1, this.width | 0))
-      + (this.comma ? "," : "")
-      + (this.precision === undefined ? "" : "." + Math.max(0, this.precision | 0))
-      + (this.trim ? "~" : "")
-      + this.type;
-};
-
-// Trims insignificant zeros, e.g., replaces 1.2000k with 1.2k.
-function formatTrim(s) {
-  out: for (var n = s.length, i = 1, i0 = -1, i1; i < n; ++i) {
-    switch (s[i]) {
-      case ".": i0 = i1 = i; break;
-      case "0": if (i0 === 0) i0 = i; i1 = i; break;
-      default: if (!+s[i]) break out; if (i0 > 0) i0 = 0; break;
-    }
-  }
-  return i0 > 0 ? s.slice(0, i0) + s.slice(i1 + 1) : s;
-}
-
-var prefixExponent$1;
-
-function formatPrefixAuto$1(x, p) {
-  var d = formatDecimal$1(x, p);
-  if (!d) return x + "";
-  var coefficient = d[0],
-      exponent = d[1],
-      i = exponent - (prefixExponent$1 = Math.max(-8, Math.min(8, Math.floor(exponent / 3))) * 3) + 1,
-      n = coefficient.length;
-  return i === n ? coefficient
-      : i > n ? coefficient + new Array(i - n + 1).join("0")
-      : i > 0 ? coefficient.slice(0, i) + "." + coefficient.slice(i)
-      : "0." + new Array(1 - i).join("0") + formatDecimal$1(x, Math.max(0, p + i - 1))[0]; // less than 1y!
-}
-
-function formatRounded$1(x, p) {
-  var d = formatDecimal$1(x, p);
-  if (!d) return x + "";
-  var coefficient = d[0],
-      exponent = d[1];
-  return exponent < 0 ? "0." + new Array(-exponent).join("0") + coefficient
-      : coefficient.length > exponent + 1 ? coefficient.slice(0, exponent + 1) + "." + coefficient.slice(exponent + 1)
-      : coefficient + new Array(exponent - coefficient.length + 2).join("0");
-}
-
-var formatTypes$1 = {
-  "%": function(x, p) { return (x * 100).toFixed(p); },
-  "b": function(x) { return Math.round(x).toString(2); },
-  "c": function(x) { return x + ""; },
-  "d": function(x) { return Math.round(x).toString(10); },
-  "e": function(x, p) { return x.toExponential(p); },
-  "f": function(x, p) { return x.toFixed(p); },
-  "g": function(x, p) { return x.toPrecision(p); },
-  "o": function(x) { return Math.round(x).toString(8); },
-  "p": function(x, p) { return formatRounded$1(x * 100, p); },
-  "r": formatRounded$1,
-  "s": formatPrefixAuto$1,
-  "X": function(x) { return Math.round(x).toString(16).toUpperCase(); },
-  "x": function(x) { return Math.round(x).toString(16); }
-};
-
-function identity$1(x) {
-  return x;
-}
-
-var map$2 = Array.prototype.map,
-    prefixes$1 = ["y","z","a","f","p","n","µ","m","","k","M","G","T","P","E","Z","Y"];
-
-function formatLocale$1(locale) {
-  var group = locale.grouping === undefined || locale.thousands === undefined ? identity$1 : formatGroup$1(map$2.call(locale.grouping, Number), locale.thousands + ""),
-      currencyPrefix = locale.currency === undefined ? "" : locale.currency[0] + "",
-      currencySuffix = locale.currency === undefined ? "" : locale.currency[1] + "",
-      decimal = locale.decimal === undefined ? "." : locale.decimal + "",
-      numerals = locale.numerals === undefined ? identity$1 : formatNumerals(map$2.call(locale.numerals, String)),
-      percent = locale.percent === undefined ? "%" : locale.percent + "",
-      minus = locale.minus === undefined ? "-" : locale.minus + "",
-      nan = locale.nan === undefined ? "NaN" : locale.nan + "";
-
-  function newFormat(specifier) {
-    specifier = formatSpecifier$1(specifier);
-
-    var fill = specifier.fill,
-        align = specifier.align,
-        sign = specifier.sign,
-        symbol = specifier.symbol,
-        zero = specifier.zero,
-        width = specifier.width,
-        comma = specifier.comma,
-        precision = specifier.precision,
-        trim = specifier.trim,
-        type = specifier.type;
-
-    // The "n" type is an alias for ",g".
-    if (type === "n") comma = true, type = "g";
-
-    // The "" type, and any invalid type, is an alias for ".12~g".
-    else if (!formatTypes$1[type]) precision === undefined && (precision = 12), trim = true, type = "g";
-
-    // If zero fill is specified, padding goes after sign and before digits.
-    if (zero || (fill === "0" && align === "=")) zero = true, fill = "0", align = "=";
-
-    // Compute the prefix and suffix.
-    // For SI-prefix, the suffix is lazily computed.
-    var prefix = symbol === "$" ? currencyPrefix : symbol === "#" && /[boxX]/.test(type) ? "0" + type.toLowerCase() : "",
-        suffix = symbol === "$" ? currencySuffix : /[%p]/.test(type) ? percent : "";
-
-    // What format function should we use?
-    // Is this an integer type?
-    // Can this type generate exponential notation?
-    var formatType = formatTypes$1[type],
-        maybeSuffix = /[defgprs%]/.test(type);
-
-    // Set the default precision if not specified,
-    // or clamp the specified precision to the supported range.
-    // For significant precision, it must be in [1, 21].
-    // For fixed precision, it must be in [0, 20].
-    precision = precision === undefined ? 6
-        : /[gprs]/.test(type) ? Math.max(1, Math.min(21, precision))
-        : Math.max(0, Math.min(20, precision));
-
-    function format(value) {
-      var valuePrefix = prefix,
-          valueSuffix = suffix,
-          i, n, c;
-
-      if (type === "c") {
-        valueSuffix = formatType(value) + valueSuffix;
-        value = "";
-      } else {
-        value = +value;
-
-        // Perform the initial formatting.
-        var valueNegative = value < 0;
-        value = isNaN(value) ? nan : formatType(Math.abs(value), precision);
-
-        // Trim insignificant zeros.
-        if (trim) value = formatTrim(value);
-
-        // If a negative value rounds to zero during formatting, treat as positive.
-        if (valueNegative && +value === 0) valueNegative = false;
-
-        // Compute the prefix and suffix.
-        valuePrefix = (valueNegative ? (sign === "(" ? sign : minus) : sign === "-" || sign === "(" ? "" : sign) + valuePrefix;
-
-        valueSuffix = (type === "s" ? prefixes$1[8 + prefixExponent$1 / 3] : "") + valueSuffix + (valueNegative && sign === "(" ? ")" : "");
-
-        // Break the formatted value into the integer “value” part that can be
-        // grouped, and fractional or exponential “suffix” part that is not.
-        if (maybeSuffix) {
-          i = -1, n = value.length;
-          while (++i < n) {
-            if (c = value.charCodeAt(i), 48 > c || c > 57) {
-              valueSuffix = (c === 46 ? decimal + value.slice(i + 1) : value.slice(i)) + valueSuffix;
-              value = value.slice(0, i);
-              break;
-            }
-          }
-        }
-      }
-
-      // If the fill character is not "0", grouping is applied before padding.
-      if (comma && !zero) value = group(value, Infinity);
-
-      // Compute the padding.
-      var length = valuePrefix.length + value.length + valueSuffix.length,
-          padding = length < width ? new Array(width - length + 1).join(fill) : "";
-
-      // If the fill character is "0", grouping is applied after padding.
-      if (comma && zero) value = group(padding + value, padding.length ? width - valueSuffix.length : Infinity), padding = "";
-
-      // Reconstruct the final output based on the desired alignment.
-      switch (align) {
-        case "<": value = valuePrefix + value + valueSuffix + padding; break;
-        case "=": value = valuePrefix + padding + value + valueSuffix; break;
-        case "^": value = padding.slice(0, length = padding.length >> 1) + valuePrefix + value + valueSuffix + padding.slice(length); break;
-        default: value = padding + valuePrefix + value + valueSuffix; break;
-      }
-
-      return numerals(value);
-    }
-
-    format.toString = function() {
-      return specifier + "";
-    };
-
-    return format;
-  }
-
-  function formatPrefix(specifier, value) {
-    var f = newFormat((specifier = formatSpecifier$1(specifier), specifier.type = "f", specifier)),
-        e = Math.max(-8, Math.min(8, Math.floor(exponent$1(value) / 3))) * 3,
-        k = Math.pow(10, -e),
-        prefix = prefixes$1[8 + e / 3];
-    return function(value) {
-      return f(k * value) + prefix;
-    };
-  }
-
-  return {
-    format: newFormat,
-    formatPrefix: formatPrefix
-  };
-}
-
-var locale$1;
-var format$1;
-var formatPrefix$1;
-
-defaultLocale$1({
-  decimal: ".",
-  thousands: ",",
-  grouping: [3],
-  currency: ["$", ""],
-  minus: "-"
-});
-
-function defaultLocale$1(definition) {
-  locale$1 = formatLocale$1(definition);
-  format$1 = locale$1.format;
-  formatPrefix$1 = locale$1.formatPrefix;
-  return locale$1;
-}
-
-function precisionFixed(step) {
-  return Math.max(0, -exponent$1(Math.abs(step)));
-}
-
-function precisionPrefix(step, value) {
-  return Math.max(0, Math.max(-8, Math.min(8, Math.floor(exponent$1(value) / 3))) * 3 - exponent$1(Math.abs(step)));
-}
-
-function precisionRound(step, max) {
-  step = Math.abs(step), max = Math.abs(max) - step;
-  return Math.max(0, exponent$1(max) - exponent$1(step)) + 1;
-}
-
-function tickFormat(domain, count, specifier) {
-  var start = domain[0],
-      stop = domain[domain.length - 1],
-      step = tickStep(start, stop, count == null ? 10 : count),
-      precision;
-  specifier = formatSpecifier$1(specifier == null ? ",f" : specifier);
-  switch (specifier.type) {
-    case "s": {
-      var value = Math.max(Math.abs(start), Math.abs(stop));
-      if (specifier.precision == null && !isNaN(precision = precisionPrefix(step, value))) specifier.precision = precision;
-      return formatPrefix$1(specifier, value);
-    }
-    case "":
-    case "e":
-    case "g":
-    case "p":
-    case "r": {
-      if (specifier.precision == null && !isNaN(precision = precisionRound(step, Math.max(Math.abs(start), Math.abs(stop))))) specifier.precision = precision - (specifier.type === "e");
-      break;
-    }
-    case "f":
-    case "%": {
-      if (specifier.precision == null && !isNaN(precision = precisionFixed(step))) specifier.precision = precision - (specifier.type === "%") * 2;
-      break;
-    }
-  }
-  return format$1(specifier);
-}
-
-function linearish(scale) {
-  var domain = scale.domain;
-
-  scale.ticks = function(count) {
-    var d = domain();
-    return ticks(d[0], d[d.length - 1], count == null ? 10 : count);
-  };
-
-  scale.tickFormat = function(count, specifier) {
-    return tickFormat(domain(), count, specifier);
-  };
-
-  scale.nice = function(count) {
-    var d = domain(),
-        i = d.length - 1,
-        n = count == null ? 10 : count,
-        start = d[0],
-        stop = d[i],
-        step = tickStep(start, stop, n);
-
-    if (step) {
-      step = tickStep(Math.floor(start / step) * step, Math.ceil(stop / step) * step, n);
-      d[0] = Math.floor(start / step) * step;
-      d[i] = Math.ceil(stop / step) * step;
-      domain(d);
-    }
-
-    return scale;
-  };
-
-  return scale;
-}
-
-function linear() {
-  var scale = continuous(deinterpolateLinear, reinterpolate);
-
-  scale.copy = function() {
-    return copy(scale, linear());
-  };
-
-  return linearish(scale);
-}
-
-function colors(s) {
-  return s.match(/.{6}/g).map(function(x) {
-    return "#" + x;
-  });
-}
-
-colors("1f77b4ff7f0e2ca02cd627289467bd8c564be377c27f7f7fbcbd2217becf");
-
-colors("393b795254a36b6ecf9c9ede6379398ca252b5cf6bcedb9c8c6d31bd9e39e7ba52e7cb94843c39ad494ad6616be7969c7b4173a55194ce6dbdde9ed6");
-
-colors("3182bd6baed69ecae1c6dbefe6550dfd8d3cfdae6bfdd0a231a35474c476a1d99bc7e9c0756bb19e9ac8bcbddcdadaeb636363969696bdbdbdd9d9d9");
-
-colors("1f77b4aec7e8ff7f0effbb782ca02c98df8ad62728ff98969467bdc5b0d58c564bc49c94e377c2f7b6d27f7f7fc7c7c7bcbd22dbdb8d17becf9edae5");
 
 function define(constructor, factory, prototype) {
   constructor.prototype = factory.prototype = prototype;
@@ -2181,8 +1118,8 @@ function color(format) {
   format = (format + "").trim().toLowerCase();
   return (m = reHex.exec(format)) ? (l = m[1].length, m = parseInt(m[1], 16), l === 6 ? rgbn(m) // #ff0000
       : l === 3 ? new Rgb((m >> 8 & 0xf) | (m >> 4 & 0xf0), (m >> 4 & 0xf) | (m & 0xf0), ((m & 0xf) << 4) | (m & 0xf), 1) // #f00
-      : l === 8 ? new Rgb(m >> 24 & 0xff, m >> 16 & 0xff, m >> 8 & 0xff, (m & 0xff) / 0xff) // #ff000000
-      : l === 4 ? new Rgb((m >> 12 & 0xf) | (m >> 8 & 0xf0), (m >> 8 & 0xf) | (m >> 4 & 0xf0), (m >> 4 & 0xf) | (m & 0xf0), (((m & 0xf) << 4) | (m & 0xf)) / 0xff) // #f000
+      : l === 8 ? rgba(m >> 24 & 0xff, m >> 16 & 0xff, m >> 8 & 0xff, (m & 0xff) / 0xff) // #ff000000
+      : l === 4 ? rgba((m >> 12 & 0xf) | (m >> 8 & 0xf0), (m >> 8 & 0xf) | (m >> 4 & 0xf0), (m >> 4 & 0xf) | (m & 0xf0), (((m & 0xf) << 4) | (m & 0xf)) / 0xff) // #f000
       : null) // invalid hex
       : (m = reRgbInteger.exec(format)) ? new Rgb(m[1], m[2], m[3], 1) // rgb(255, 0, 0)
       : (m = reRgbPercent.exec(format)) ? new Rgb(m[1] * 255 / 100, m[2] * 255 / 100, m[3] * 255 / 100, 1) // rgb(100%, 0%, 0%)
@@ -2414,6 +1351,441 @@ define(Cubehelix, cubehelix, extend(Color, {
   }
 }));
 
+function constant(x) {
+  return function() {
+    return x;
+  };
+}
+
+function linear(a, d) {
+  return function(t) {
+    return a + t * d;
+  };
+}
+
+function exponential(a, b, y) {
+  return a = Math.pow(a, y), b = Math.pow(b, y) - a, y = 1 / y, function(t) {
+    return Math.pow(a + t * b, y);
+  };
+}
+
+function hue(a, b) {
+  var d = b - a;
+  return d ? linear(a, d > 180 || d < -180 ? d - 360 * Math.round(d / 360) : d) : constant(isNaN(a) ? b : a);
+}
+
+function gamma(y) {
+  return (y = +y) === 1 ? nogamma : function(a, b) {
+    return b - a ? exponential(a, b, y) : constant(isNaN(a) ? b : a);
+  };
+}
+
+function nogamma(a, b) {
+  var d = b - a;
+  return d ? linear(a, d) : constant(isNaN(a) ? b : a);
+}
+
+var rgb$1 = (function rgbGamma(y) {
+  var color = gamma(y);
+
+  function rgb$1(start, end) {
+    var r = color((start = rgb(start)).r, (end = rgb(end)).r),
+        g = color(start.g, end.g),
+        b = color(start.b, end.b),
+        opacity = nogamma(start.opacity, end.opacity);
+    return function(t) {
+      start.r = r(t);
+      start.g = g(t);
+      start.b = b(t);
+      start.opacity = opacity(t);
+      return start + "";
+    };
+  }
+
+  rgb$1.gamma = rgbGamma;
+
+  return rgb$1;
+})(1);
+
+function numberArray(a, b) {
+  if (!b) b = [];
+  var n = a ? Math.min(b.length, a.length) : 0,
+      c = b.slice(),
+      i;
+  return function(t) {
+    for (i = 0; i < n; ++i) c[i] = a[i] * (1 - t) + b[i] * t;
+    return c;
+  };
+}
+
+function isNumberArray(x) {
+  return ArrayBuffer.isView(x) && !(x instanceof DataView);
+}
+
+function genericArray(a, b) {
+  var nb = b ? b.length : 0,
+      na = a ? Math.min(nb, a.length) : 0,
+      x = new Array(na),
+      c = new Array(nb),
+      i;
+
+  for (i = 0; i < na; ++i) x[i] = interpolateValue(a[i], b[i]);
+  for (; i < nb; ++i) c[i] = b[i];
+
+  return function(t) {
+    for (i = 0; i < na; ++i) c[i] = x[i](t);
+    return c;
+  };
+}
+
+function date(a, b) {
+  var d = new Date;
+  return a = +a, b = +b, function(t) {
+    return d.setTime(a * (1 - t) + b * t), d;
+  };
+}
+
+function reinterpolate(a, b) {
+  return a = +a, b = +b, function(t) {
+    return a * (1 - t) + b * t;
+  };
+}
+
+function object(a, b) {
+  var i = {},
+      c = {},
+      k;
+
+  if (a === null || typeof a !== "object") a = {};
+  if (b === null || typeof b !== "object") b = {};
+
+  for (k in b) {
+    if (k in a) {
+      i[k] = interpolateValue(a[k], b[k]);
+    } else {
+      c[k] = b[k];
+    }
+  }
+
+  return function(t) {
+    for (k in i) c[k] = i[k](t);
+    return c;
+  };
+}
+
+var reA = /[-+]?(?:\d+\.?\d*|\.?\d+)(?:[eE][-+]?\d+)?/g,
+    reB = new RegExp(reA.source, "g");
+
+function zero(b) {
+  return function() {
+    return b;
+  };
+}
+
+function one(b) {
+  return function(t) {
+    return b(t) + "";
+  };
+}
+
+function string(a, b) {
+  var bi = reA.lastIndex = reB.lastIndex = 0, // scan index for next number in b
+      am, // current match in a
+      bm, // current match in b
+      bs, // string preceding current number in b, if any
+      i = -1, // index in s
+      s = [], // string constants and placeholders
+      q = []; // number interpolators
+
+  // Coerce inputs to strings.
+  a = a + "", b = b + "";
+
+  // Interpolate pairs of numbers in a & b.
+  while ((am = reA.exec(a))
+      && (bm = reB.exec(b))) {
+    if ((bs = bm.index) > bi) { // a string precedes the next number in b
+      bs = b.slice(bi, bs);
+      if (s[i]) s[i] += bs; // coalesce with previous string
+      else s[++i] = bs;
+    }
+    if ((am = am[0]) === (bm = bm[0])) { // numbers in a & b match
+      if (s[i]) s[i] += bm; // coalesce with previous string
+      else s[++i] = bm;
+    } else { // interpolate non-matching numbers
+      s[++i] = null;
+      q.push({i: i, x: reinterpolate(am, bm)});
+    }
+    bi = reB.lastIndex;
+  }
+
+  // Add remains of b.
+  if (bi < b.length) {
+    bs = b.slice(bi);
+    if (s[i]) s[i] += bs; // coalesce with previous string
+    else s[++i] = bs;
+  }
+
+  // Special optimization for only a single match.
+  // Otherwise, interpolate each of the numbers and rejoin the string.
+  return s.length < 2 ? (q[0]
+      ? one(q[0].x)
+      : zero(b))
+      : (b = q.length, function(t) {
+          for (var i = 0, o; i < b; ++i) s[(o = q[i]).i] = o.x(t);
+          return s.join("");
+        });
+}
+
+function interpolateValue(a, b) {
+  var t = typeof b, c;
+  return b == null || t === "boolean" ? constant(b)
+      : (t === "number" ? reinterpolate
+      : t === "string" ? ((c = color(b)) ? (b = c, rgb$1) : string)
+      : b instanceof color ? rgb$1
+      : b instanceof Date ? date
+      : isNumberArray(b) ? numberArray
+      : Array.isArray(b) ? genericArray
+      : typeof b.valueOf !== "function" && typeof b.toString !== "function" || isNaN(b) ? object
+      : reinterpolate)(a, b);
+}
+
+function interpolateRound(a, b) {
+  return a = +a, b = +b, function(t) {
+    return Math.round(a * (1 - t) + b * t);
+  };
+}
+
+function cubehelix$1(hue) {
+  return (function cubehelixGamma(y) {
+    y = +y;
+
+    function cubehelix$1(start, end) {
+      var h = hue((start = cubehelix(start)).h, (end = cubehelix(end)).h),
+          s = nogamma(start.s, end.s),
+          l = nogamma(start.l, end.l),
+          opacity = nogamma(start.opacity, end.opacity);
+      return function(t) {
+        start.h = h(t);
+        start.s = s(t);
+        start.l = l(Math.pow(t, y));
+        start.opacity = opacity(t);
+        return start + "";
+      };
+    }
+
+    cubehelix$1.gamma = cubehelixGamma;
+
+    return cubehelix$1;
+  })(1);
+}
+
+cubehelix$1(hue);
+var cubehelixLong = cubehelix$1(nogamma);
+
+function constant$1(x) {
+  return function() {
+    return x;
+  };
+}
+
+function number(x) {
+  return +x;
+}
+
+var unit = [0, 1];
+
+function deinterpolateLinear(a, b) {
+  return (b -= (a = +a))
+      ? function(x) { return (x - a) / b; }
+      : constant$1(b);
+}
+
+function deinterpolateClamp(deinterpolate) {
+  return function(a, b) {
+    var d = deinterpolate(a = +a, b = +b);
+    return function(x) { return x <= a ? 0 : x >= b ? 1 : d(x); };
+  };
+}
+
+function reinterpolateClamp(reinterpolate) {
+  return function(a, b) {
+    var r = reinterpolate(a = +a, b = +b);
+    return function(t) { return t <= 0 ? a : t >= 1 ? b : r(t); };
+  };
+}
+
+function bimap(domain, range, deinterpolate, reinterpolate) {
+  var d0 = domain[0], d1 = domain[1], r0 = range[0], r1 = range[1];
+  if (d1 < d0) d0 = deinterpolate(d1, d0), r0 = reinterpolate(r1, r0);
+  else d0 = deinterpolate(d0, d1), r0 = reinterpolate(r0, r1);
+  return function(x) { return r0(d0(x)); };
+}
+
+function polymap(domain, range, deinterpolate, reinterpolate) {
+  var j = Math.min(domain.length, range.length) - 1,
+      d = new Array(j),
+      r = new Array(j),
+      i = -1;
+
+  // Reverse descending domains.
+  if (domain[j] < domain[0]) {
+    domain = domain.slice().reverse();
+    range = range.slice().reverse();
+  }
+
+  while (++i < j) {
+    d[i] = deinterpolate(domain[i], domain[i + 1]);
+    r[i] = reinterpolate(range[i], range[i + 1]);
+  }
+
+  return function(x) {
+    var i = bisectRight(domain, x, 1, j) - 1;
+    return r[i](d[i](x));
+  };
+}
+
+function copy(source, target) {
+  return target
+      .domain(source.domain())
+      .range(source.range())
+      .interpolate(source.interpolate())
+      .clamp(source.clamp());
+}
+
+// deinterpolate(a, b)(x) takes a domain value x in [a,b] and returns the corresponding parameter t in [0,1].
+// reinterpolate(a, b)(t) takes a parameter t in [0,1] and returns the corresponding domain value x in [a,b].
+function continuous(deinterpolate, reinterpolate) {
+  var domain = unit,
+      range = unit,
+      interpolate = interpolateValue,
+      clamp = false,
+      piecewise,
+      output,
+      input;
+
+  function rescale() {
+    piecewise = Math.min(domain.length, range.length) > 2 ? polymap : bimap;
+    output = input = null;
+    return scale;
+  }
+
+  function scale(x) {
+    return (output || (output = piecewise(domain, range, clamp ? deinterpolateClamp(deinterpolate) : deinterpolate, interpolate)))(+x);
+  }
+
+  scale.invert = function(y) {
+    return (input || (input = piecewise(range, domain, deinterpolateLinear, clamp ? reinterpolateClamp(reinterpolate) : reinterpolate)))(+y);
+  };
+
+  scale.domain = function(_) {
+    return arguments.length ? (domain = map$1.call(_, number), rescale()) : domain.slice();
+  };
+
+  scale.range = function(_) {
+    return arguments.length ? (range = slice.call(_), rescale()) : range.slice();
+  };
+
+  scale.rangeRound = function(_) {
+    return range = slice.call(_), interpolate = interpolateRound, rescale();
+  };
+
+  scale.clamp = function(_) {
+    return arguments.length ? (clamp = !!_, rescale()) : clamp;
+  };
+
+  scale.interpolate = function(_) {
+    return arguments.length ? (interpolate = _, rescale()) : interpolate;
+  };
+
+  return rescale();
+}
+
+function tickFormat(domain, count, specifier) {
+  var start = domain[0],
+      stop = domain[domain.length - 1],
+      step = tickStep(start, stop, count == null ? 10 : count),
+      precision;
+  specifier = formatSpecifier(specifier == null ? ",f" : specifier);
+  switch (specifier.type) {
+    case "s": {
+      var value = Math.max(Math.abs(start), Math.abs(stop));
+      if (specifier.precision == null && !isNaN(precision = precisionPrefix(step, value))) specifier.precision = precision;
+      return formatPrefix(specifier, value);
+    }
+    case "":
+    case "e":
+    case "g":
+    case "p":
+    case "r": {
+      if (specifier.precision == null && !isNaN(precision = precisionRound(step, Math.max(Math.abs(start), Math.abs(stop))))) specifier.precision = precision - (specifier.type === "e");
+      break;
+    }
+    case "f":
+    case "%": {
+      if (specifier.precision == null && !isNaN(precision = precisionFixed(step))) specifier.precision = precision - (specifier.type === "%") * 2;
+      break;
+    }
+  }
+  return format(specifier);
+}
+
+function linearish(scale) {
+  var domain = scale.domain;
+
+  scale.ticks = function(count) {
+    var d = domain();
+    return ticks(d[0], d[d.length - 1], count == null ? 10 : count);
+  };
+
+  scale.tickFormat = function(count, specifier) {
+    return tickFormat(domain(), count, specifier);
+  };
+
+  scale.nice = function(count) {
+    var d = domain(),
+        i = d.length - 1,
+        n = count == null ? 10 : count,
+        start = d[0],
+        stop = d[i],
+        step = tickStep(start, stop, n);
+
+    if (step) {
+      step = tickStep(Math.floor(start / step) * step, Math.ceil(stop / step) * step, n);
+      d[0] = Math.floor(start / step) * step;
+      d[i] = Math.ceil(stop / step) * step;
+      domain(d);
+    }
+
+    return scale;
+  };
+
+  return scale;
+}
+
+function linear$1() {
+  var scale = continuous(deinterpolateLinear, reinterpolate);
+
+  scale.copy = function() {
+    return copy(scale, linear$1());
+  };
+
+  return linearish(scale);
+}
+
+function colors(s) {
+  return s.match(/.{6}/g).map(function(x) {
+    return "#" + x;
+  });
+}
+
+colors("1f77b4ff7f0e2ca02cd627289467bd8c564be377c27f7f7fbcbd2217becf");
+
+colors("393b795254a36b6ecf9c9ede6379398ca252b5cf6bcedb9c8c6d31bd9e39e7ba52e7cb94843c39ad494ad6616be7969c7b4173a55194ce6dbdde9ed6");
+
+colors("3182bd6baed69ecae1c6dbefe6550dfd8d3cfdae6bfdd0a231a35474c476a1d99bc7e9c0756bb19e9ac8bcbddcdadaeb636363969696bdbdbdd9d9d9");
+
+colors("1f77b4aec7e8ff7f0effbb782ca02c98df8ad62728ff98969467bdc5b0d58c564bc49c94e377c2f7b6d27f7f7fc7c7c7bcbd22dbdb8d17becf9edae5");
+
 cubehelixLong(cubehelix(300, 0.5, 0.0), cubehelix(-240, 0.5, 1.0));
 
 var warm = cubehelixLong(cubehelix(-100, 0.75, 0.35), cubehelix(80, 1.50, 0.8));
@@ -2437,392 +1809,108 @@ var inferno = ramp(colors("00000401000501010601010802010a02020c02020e03021004031
 
 var plasma = ramp(colors("0d088710078813078916078a19068c1b068d1d068e20068f2206902406912605912805922a05932c05942e05952f059631059733059735049837049938049a3a049a3c049b3e049c3f049c41049d43039e44039e46039f48039f4903a04b03a14c02a14e02a25002a25102a35302a35502a45601a45801a45901a55b01a55c01a65e01a66001a66100a76300a76400a76600a76700a86900a86a00a86c00a86e00a86f00a87100a87201a87401a87501a87701a87801a87a02a87b02a87d03a87e03a88004a88104a78305a78405a78606a68707a68808a68a09a58b0aa58d0ba58e0ca48f0da4910ea3920fa39410a29511a19613a19814a099159f9a169f9c179e9d189d9e199da01a9ca11b9ba21d9aa31e9aa51f99a62098a72197a82296aa2395ab2494ac2694ad2793ae2892b02991b12a90b22b8fb32c8eb42e8db52f8cb6308bb7318ab83289ba3388bb3488bc3587bd3786be3885bf3984c03a83c13b82c23c81c33d80c43e7fc5407ec6417dc7427cc8437bc9447aca457acb4679cc4778cc4977cd4a76ce4b75cf4c74d04d73d14e72d24f71d35171d45270d5536fd5546ed6556dd7566cd8576bd9586ada5a6ada5b69db5c68dc5d67dd5e66de5f65de6164df6263e06363e16462e26561e26660e3685fe4695ee56a5de56b5de66c5ce76e5be76f5ae87059e97158e97257ea7457eb7556eb7655ec7754ed7953ed7a52ee7b51ef7c51ef7e50f07f4ff0804ef1814df1834cf2844bf3854bf3874af48849f48948f58b47f58c46f68d45f68f44f79044f79143f79342f89441f89540f9973ff9983ef99a3efa9b3dfa9c3cfa9e3bfb9f3afba139fba238fca338fca537fca636fca835fca934fdab33fdac33fdae32fdaf31fdb130fdb22ffdb42ffdb52efeb72dfeb82cfeba2cfebb2bfebd2afebe2afec029fdc229fdc328fdc527fdc627fdc827fdca26fdcb26fccd25fcce25fcd025fcd225fbd324fbd524fbd724fad824fada24f9dc24f9dd25f8df25f8e125f7e225f7e425f6e626f6e826f5e926f5eb27f4ed27f3ee27f3f027f2f227f1f426f1f525f0f724f0f921"));
 
-function ascending$2(a, b) {
-  return a < b ? -1 : a > b ? 1 : a >= b ? 0 : NaN;
-}
-
-function bisector$1(compare) {
-  if (compare.length === 1) compare = ascendingComparator$1(compare);
-  return {
-    left: function(a, x, lo, hi) {
-      if (lo == null) lo = 0;
-      if (hi == null) hi = a.length;
-      while (lo < hi) {
-        var mid = lo + hi >>> 1;
-        if (compare(a[mid], x) < 0) lo = mid + 1;
-        else hi = mid;
-      }
-      return lo;
-    },
-    right: function(a, x, lo, hi) {
-      if (lo == null) lo = 0;
-      if (hi == null) hi = a.length;
-      while (lo < hi) {
-        var mid = lo + hi >>> 1;
-        if (compare(a[mid], x) > 0) hi = mid;
-        else lo = mid + 1;
-      }
-      return lo;
-    }
-  };
-}
-
-function ascendingComparator$1(f) {
-  return function(d, x) {
-    return ascending$2(f(d), x);
-  };
-}
-
-var ascendingBisect$1 = bisector$1(ascending$2);
-
-function max(array, f) {
-  var i = -1,
-      n = array.length,
-      a,
-      b;
-
-  if (f == null) {
-    while (++i < n) if ((b = array[i]) != null && b >= b) { a = b; break; }
-    while (++i < n) if ((b = array[i]) != null && b > a) a = b;
-  }
-
-  else {
-    while (++i < n) if ((b = f(array[i], i, array)) != null && b >= b) { a = b; break; }
-    while (++i < n) if ((b = f(array[i], i, array)) != null && b > a) a = b;
-  }
-
-  return a;
-}
-
-function sum(array, f) {
-  var s = 0,
-      n = array.length,
-      a,
-      i = -1;
-
-  if (f == null) {
-    while (++i < n) if (a = +array[i]) s += a; // Note: zero and null are equivalent.
-  }
-
-  else {
-    while (++i < n) if (a = +f(array[i], i, array)) s += a;
-  }
-
-  return s;
-}
-
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) {
-  return typeof obj;
-} : function (obj) {
-  return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
-};
-
-var d3_identity = function d3_identity(d) {
-  return d;
-};
-
-var d3_reverse = function d3_reverse(arr) {
-  var mirror = [];
-  for (var i = 0, l = arr.length; i < l; i++) {
-    mirror[i] = arr[l - i - 1];
-  }
-  return mirror;
-};
-
-//Text wrapping code adapted from Mike Bostock
-var d3_textWrapping = function d3_textWrapping(text, width) {
-  text.each(function () {
-    var text = select(this),
-        words = text.text().split(/\s+/).reverse(),
-        word,
-        line = [],
-        lineHeight = 1.2,
-        //ems
-    y = text.attr("y"),
-        dy = parseFloat(text.attr("dy")) || 0,
-        tspan = text.text(null).append("tspan").attr("x", 0).attr("dy", dy + "em");
-
-    while (word = words.pop()) {
-      line.push(word);
-      tspan.text(line.join(" "));
-      if (tspan.node().getComputedTextLength() > width && line.length > 1) {
-        line.pop();
-        tspan.text(line.join(" "));
-        line = [word];
-        tspan = text.append("tspan").attr("x", 0).attr("dy", lineHeight + dy + "em").text(word);
-      }
-    }
-  });
-};
-
-var d3_mergeLabels = function d3_mergeLabels() {
-  var gen = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
-  var labels = arguments[1];
-  var domain = arguments[2];
-  var range = arguments[3];
-  var labelDelimiter = arguments[4];
-
-  if ((typeof labels === "undefined" ? "undefined" : _typeof(labels)) === "object") {
-    if (labels.length === 0) return gen;
-
-    var i = labels.length;
-    for (; i < gen.length; i++) {
-      labels.push(gen[i]);
-    }
-    return labels;
-  } else if (typeof labels === "function") {
-    var customLabels = [];
-    var genLength = gen.length;
-    for (var _i = 0; _i < genLength; _i++) {
-      customLabels.push(labels({
-        i: _i,
-        genLength: genLength,
-        generatedLabels: gen,
-        domain: domain,
-        range: range,
-        labelDelimiter: labelDelimiter
-      }));
-    }
-    return customLabels;
-  }
-
-  return gen;
-};
-
-var d3_linearLegend = function d3_linearLegend(scale, cells, labelFormat) {
-  var data = [];
-
-  if (cells.length > 1) {
-    data = cells;
-  } else {
-    var domain = scale.domain(),
-        increment = (domain[domain.length - 1] - domain[0]) / (cells - 1);
-    var i = 0;
-
-    for (; i < cells; i++) {
-      data.push(domain[0] + i * increment);
-    }
-  }
-
-  var labels = data.map(labelFormat);
-  return {
-    data: data,
-    labels: labels,
-    feature: function feature(d) {
-      return scale(d);
-    }
-  };
-};
-
-var d3_quantLegend = function d3_quantLegend(scale, labelFormat, labelDelimiter) {
-  var labels = scale.range().map(function (d) {
-    var invert = scale.invertExtent(d);
-    return labelFormat(invert[0]) + " " + labelDelimiter + " " + labelFormat(invert[1]);
-  });
-
-  return {
-    data: scale.range(),
-    labels: labels,
-    feature: d3_identity
-  };
-};
-
-var d3_ordinalLegend = function d3_ordinalLegend(scale) {
-  return {
-    data: scale.domain(),
-    labels: scale.domain(),
-    feature: function feature(d) {
-      return scale(d);
-    }
-  };
-};
-
-var d3_cellOver = function d3_cellOver(cellDispatcher, d, obj) {
-  cellDispatcher.call("cellover", obj, d);
-};
-
-var d3_cellOut = function d3_cellOut(cellDispatcher, d, obj) {
-  cellDispatcher.call("cellout", obj, d);
-};
-
-var d3_cellClick = function d3_cellClick(cellDispatcher, d, obj) {
-  cellDispatcher.call("cellclick", obj, d);
-};
-
-var helper = {
-  d3_drawShapes: function d3_drawShapes(shape, shapes, shapeHeight, shapeWidth, shapeRadius, path) {
-    if (shape === "rect") {
-      shapes.attr("height", shapeHeight).attr("width", shapeWidth);
-    } else if (shape === "circle") {
-      shapes.attr("r", shapeRadius);
-    } else if (shape === "line") {
-      shapes.attr("x1", 0).attr("x2", shapeWidth).attr("y1", 0).attr("y2", 0);
-    } else if (shape === "path") {
-      shapes.attr("d", path);
-    }
-  },
-
-  d3_addText: function d3_addText(svg, enter, labels, classPrefix, labelWidth) {
-    return Promise.all(labels).then(function (resolvedLabels) {
-      enter.append("text").attr("class", classPrefix + "label");
-      var text = svg.selectAll("g." + classPrefix + "cell text." + classPrefix + "label").data(resolvedLabels).text(d3_identity);
-
-      if (labelWidth) {
-        svg.selectAll("g." + classPrefix + "cell text." + classPrefix + "label").call(d3_textWrapping, labelWidth);
-      }
-      return text;
-    });
-  },
-
-  d3_calcType: function d3_calcType(scale, ascending, cells, labels, labelFormat, labelDelimiter) {
-    var type = scale.invertExtent ? d3_quantLegend(scale, labelFormat, labelDelimiter) : scale.ticks ? d3_linearLegend(scale, cells, labelFormat) : d3_ordinalLegend(scale);
-
-    //for d3.scaleSequential that doesn't have a range function
-    var range = scale.range && scale.range() || scale.domain();
-    type.labels = d3_mergeLabels(type.labels, labels, scale.domain(), range, labelDelimiter);
-
-    if (ascending) {
-      type.labels = d3_reverse(type.labels);
-      type.data = d3_reverse(type.data);
-    }
-
-    return type;
-  },
-
-  d3_filterCells: function d3_filterCells(type, cellFilter) {
-    var filterCells = type.data.map(function (d, i) {
-      return { data: d, label: type.labels[i] };
-    }).filter(cellFilter);
-    var dataValues = filterCells.map(function (d) {
-      return d.data;
-    });
-    var labelValues = filterCells.map(function (d) {
-      return d.label;
-    });
-    type.data = type.data.filter(function (d) {
-      return dataValues.indexOf(d) !== -1;
-    });
-    type.labels = type.labels.filter(function (d) {
-      return labelValues.indexOf(d) !== -1;
-    });
-    return type;
-  },
-
-  d3_placement: function d3_placement(orient, cell, cellTrans, text, textTrans, labelAlign) {
-    cell.attr("transform", cellTrans);
-    text.attr("transform", textTrans);
-    if (orient === "horizontal") {
-      text.style("text-anchor", labelAlign);
-    }
-  },
-
-  d3_addEvents: function d3_addEvents(cells, dispatcher) {
-    cells.on("mouseover.legend", function (d) {
-      d3_cellOver(dispatcher, d, this);
-    }).on("mouseout.legend", function (d) {
-      d3_cellOut(dispatcher, d, this);
-    }).on("click.legend", function (d) {
-      d3_cellClick(dispatcher, d, this);
-    });
-  },
-
-  d3_title: function d3_title(svg, title, classPrefix, titleWidth) {
-    if (title !== "") {
-      var titleText = svg.selectAll("text." + classPrefix + "legendTitle");
-
-      titleText.data([title]).enter().append("text").attr("class", classPrefix + "legendTitle");
-
-      svg.selectAll("text." + classPrefix + "legendTitle").text(title);
-
-      if (titleWidth) {
-        svg.selectAll("text." + classPrefix + "legendTitle").call(d3_textWrapping, titleWidth);
-      }
-
-      var cellsSvg = svg.select("." + classPrefix + "legendCells");
-      var yOffset = svg.select("." + classPrefix + "legendTitle").nodes().map(function (d) {
-        return d.getBBox().height;
-      })[0],
-          xOffset = -cellsSvg.nodes().map(function (d) {
-        return d.getBBox().x;
-      })[0];
-      cellsSvg.attr("transform", "translate(" + xOffset + "," + yOffset + ")");
-    }
-  },
-
-  d3_defaultLocale: {
-    format: format,
-    formatPrefix: formatPrefix
-  },
-
-  d3_defaultFormatSpecifier: ".01f",
-
-  d3_defaultDelimiter: "to"
-};
-
 function color$1() {
-  var scale = linear(),
-      shape = "rect",
-      shapeWidth = 15,
-      shapeHeight = 15,
-      shapeRadius = 10,
-      shapePadding = 2,
-      cells = [5],
-      cellFilter = void 0,
-      labels = [],
-      classPrefix = "",
-      useClass = false,
-      title = "",
-      locale = helper.d3_defaultLocale,
-      specifier = helper.d3_defaultFormatSpecifier,
-      labelOffset = 10,
-      labelAlign = "middle",
-      labelDelimiter = helper.d3_defaultDelimiter,
-      labelWrap = void 0,
-      orient = "vertical",
-      ascending = false,
-      path = void 0,
-      titleWidth = void 0,
-      legendDispatcher = dispatch("cellover", "cellout", "cellclick");
+  let scale = linear$1(),
+    shape = "rect",
+    shapeWidth = 15,
+    shapeHeight = 15,
+    shapeRadius = 10,
+    shapePadding = 2,
+    cells = [5],
+    cellFilter,
+    labels = [],
+    classPrefix = "",
+    useClass = false,
+    title = "",
+    locale = helper.d3_defaultLocale,
+    specifier = helper.d3_defaultFormatSpecifier,
+    labelOffset = 10,
+    labelAlign = "middle",
+    labelDelimiter = helper.d3_defaultDelimiter,
+    labelWrap,
+    orient = "vertical",
+    ascending = false,
+    path,
+    titleWidth,
+    legendDispatcher = dispatch("cellover", "cellout", "cellclick");
 
   function legend(svg) {
-    var type = helper.d3_calcType(scale, ascending, cells, labels, locale.format(specifier), labelDelimiter),
-        legendG = svg.selectAll("g").data([scale]);
+    const type = helper.d3_calcType(
+        scale,
+        ascending,
+        cells,
+        labels,
+        locale.format(specifier),
+        labelDelimiter
+      ),
+      legendG = svg.selectAll("g").data([scale]);
 
-    legendG.enter().append("g").attr("class", classPrefix + "legendCells");
+    legendG
+      .enter()
+      .append("g")
+      .attr("class", classPrefix + "legendCells");
 
     if (cellFilter) {
       helper.d3_filterCells(type, cellFilter);
     }
 
-    var cell = svg.select("." + classPrefix + "legendCells").selectAll("." + classPrefix + "cell").data(type.data);
+    let cell = svg
+      .select("." + classPrefix + "legendCells")
+      .selectAll("." + classPrefix + "cell")
+      .data(type.data);
 
-    var cellEnter = cell.enter().append("g").attr("class", classPrefix + "cell");
+    const cellEnter = cell
+      .enter()
+      .append("g")
+      .attr("class", classPrefix + "cell");
     cellEnter.append(shape).attr("class", classPrefix + "swatch");
 
-    var shapes = svg.selectAll("g." + classPrefix + "cell " + shape + "." + classPrefix + "swatch").data(type.data);
+    let shapes = svg
+      .selectAll(
+        "g." + classPrefix + "cell " + shape + "." + classPrefix + "swatch"
+      )
+      .data(type.data);
 
     //add event handlers
     helper.d3_addEvents(cellEnter, legendDispatcher);
 
-    cell.exit().transition().style("opacity", 0).remove();
-
-    shapes.exit().transition().style("opacity", 0).remove();
+    cell
+      .exit()
+      .transition()
+      .style("opacity", 0)
+      .remove();
+    
+    shapes
+      .exit()
+      .transition()
+      .style("opacity", 0)
+      .remove();
 
     shapes = shapes.merge(shapes);
     // we need to merge the selection, otherwise changes in the legend (e.g. change of orientation) are applied only to the new cells and not the existing ones.
     cell = cellEnter.merge(cell);
 
-    helper.d3_drawShapes(shape, shapes, shapeHeight, shapeWidth, shapeRadius, path);
-
-    helper.d3_addText(svg, cellEnter, type.labels, classPrefix, labelWrap).then(function (text) {
+    helper.d3_drawShapes(
+      shape,
+      shapes,
+      shapeHeight,
+      shapeWidth,
+      shapeRadius,
+      path
+    );
+    
+    helper.d3_addText(
+      svg,
+      cellEnter,
+      type.labels,
+      classPrefix,
+      labelWrap
+    )
+    .then(text => {
 
       // sets placement
-      var textSize = text.nodes().map(function (d) {
-        return d.getBBox();
-      }),
-          shapeSize = shapes.nodes().map(function (d) {
-        return d.getBBox();
-      });
+      const textSize = text.nodes().map(d => d.getBBox()),
+        shapeSize = shapes.nodes().map(d => d.getBBox());
       //sets scale
       //everything is fill except for line which is stroke,
       if (!useClass) {
@@ -2832,35 +1920,39 @@ function color$1() {
           shapes.style("fill", type.feature);
         }
       } else {
-        shapes.attr("class", function (d) {
-          return classPrefix + "swatch " + type.feature(d);
-        });
+        shapes.attr("class", d => `${classPrefix}swatch ${type.feature(d)}`);
       }
 
-      var cellTrans = void 0,
-          textTrans = void 0,
-          textAlign = labelAlign == "start" ? 0 : labelAlign == "middle" ? 0.5 : 1;
+      let cellTrans,
+        textTrans,
+        textAlign = labelAlign == "start" ? 0 : labelAlign == "middle" ? 0.5 : 1;
 
       //positions cells and text
       if (orient === "vertical") {
-        var cellSize = textSize.map(function (d, i) {
-          return Math.max(d.height, shapeSize[i].height);
+        const cellSize = textSize.map((d, i) => {
+            if (!shapeSize[i]) {return 0}
+            return Math.max(d.height, shapeSize[i].height)
         });
 
-        cellTrans = function cellTrans(d, i) {
-          var height = sum(cellSize.slice(0, i));
-          return "translate(0, " + (height + i * shapePadding) + ")";
+        cellTrans = (d, i) => {
+          const height = sum(cellSize.slice(0, i));
+          return `translate(0, ${height + i * shapePadding})`
         };
 
-        textTrans = function textTrans(d, i) {
-          return "translate( " + (shapeSize[i].width + shapeSize[i].x + labelOffset) + ", " + (shapeSize[i].y + shapeSize[i].height / 2 + 5) + ")";
-        };
+        textTrans = (d, i) => {
+          if (!shapeSize[i]) {return ''}
+          return `translate( ${shapeSize[i].width +
+            shapeSize[i].x +
+            labelOffset}, ${shapeSize[i].y + shapeSize[i].height / 2 + 5})`};
       } else if (orient === "horizontal") {
-        cellTrans = function cellTrans(d, i) {
-          return "translate(" + i * (shapeSize[i].width + shapePadding) + ",0)";
+        cellTrans = (d, i) => {
+          if (!shapeSize[i]) {return ''}
+          return `translate(${i * (shapeSize[i].width + shapePadding)},0)`
         };
-        textTrans = function textTrans(d, i) {
-          return "translate(" + (shapeSize[i].width * textAlign + shapeSize[i].x) + ",\n            " + (shapeSize[i].height + shapeSize[i].y + labelOffset + 8) + ")";
+        textTrans = (d, i) => {
+          if (!shapeSize[i]) {return ''}
+          return `translate(${shapeSize[i].width * textAlign + shapeSize[i].x},
+                    ${shapeSize[i].height + shapeSize[i].y + labelOffset + 8})`
         };
       }
 
@@ -2871,203 +1963,234 @@ function color$1() {
     });
   }
 
-  legend.scale = function (_) {
-    if (!arguments.length) return scale;
+  legend.scale = function(_) {
+    if (!arguments.length) return scale
     scale = _;
-    return legend;
+    return legend
   };
 
-  legend.cells = function (_) {
-    if (!arguments.length) return cells;
+  legend.cells = function(_) {
+    if (!arguments.length) return cells
     if (_.length > 1 || _ >= 2) {
       cells = _;
     }
-    return legend;
+    return legend
   };
 
-  legend.cellFilter = function (_) {
-    if (!arguments.length) return cellFilter;
+  legend.cellFilter = function(_) {
+    if (!arguments.length) return cellFilter
     cellFilter = _;
-    return legend;
+    return legend
   };
 
-  legend.shape = function (_, d) {
-    if (!arguments.length) return shape;
-    if (_ == "rect" || _ == "circle" || _ == "line" || _ == "path" && typeof d === "string") {
+  legend.shape = function(_, d) {
+    if (!arguments.length) return shape
+    if (
+      _ == "rect" ||
+      _ == "circle" ||
+      _ == "line" ||
+      (_ == "path" && typeof d === "string")
+    ) {
       shape = _;
       path = d;
     }
-    return legend;
+    return legend
   };
 
-  legend.shapeWidth = function (_) {
-    if (!arguments.length) return shapeWidth;
+  legend.shapeWidth = function(_) {
+    if (!arguments.length) return shapeWidth
     shapeWidth = +_;
-    return legend;
+    return legend
   };
 
-  legend.shapeHeight = function (_) {
-    if (!arguments.length) return shapeHeight;
+  legend.shapeHeight = function(_) {
+    if (!arguments.length) return shapeHeight
     shapeHeight = +_;
-    return legend;
+    return legend
   };
 
-  legend.shapeRadius = function (_) {
-    if (!arguments.length) return shapeRadius;
+  legend.shapeRadius = function(_) {
+    if (!arguments.length) return shapeRadius
     shapeRadius = +_;
-    return legend;
+    return legend
   };
 
-  legend.shapePadding = function (_) {
-    if (!arguments.length) return shapePadding;
+  legend.shapePadding = function(_) {
+    if (!arguments.length) return shapePadding
     shapePadding = +_;
-    return legend;
+    return legend
   };
 
-  legend.labels = function (_) {
-    if (!arguments.length) return labels;
+  legend.labels = function(_) {
+    if (!arguments.length) return labels
     labels = _;
-    return legend;
+    return legend
   };
 
-  legend.labelAlign = function (_) {
-    if (!arguments.length) return labelAlign;
+  legend.labelAlign = function(_) {
+    if (!arguments.length) return labelAlign
     if (_ == "start" || _ == "end" || _ == "middle") {
       labelAlign = _;
     }
-    return legend;
+    return legend
   };
 
-  legend.locale = function (_) {
-    if (!arguments.length) return locale;
+  legend.locale = function(_) {
+    if (!arguments.length) return locale
     locale = formatLocale(_);
-    return legend;
+    return legend
   };
 
-  legend.labelFormat = function (_) {
-    if (!arguments.length) return legend.locale().format(specifier);
+  legend.labelFormat = function(_) {
+    if (!arguments.length) return legend.locale().format(specifier)
     specifier = formatSpecifier(_);
-    return legend;
+    return legend
   };
 
-  legend.labelOffset = function (_) {
-    if (!arguments.length) return labelOffset;
+  legend.labelOffset = function(_) {
+    if (!arguments.length) return labelOffset
     labelOffset = +_;
-    return legend;
+    return legend
   };
 
-  legend.labelDelimiter = function (_) {
-    if (!arguments.length) return labelDelimiter;
+  legend.labelDelimiter = function(_) {
+    if (!arguments.length) return labelDelimiter
     labelDelimiter = _;
-    return legend;
+    return legend
   };
 
-  legend.labelWrap = function (_) {
-    if (!arguments.length) return labelWrap;
+  legend.labelWrap = function(_) {
+    if (!arguments.length) return labelWrap
     labelWrap = _;
-    return legend;
+    return legend
   };
 
-  legend.useClass = function (_) {
-    if (!arguments.length) return useClass;
+  legend.useClass = function(_) {
+    if (!arguments.length) return useClass
     if (_ === true || _ === false) {
       useClass = _;
     }
-    return legend;
+    return legend
   };
 
-  legend.orient = function (_) {
-    if (!arguments.length) return orient;
+  legend.orient = function(_) {
+    if (!arguments.length) return orient
     _ = _.toLowerCase();
     if (_ == "horizontal" || _ == "vertical") {
       orient = _;
     }
-    return legend;
+    return legend
   };
 
-  legend.ascending = function (_) {
-    if (!arguments.length) return ascending;
+  legend.ascending = function(_) {
+    if (!arguments.length) return ascending
     ascending = !!_;
-    return legend;
+    return legend
   };
 
-  legend.classPrefix = function (_) {
-    if (!arguments.length) return classPrefix;
+  legend.classPrefix = function(_) {
+    if (!arguments.length) return classPrefix
     classPrefix = _;
-    return legend;
+    return legend
   };
 
-  legend.title = function (_) {
-    if (!arguments.length) return title;
+  legend.title = function(_) {
+    if (!arguments.length) return title
     title = _;
-    return legend;
+    return legend
   };
 
-  legend.titleWidth = function (_) {
-    if (!arguments.length) return titleWidth;
+  legend.titleWidth = function(_) {
+    if (!arguments.length) return titleWidth
     titleWidth = _;
-    return legend;
+    return legend
   };
 
-  legend.textWrap = function (_) {
-    if (!arguments.length) return textWrap;
+  legend.textWrap = function(_) {
+    if (!arguments.length) return textWrap
     textWrap = _;
-    return legend;
+    return legend
   };
 
-  legend.on = function () {
-    var value = legendDispatcher.on.apply(legendDispatcher, arguments);
-    return value === legendDispatcher ? legend : value;
+  legend.on = function() {
+    const value = legendDispatcher.on.apply(legendDispatcher, arguments);
+    return value === legendDispatcher ? legend : value
   };
 
-  return legend;
+  return legend
 }
 
 function size() {
-  var scale = linear(),
-      shape = "rect",
-      shapeWidth = 15,
-      shapePadding = 2,
-      cells = [5],
-      cellFilter = void 0,
-      labels = [],
-      classPrefix = "",
-      title = "",
-      locale = helper.d3_defaultLocale,
-      specifier = helper.d3_defaultFormatSpecifier,
-      labelOffset = 10,
-      labelAlign = "middle",
-      labelDelimiter = helper.d3_defaultDelimiter,
-      labelWrap = void 0,
-      orient = "vertical",
-      ascending = false,
-      path = void 0,
-      titleWidth = void 0,
-      legendDispatcher = dispatch("cellover", "cellout", "cellclick");
+  let scale = linear$1(),
+    shape = "rect",
+    shapeWidth = 15,
+    shapePadding = 2,
+    cells = [5],
+    cellFilter,
+    labels = [],
+    classPrefix = "",
+    title = "",
+    locale = helper.d3_defaultLocale,
+    specifier = helper.d3_defaultFormatSpecifier,
+    labelOffset = 10,
+    labelAlign = "middle",
+    labelDelimiter = helper.d3_defaultDelimiter,
+    labelWrap,
+    orient = "vertical",
+    ascending = false,
+    path,
+    titleWidth,
+    legendDispatcher = dispatch("cellover", "cellout", "cellclick");
 
   function legend(svg) {
-    var type = helper.d3_calcType(scale, ascending, cells, labels, locale.format(specifier), labelDelimiter),
-        legendG = svg.selectAll("g").data([scale]);
+    const type = helper.d3_calcType(
+        scale,
+        ascending,
+        cells,
+        labels,
+        locale.format(specifier),
+        labelDelimiter
+      ),
+      legendG = svg.selectAll("g").data([scale]);
 
     if (cellFilter) {
       helper.d3_filterCells(type, cellFilter);
     }
 
-    legendG.enter().append("g").attr("class", classPrefix + "legendCells");
+    legendG
+      .enter()
+      .append("g")
+      .attr("class", classPrefix + "legendCells");
 
-    var cell = svg.select("." + classPrefix + "legendCells").selectAll("." + classPrefix + "cell").data(type.data);
-    var cellEnter = cell.enter().append("g").attr("class", classPrefix + "cell");
+    let cell = svg
+      .select("." + classPrefix + "legendCells")
+      .selectAll("." + classPrefix + "cell")
+      .data(type.data);
+    const cellEnter = cell
+      .enter()
+      .append("g")
+      .attr("class", classPrefix + "cell");
     cellEnter.append(shape).attr("class", classPrefix + "swatch");
 
-    var shapes = svg.selectAll("g." + classPrefix + "cell " + shape + "." + classPrefix + "swatch");
+    let shapes = svg.selectAll(
+      "g." + classPrefix + "cell " + shape + "." + classPrefix + "swatch"
+    );
 
     //add event handlers
     helper.d3_addEvents(cellEnter, legendDispatcher);
 
-    cell.exit().transition().style("opacity", 0).remove();
+    cell
+      .exit()
+      .transition()
+      .style("opacity", 0)
+      .remove();
 
-    shapes.exit().transition().style("opacity", 0).remove();
-
+    shapes
+      .exit()
+      .transition()
+      .style("opacity", 0)
+      .remove();
+    
     shapes = shapes.merge(shapes);
     // we need to merge the selection, otherwise changes in the legend (e.g. change of orientation) are applied only to the new cells and not the existing ones.
     cell = cellEnter.merge(cell);
@@ -3077,65 +2200,77 @@ function size() {
       helper.d3_drawShapes(shape, shapes, 0, shapeWidth);
       shapes.attr("stroke-width", type.feature);
     } else {
-      helper.d3_drawShapes(shape, shapes, type.feature, type.feature, type.feature, path);
+      helper.d3_drawShapes(
+        shape,
+        shapes,
+        type.feature,
+        type.feature,
+        type.feature,
+        path
+      );
     }
 
-    helper.d3_addText(svg, cellEnter, type.labels, classPrefix, labelWrap).then(function (text) {
+    helper.d3_addText(
+      svg,
+      cellEnter,
+      type.labels,
+      classPrefix,
+      labelWrap
+    )
+    .then(text => {
 
       //sets placement
-      var textSize = text.nodes().map(function (d) {
-        return d.getBBox();
-      }),
-          shapeSize = shapes.nodes().map(function (d, i) {
-        var bbox = d.getBBox();
-        var stroke = scale(type.data[i]);
+      const textSize = text.nodes().map(d => d.getBBox()),
+        shapeSize = shapes.nodes().map((d, i) => {
+          const bbox = d.getBBox();
+          const stroke = scale(type.data[i]);
 
-        if (shape === "line" && orient === "horizontal") {
-          bbox.height = bbox.height + stroke;
-        } else if (shape === "line" && orient === "vertical") {
-          bbox.width = bbox.width;
-        }
-        return bbox;
-      });
+          if (shape === "line" && orient === "horizontal") {
+            bbox.height = bbox.height + stroke;
+          } else if (shape === "line" && orient === "vertical") {
+            bbox.width = bbox.width;
+          }
+          return bbox
+        });
 
-      var maxH = max(shapeSize, function (d) {
-        return d.height + d.y;
-      }),
-          maxW = max(shapeSize, function (d) {
-        return d.width + d.x;
-      });
+      const maxH = max(shapeSize, d => d.height + d.y),
+        maxW = max(shapeSize, d => d.width + d.x);
 
-      var cellTrans = void 0,
-          textTrans = void 0,
-          textAlign = labelAlign == "start" ? 0 : labelAlign == "middle" ? 0.5 : 1;
+      let cellTrans,
+        textTrans,
+        textAlign = labelAlign == "start" ? 0 : labelAlign == "middle" ? 0.5 : 1;
 
       //positions cells and text
       if (orient === "vertical") {
-        var cellSize = textSize.map(function (d, i) {
-          return Math.max(d.height, shapeSize[i].height);
-        });
-        var y = shape == "circle" || shape == "line" ? shapeSize[0].height / 2 : 0;
-        cellTrans = function cellTrans(d, i) {
-          var height = sum(cellSize.slice(0, i));
+        const cellSize = textSize.map((d, i) => {
+            if (!shapeSize[i]) { return 0 }
+            return Math.max(d.height, shapeSize[i].height)
+          }
+        );
+        const y =
+          shape == "circle" || shape == "line" ? shapeSize[0].height / 2 : 0;
+        cellTrans = (d, i) => {
+          const height = sum(cellSize.slice(0, i));
 
-          return "translate(0, " + (y + height + i * shapePadding) + ")";
+          return `translate(0, ${y + height + i * shapePadding})`
         };
 
-        textTrans = function textTrans(d, i) {
-          return "translate( " + (maxW + labelOffset) + ",\n            " + (shapeSize[i].y + shapeSize[i].height / 2 + 5) + ")";
+        textTrans = (d, i) => {
+          if (!shapeSize[i]) {return ''}
+          return `translate( ${maxW + labelOffset}, ${shapeSize[i].y + shapeSize[i].height / 2 + 5})`
         };
       } else if (orient === "horizontal") {
-        cellTrans = function cellTrans(d, i) {
-          var width = sum(shapeSize.slice(0, i), function (d) {
-            return d.width;
-          });
-          var y = shape == "circle" || shape == "line" ? maxH / 2 : 0;
-          return "translate(" + (width + i * shapePadding) + ", " + y + ")";
+        cellTrans = (d, i) => {
+          const width = sum(shapeSize.slice(0, i), d => d.width);
+          const y = shape == "circle" || shape == "line" ? maxH / 2 : 0;
+          return `translate(${width + i * shapePadding}, ${y})`
         };
 
-        var offset = shape == "line" ? maxH / 2 : maxH;
-        textTrans = function textTrans(d, i) {
-          return "translate( " + (shapeSize[i].width * textAlign + shapeSize[i].x) + ",\n                " + (offset + labelOffset) + ")";
+        const offset = shape == "line" ? maxH / 2 : maxH;
+        textTrans = (d, i) => {
+          if (!shapeSize[i]) {return ''}
+          return `translate( ${shapeSize[i].width * textAlign + shapeSize[i].x},
+                ${offset + labelOffset})`
         };
       }
 
@@ -3143,227 +2278,255 @@ function size() {
       helper.d3_title(svg, title, classPrefix, titleWidth);
 
       cell.transition().style("opacity", 1);
-    });
+     });
   }
 
-  legend.scale = function (_) {
-    if (!arguments.length) return scale;
+  legend.scale = function(_) {
+    if (!arguments.length) return scale
     scale = _;
-    return legend;
+    return legend
   };
 
-  legend.cells = function (_) {
-    if (!arguments.length) return cells;
+  legend.cells = function(_) {
+    if (!arguments.length) return cells
     if (_.length > 1 || _ >= 2) {
       cells = _;
     }
-    return legend;
+    return legend
   };
 
-  legend.cellFilter = function (_) {
-    if (!arguments.length) return cellFilter;
+  legend.cellFilter = function(_) {
+    if (!arguments.length) return cellFilter
     cellFilter = _;
-    return legend;
+    return legend
   };
 
-  legend.shape = function (_, d) {
-    if (!arguments.length) return shape;
+  legend.shape = function(_, d) {
+    if (!arguments.length) return shape
     if (_ == "rect" || _ == "circle" || _ == "line") {
       shape = _;
       path = d;
     }
-    return legend;
+    return legend
   };
 
-  legend.shapeWidth = function (_) {
-    if (!arguments.length) return shapeWidth;
+  legend.shapeWidth = function(_) {
+    if (!arguments.length) return shapeWidth
     shapeWidth = +_;
-    return legend;
+    return legend
   };
 
-  legend.shapePadding = function (_) {
-    if (!arguments.length) return shapePadding;
+  legend.shapePadding = function(_) {
+    if (!arguments.length) return shapePadding
     shapePadding = +_;
-    return legend;
+    return legend
   };
 
-  legend.labels = function (_) {
-    if (!arguments.length) return labels;
+  legend.labels = function(_) {
+    if (!arguments.length) return labels
     labels = _;
-    return legend;
+    return legend
   };
 
-  legend.labelAlign = function (_) {
-    if (!arguments.length) return labelAlign;
+  legend.labelAlign = function(_) {
+    if (!arguments.length) return labelAlign
     if (_ == "start" || _ == "end" || _ == "middle") {
       labelAlign = _;
     }
-    return legend;
+    return legend
   };
 
-  legend.locale = function (_) {
-    if (!arguments.length) return locale;
+  legend.locale = function(_) {
+    if (!arguments.length) return locale
     locale = formatLocale(_);
-    return legend;
+    return legend
   };
 
-  legend.labelFormat = function (_) {
-    if (!arguments.length) return legend.locale().format(specifier);
+  legend.labelFormat = function(_) {
+    if (!arguments.length) return legend.locale().format(specifier)
     specifier = formatSpecifier(_);
-    return legend;
+    return legend
   };
 
-  legend.labelOffset = function (_) {
-    if (!arguments.length) return labelOffset;
+  legend.labelOffset = function(_) {
+    if (!arguments.length) return labelOffset
     labelOffset = +_;
-    return legend;
+    return legend
   };
 
-  legend.labelDelimiter = function (_) {
-    if (!arguments.length) return labelDelimiter;
+  legend.labelDelimiter = function(_) {
+    if (!arguments.length) return labelDelimiter
     labelDelimiter = _;
-    return legend;
+    return legend
   };
 
-  legend.labelWrap = function (_) {
-    if (!arguments.length) return labelWrap;
+  legend.labelWrap = function(_) {
+    if (!arguments.length) return labelWrap
     labelWrap = _;
-    return legend;
+    return legend
   };
 
-  legend.orient = function (_) {
-    if (!arguments.length) return orient;
+  legend.orient = function(_) {
+    if (!arguments.length) return orient
     _ = _.toLowerCase();
     if (_ == "horizontal" || _ == "vertical") {
       orient = _;
     }
-    return legend;
+    return legend
   };
 
-  legend.ascending = function (_) {
-    if (!arguments.length) return ascending;
+  legend.ascending = function(_) {
+    if (!arguments.length) return ascending
     ascending = !!_;
-    return legend;
+    return legend
   };
 
-  legend.classPrefix = function (_) {
-    if (!arguments.length) return classPrefix;
+  legend.classPrefix = function(_) {
+    if (!arguments.length) return classPrefix
     classPrefix = _;
-    return legend;
+    return legend
   };
 
-  legend.title = function (_) {
-    if (!arguments.length) return title;
+  legend.title = function(_) {
+    if (!arguments.length) return title
     title = _;
-    return legend;
+    return legend
   };
 
-  legend.titleWidth = function (_) {
-    if (!arguments.length) return titleWidth;
+  legend.titleWidth = function(_) {
+    if (!arguments.length) return titleWidth
     titleWidth = _;
-    return legend;
+    return legend
   };
 
-  legend.on = function () {
-    var value = legendDispatcher.on.apply(legendDispatcher, arguments);
-    return value === legendDispatcher ? legend : value;
+  legend.on = function() {
+    const value = legendDispatcher.on.apply(legendDispatcher, arguments);
+    return value === legendDispatcher ? legend : value
   };
 
-  return legend;
+  return legend
 }
 
 function symbol() {
-  var scale = linear(),
-      shape = "path",
-      shapeWidth = 15,
-      shapeHeight = 15,
-      shapeRadius = 10,
-      shapePadding = 5,
-      cells = [5],
-      cellFilter = void 0,
-      labels = [],
-      classPrefix = "",
-      title = "",
-      locale = helper.d3_defaultLocale,
-      specifier = helper.d3_defaultFormatSpecifier,
-      labelAlign = "middle",
-      labelOffset = 10,
-      labelDelimiter = helper.d3_defaultDelimiter,
-      labelWrap = void 0,
-      orient = "vertical",
-      ascending = false,
-      titleWidth = void 0,
-      legendDispatcher = dispatch("cellover", "cellout", "cellclick");
+  let scale = linear$1(),
+    shape = "path",
+    shapeWidth = 15,
+    shapeHeight = 15,
+    shapeRadius = 10,
+    shapePadding = 5,
+    cells = [5],
+    cellFilter,
+    labels = [],
+    classPrefix = "",
+    title = "",
+    locale = helper.d3_defaultLocale,
+    specifier = helper.d3_defaultFormatSpecifier,
+    labelAlign = "middle",
+    labelOffset = 10,
+    labelDelimiter = helper.d3_defaultDelimiter,
+    labelWrap,
+    orient = "vertical",
+    ascending = false,
+    titleWidth,
+    legendDispatcher = dispatch("cellover", "cellout", "cellclick");
 
   function legend(svg) {
-    var type = helper.d3_calcType(scale, ascending, cells, labels, locale.format(specifier), labelDelimiter),
-        legendG = svg.selectAll("g").data([scale]);
+    const type = helper.d3_calcType(
+        scale,
+        ascending,
+        cells,
+        labels,
+        locale.format(specifier),
+        labelDelimiter
+      ),
+      legendG = svg.selectAll("g").data([scale]);
 
     if (cellFilter) {
       helper.d3_filterCells(type, cellFilter);
     }
 
-    legendG.enter().append("g").attr("class", classPrefix + "legendCells");
+    legendG
+      .enter()
+      .append("g")
+      .attr("class", classPrefix + "legendCells");
 
-    var cell = svg.select("." + classPrefix + "legendCells").selectAll("." + classPrefix + "cell").data(type.data);
-    var cellEnter = cell.enter().append("g").attr("class", classPrefix + "cell");
+    let cell = svg
+      .select("." + classPrefix + "legendCells")
+      .selectAll("." + classPrefix + "cell")
+      .data(type.data);
+    const cellEnter = cell
+      .enter()
+      .append("g")
+      .attr("class", classPrefix + "cell");
     cellEnter.append(shape).attr("class", classPrefix + "swatch");
 
-    var shapes = svg.selectAll("g." + classPrefix + "cell " + shape + "." + classPrefix + "swatch");
+    let shapes = svg.selectAll("g." + classPrefix + "cell " + shape + "." + classPrefix + "swatch");
 
     //add event handlers
     helper.d3_addEvents(cellEnter, legendDispatcher);
 
     //remove old shapes
-    cell.exit().transition().style("opacity", 0).remove();
-    shapes.exit().transition().style("opacity", 0).remove();
+    cell
+      .exit()
+      .transition()
+      .style("opacity", 0)
+      .remove();
+    shapes
+      .exit()
+      .transition()
+      .style("opacity", 0)
+      .remove();
 
     shapes = shapes.merge(shapes);
     // we need to merge the selection, otherwise changes in the legend (e.g. change of orientation) are applied only to the new cells and not the existing ones.
     cell = cellEnter.merge(cell);
 
-    helper.d3_drawShapes(shape, shapes, shapeHeight, shapeWidth, shapeRadius, type.feature);
-
-    helper.d3_addText(svg, cellEnter, type.labels, classPrefix, labelWrap).then(function (text) {
+    helper.d3_drawShapes(
+      shape,
+      shapes,
+      shapeHeight,
+      shapeWidth,
+      shapeRadius,
+      type.feature
+    );
+    
+    helper.d3_addText(
+      svg,
+      cellEnter,
+      type.labels,
+      classPrefix,
+      labelWrap
+    )
+    .then(text => {
 
       // sets placement
-      var textSize = text.nodes().map(function (d) {
-        return d.getBBox();
-      }),
-          shapeSize = shapes.nodes().map(function (d) {
-        return d.getBBox();
-      });
+      const textSize = text.nodes().map(d => d.getBBox()),
+        shapeSize = shapes.nodes().map(d => d.getBBox());
 
-      var maxH = max(shapeSize, function (d) {
-        return d.height;
-      }),
-          maxW = max(shapeSize, function (d) {
-        return d.width;
-      });
+      const maxH = max(shapeSize, d => d.height),
+        maxW = max(shapeSize, d => d.width);
 
-      var cellTrans = void 0,
-          textTrans = void 0,
-          textAlign = labelAlign == "start" ? 0 : labelAlign == "middle" ? 0.5 : 1;
+      let cellTrans,
+        textTrans,
+        textAlign = labelAlign == "start" ? 0 : labelAlign == "middle" ? 0.5 : 1;
 
       //positions cells and text
       if (orient === "vertical") {
-        var cellSize = textSize.map(function (d, i) {
-          return Math.max(maxH, d.height);
-        });
+        const cellSize = textSize.map((d, i) => Math.max(maxH, d.height));
 
-        cellTrans = function cellTrans(d, i) {
-          var height = sum(cellSize.slice(0, i));
-          return "translate(0, " + (height + i * shapePadding) + " )";
+        cellTrans = (d, i) => {
+          const height = sum(cellSize.slice(0, i));
+          return `translate(0, ${height + i * shapePadding} )`
         };
-        textTrans = function textTrans(d, i) {
-          return "translate( " + (maxW + labelOffset) + ",\n                " + (shapeSize[i].y + shapeSize[i].height / 2 + 5) + ")";
+        textTrans = (d, i) => { 
+          if (!shapeSize[i]) {return ''}
+          return `translate( ${maxW + labelOffset},${shapeSize[i].y + shapeSize[i].height / 2 + 5})`
         };
       } else if (orient === "horizontal") {
-        cellTrans = function cellTrans(d, i) {
-          return "translate( " + i * (maxW + shapePadding) + ",0)";
-        };
-        textTrans = function textTrans(d, i) {
-          return "translate( " + (shapeSize[i].width * textAlign + shapeSize[i].x) + ",\n                " + (maxH + labelOffset) + ")";
+        cellTrans = (d, i) => `translate( ${i * (maxW + shapePadding)},0)`;
+        textTrans = (d, i) => {
+          if (!shapeSize[i]) {return ''}
+          return `translate( ${shapeSize[i].width * textAlign + shapeSize[i].x}, ${maxH + labelOffset})`
         };
       }
 
@@ -3373,142 +2536,142 @@ function symbol() {
     });
   }
 
-  legend.scale = function (_) {
-    if (!arguments.length) return scale;
+  legend.scale = function(_) {
+    if (!arguments.length) return scale
     scale = _;
-    return legend;
+    return legend
   };
 
-  legend.cells = function (_) {
-    if (!arguments.length) return cells;
+  legend.cells = function(_) {
+    if (!arguments.length) return cells
     if (_.length > 1 || _ >= 2) {
       cells = _;
     }
-    return legend;
+    return legend
   };
 
-  legend.cellFilter = function (_) {
-    if (!arguments.length) return cellFilter;
+  legend.cellFilter = function(_) {
+    if (!arguments.length) return cellFilter
     cellFilter = _;
-    return legend;
+    return legend
   };
 
-  legend.shapePadding = function (_) {
-    if (!arguments.length) return shapePadding;
+  legend.shapePadding = function(_) {
+    if (!arguments.length) return shapePadding
     shapePadding = +_;
-    return legend;
+    return legend
   };
 
-  legend.labels = function (_) {
-    if (!arguments.length) return labels;
+  legend.labels = function(_) {
+    if (!arguments.length) return labels
     labels = _;
-    return legend;
+    return legend
   };
 
-  legend.labelAlign = function (_) {
-    if (!arguments.length) return labelAlign;
+  legend.labelAlign = function(_) {
+    if (!arguments.length) return labelAlign
     if (_ == "start" || _ == "end" || _ == "middle") {
       labelAlign = _;
     }
-    return legend;
+    return legend
   };
 
-  legend.locale = function (_) {
-    if (!arguments.length) return locale;
+  legend.locale = function(_) {
+    if (!arguments.length) return locale
     locale = formatLocale(_);
-    return legend;
+    return legend
   };
 
-  legend.labelFormat = function (_) {
-    if (!arguments.length) return legend.locale().format(specifier);
+  legend.labelFormat = function(_) {
+    if (!arguments.length) return legend.locale().format(specifier)
     specifier = formatSpecifier(_);
-    return legend;
+    return legend
   };
 
-  legend.labelOffset = function (_) {
-    if (!arguments.length) return labelOffset;
+  legend.labelOffset = function(_) {
+    if (!arguments.length) return labelOffset
     labelOffset = +_;
-    return legend;
+    return legend
   };
 
-  legend.labelDelimiter = function (_) {
-    if (!arguments.length) return labelDelimiter;
+  legend.labelDelimiter = function(_) {
+    if (!arguments.length) return labelDelimiter
     labelDelimiter = _;
-    return legend;
+    return legend
   };
 
-  legend.labelWrap = function (_) {
-    if (!arguments.length) return labelWrap;
+  legend.labelWrap = function(_) {
+    if (!arguments.length) return labelWrap
     labelWrap = _;
-    return legend;
+    return legend
   };
 
-  legend.orient = function (_) {
-    if (!arguments.length) return orient;
+  legend.orient = function(_) {
+    if (!arguments.length) return orient
     _ = _.toLowerCase();
     if (_ == "horizontal" || _ == "vertical") {
       orient = _;
     }
-    return legend;
+    return legend
   };
 
-  legend.ascending = function (_) {
-    if (!arguments.length) return ascending;
+  legend.ascending = function(_) {
+    if (!arguments.length) return ascending
     ascending = !!_;
-    return legend;
+    return legend
   };
 
-  legend.classPrefix = function (_) {
-    if (!arguments.length) return classPrefix;
+  legend.classPrefix = function(_) {
+    if (!arguments.length) return classPrefix
     classPrefix = _;
-    return legend;
+    return legend
   };
 
-  legend.title = function (_) {
-    if (!arguments.length) return title;
+  legend.title = function(_) {
+    if (!arguments.length) return title
     title = _;
-    return legend;
+    return legend
   };
 
-  legend.titleWidth = function (_) {
-    if (!arguments.length) return titleWidth;
+  legend.titleWidth = function(_) {
+    if (!arguments.length) return titleWidth
     titleWidth = _;
-    return legend;
+    return legend
   };
 
-  legend.on = function () {
-    var value = legendDispatcher.on.apply(legendDispatcher, arguments);
-    return value === legendDispatcher ? legend : value;
+  legend.on = function() {
+    const value = legendDispatcher.on.apply(legendDispatcher, arguments);
+    return value === legendDispatcher ? legend : value
   };
 
-  return legend;
+  return legend
 }
 
-var thresholdLabels = function thresholdLabels(_ref) {
-  var i = _ref.i,
-      genLength = _ref.genLength,
-      generatedLabels = _ref.generatedLabels,
-      labelDelimiter = _ref.labelDelimiter;
-
+const thresholdLabels = function({
+  i,
+  genLength,
+  generatedLabels,
+  labelDelimiter
+}) {
   if (i === 0) {
-    var values = generatedLabels[i].split(" " + labelDelimiter + " ");
-    return "Less than " + values[1];
+    const values = generatedLabels[i].split(` ${labelDelimiter} `);
+    return `Less than ${values[1]}`
   } else if (i === genLength - 1) {
-    var _values = generatedLabels[i].split(" " + labelDelimiter + " ");
-    return _values[0] + " or more";
+    const values = generatedLabels[i].split(` ${labelDelimiter} `);
+    return `${values[0]} or more`
   }
-  return generatedLabels[i];
+  return generatedLabels[i]
 };
 
 var legendHelpers = {
-  thresholdLabels: thresholdLabels
+  thresholdLabels
 };
 
 var index = {
   legendColor: color$1,
   legendSize: size,
   legendSymbol: symbol,
-  legendHelpers: legendHelpers
+  legendHelpers
 };
 
 export default index;

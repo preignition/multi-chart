@@ -1,5 +1,5 @@
 import { dedupingMixin } from '@polymer/polymer/lib/utils/mixin.js';
-import { cssTheme } from '@preignition/preignition-mixin';
+// import { cssTheme } from '@preignition/preignition-mixin';
 import { select } from 'd3-selection';
 /**
  * ## MultiHighlight

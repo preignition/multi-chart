@@ -18,7 +18,7 @@ import { SelectMixin, DefaultValueMixin, DoNotSetUndefinedValue } from '@preigni
 import { LitNotify, LitSync } from '@morbidick/lit-element-notify';
 
 const deep = (action, obj, keys, id, key) => {
-  keys = keys.split(".");
+  keys = keys.split('.');
   id = keys.splice(-1, 1);
   for (key in keys) obj = obj[keys[key]] = obj[keys[key]] || {};
   return action(obj, id);

@@ -1,6 +1,6 @@
 import { html, fixture, expect } from '@open-wc/testing';
 
-import '../src/helper/component-index.js';
+import '../src/helper/index.js';
 
 describe('Test multi-accessor', () => {
   it('has an accessor function', async () => {

@@ -90,12 +90,13 @@ render() {
     this.dispatchEvent(new CustomEvent('multi-verse-added', { detail: this.group, bubbles: true, composed: true }));
     super.firstUpdated(props);
   }
-  disconnectedCallback() {
-    // TODO(cg): replace multi-removed -> multi-verse-remover
-    // XXX(cg): this event will never be caught! unregister from host instead like for drawablse
-    this.dispatchEvent(new CustomEvent('multi-verse-removed', { detail: this.group, bubbles: true, composed: true }));
-    super.disconnectedCallback();
-  }
+  
+  // disconnectedCallback() {
+  //   // TODO(cg): replace multi-removed -> multi-verse-remover
+  //   // XXX(cg): this event will never be caught! unregister from host instead like for drawablse
+  //   this.dispatchEvent(new CustomEvent('multi-verse-removed', { detail: this.group, bubbles: true, composed: true }));
+  //   super.disconnectedCallback();
+  // }
 
   /* 
    * `dataChanges` relay dataChanged to registeredItems

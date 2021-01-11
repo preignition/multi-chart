@@ -12,7 +12,7 @@
   </style>
 </head>
 
-<script src="/node_modules/@webcomponents/webcomponentsjs/webcomponents-loader.js"></script>
+<!-- <script src="/node_modules/@webcomponents/webcomponentsjs/webcomponents-loader.js"></script> -->
 
 <!-- Import required Polymer components  -->
 <!-- <link rel="import" href="/bower_components/polymer/polymer.html">
@@ -24,42 +24,42 @@
 <!-- import other required components -->
 <script type="importmap">
   {
-      "imports": {
-        "@morbidick/lit-element-notify": "/web_modules/@morbidick/lit-element-notify.js",
-        "@preignition/preignition-mixin": "/web_modules/@preignition/preignition-mixin.js",
-        "@preignition/preignition-widget": "/web_modules/@preignition/preignition-widget.js",
-        "@preignition/preignition-demo": "/web_modules/@preignition/preignition-demo.js",
-        "@polymer/": "/web_modules/@polymer/",
-        "@vaadin/router": "/web_modules/@vaadin/router.js",
-        "@vaadin/vaadin-tabs": "/web_modules/@vaadin/vaadin-tabs.js",
-        "@vaadin/vaadin-tabs/": "/web_modules/@vaadin/vaadin-tabs/",
-        "pwa-helpers/media-query.js": "/web_modules/pwa-helpers/media-query.js",
-        "marked": "/web_modules/marked.js",
-        "tslib": "/web_modules/tslib.js",
-        "lit-element": "/web_modules/lit-element.js",
-        "lit-html": "/web_modules/lit-html.js",
-        "lit-html/": "/web_modules/lit-html/",
-        "d3-array": "/web_modules/d3-array.js",
-        "d3-axis": "/web_modules/d3-axis.js",
-        "d3-brush": "/web_modules/d3-brush.js",
-        "d3-fetch": "/web_modules/d3-fetch.js",
-        "d3-interpolate": "/web_modules/d3-interpolate.js",
-        "d3-selection": "/web_modules/d3-selection.js",
-        "d3-selection-multi": "/web_modules/d3-selection-multi.js",
-        "d3-shape": "/web_modules/d3-shape.js",
-        "d3-transition": "/web_modules/d3-transition.js",
-        "d3-format": "/web_modules/d3-format.js",
-        "d3-time-format": "/web_modules/d3-time-format.js",
-        "d3-random": "/web_modules/d3-random.js",
-        "d3-scale": "/web_modules/d3-scale.js",
-        "d3-time": "/web_modules/d3-time.js",
-        "d3-scale-chromatic": "/web_modules/d3-scale-chromatic.js",
-        "d3-svg-legend": "/web_modules/d3-svg-legend.js",
-        "d3-zoom": "/web_modules/d3-zoom.js",
-        "api-viewer-element": "/web_modules/api-viewer-element.js"
-    }
+    "imports": {
+      "@morbidick/lit-element-notify": "/web_modules/@morbidick/lit-element-notify.js",
+      "@preignition/preignition-mixin": "/web_modules/@preignition/preignition-mixin.js",
+      "@preignition/preignition-widget": "/web_modules/@preignition/preignition-widget.js",
+      "@preignition/preignition-demo": "/web_modules/@preignition/preignition-demo.js",
+      "@polymer/": "/web_modules/@polymer/",
+      "@vaadin/router": "/web_modules/@vaadin/router.js",
+      "@vaadin/vaadin-tabs": "/web_modules/@vaadin/vaadin-tabs.js",
+      "@vaadin/vaadin-tabs/": "/web_modules/@vaadin/vaadin-tabs/",
+      "pwa-helpers/media-query.js": "/web_modules/pwa-helpers/media-query.js",
+      "marked": "/web_modules/marked.js",
+      "tslib": "/web_modules/tslib.js",
+      "lit-element": "/web_modules/lit-element.js",
+      "lit-html": "/web_modules/lit-html.js",
+      "lit-html/": "/web_modules/lit-html/",
+      "d3-array": "/web_modules/d3-array.js",
+      "d3-axis": "/web_modules/d3-axis.js",
+      "d3-brush": "/web_modules/d3-brush.js",
+      "d3-fetch": "/web_modules/d3-fetch.js",
+      "d3-interpolate": "/web_modules/d3-interpolate.js",
+      "d3-selection": "/web_modules/d3-selection.js",
+      "d3-selection-multi": "/web_modules/d3-selection-multi.js",
+      "d3-shape": "/web_modules/d3-shape.js",
+      "d3-transition": "/web_modules/d3-transition.js",
+      "d3-format": "/web_modules/d3-format.js",
+      "d3-time-format": "/web_modules/d3-time-format.js",
+      "d3-random": "/web_modules/d3-random.js",
+      "d3-scale": "/web_modules/d3-scale.js",
+      "d3-time": "/web_modules/d3-time.js",
+      "d3-scale-chromatic": "/web_modules/d3-scale-chromatic.js",
+      "d3-svg-legend": "/web_modules/d3-svg-legend.js",
+      "d3-zoom": "/web_modules/d3-zoom.js",
+      "api-viewer-element": "/web_modules/api-viewer-element.js"
   }
-  </script>
+}
+</script>
 
 <style>
   body {
@@ -87,6 +87,8 @@
     --secondary-text-color: #727272;
     --disabled-text-color: #646464;
     --divider-color: #b6b6b6;
+
+    --font-weight-semi-bold: 500;
   }
 </style>
 
@@ -98,6 +100,7 @@
     import '/index.elements.js';
     import '/demo/multi-chart-demo.js';
     
+    // console.info('DEMO')
 
     render(
       html`

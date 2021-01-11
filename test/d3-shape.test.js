@@ -1,6 +1,6 @@
 import { html, fixture, expect } from '@open-wc/testing';
 
-import '../src/d3-wrapper/component-index.js';
+import '../src/d3-wrapper/index.js';
 
 import { d1 } from './data.js';
 

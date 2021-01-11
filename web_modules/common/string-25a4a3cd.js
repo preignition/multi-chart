@@ -1,4 +1,4 @@
-function reinterpolate(a, b) {
+function interpolateNumber(a, b) {
   return a = +a, b = +b, function(t) {
     return a * (1 - t) + b * t;
   };
@@ -44,7 +44,7 @@ function interpolateString(a, b) {
       else s[++i] = bm;
     } else { // interpolate non-matching numbers
       s[++i] = null;
-      q.push({i: i, x: reinterpolate(am, bm)});
+      q.push({i: i, x: interpolateNumber(am, bm)});
     }
     bi = reB.lastIndex;
   }
@@ -67,4 +67,4 @@ function interpolateString(a, b) {
         });
 }
 
-export { interpolateString as i, reinterpolate as r };
+export { interpolateString as a, interpolateNumber as i };

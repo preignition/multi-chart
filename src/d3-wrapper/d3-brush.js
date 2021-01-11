@@ -52,7 +52,7 @@ class D3Brush extends LitElement {
         this.brush[key](this[key]);
       }
     });
-    if(shallNotify) {
+    if (shallNotify) {
       this.dispatchEvent(new CustomEvent(`brush-changed`, { detail: { value: this.brush, type: this.type }, bubbles: true, composed: true }));
        delete this.__init;
     }

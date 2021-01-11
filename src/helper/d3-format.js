@@ -1,8 +1,8 @@
 import { LitElement, html } from 'lit-element';
 import { DefaultValueMixin, DoNotSetUndefinedValue } from '@preignition/preignition-mixin';
 import { default as FormatMixin } from './d3-format-mixin.js';
-import * as format from 'd3-format';
-import * as time from 'd3-time-format';
+// import * as format from 'd3-format';
+// import * as time from 'd3-time-format';
 
 /**
  * ## d3-format

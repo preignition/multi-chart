@@ -115,7 +115,7 @@ Registerable(
   _debouceDataChanged() {
     this._debounceDataChanged = Debouncer.debounce(
       this._debounceDataChanged, // initially undefined
-      timeOut.after(10),
+      timeOut.after(40),
       () => {
         this._processDataChanged();
       });
@@ -178,8 +178,12 @@ Registerable(
       const valueScale = this.getHostValue(`${this.valuePosition}Scale`);
       const keyScale = this.getHostValue(`${this.keyPosition}Scale`);
       const isContinuous = keyScale.category === 'continuous';
+      
+      if (this.ordinalScaleInterval) {
+        keyScale.interval = this.ordinalScaleInterval;
+      }
 
-      this.setHostDomain(this.keyPosition, this.getOrdinalDomain(this.data, this.keyAccessor, this.accessor, isContinuous));
+      this.setHostDomain(this.keyPosition, this.adjustOrdinalDomain(this.getOrdinalDomain(this.data, this.keyAccessor, this.accessor, isContinuous)));
       this.setHostDomain(this.valuePosition, [0, this.stacked ? this._stackedMax : this._max]);
 
       this.dispatchEvent(new CustomEvent('data-group-rescaled', {
@@ -300,6 +304,11 @@ Registerable(
     const position = this.valuePosition;
     domain = domain || host[`${position}Domain`];
 
+    if (!domain) {
+      console.warn('domain not yet instantiated')
+      return [];
+    }
+
     const { min, max } = this;
     if (min || min === 0) {
       domain[0] = min;
@@ -341,6 +350,8 @@ Registerable(
   }
 
   _callDataChanged() {
+    // XXX(cg): we need to apply dataChanged to registeredItems of the same group 
+    // as this multi-data-group.
     if (this.shallNotify(this._multiData)) {
       this.callRegistered('dataChanged', this._multiData, this.transition);
     }

@@ -1,13 +1,12 @@
-import './common/rgb-784c3fe6.js';
-import { i as interpolateValue } from './common/value-dabe3913.js';
-import { r as reinterpolate } from './common/string-31fe99e6.js';
-import { i as interpolateRound } from './common/round-d8c44152.js';
-import { p as piecewise } from './common/piecewise-a8ee545c.js';
-import { s as sequence, b as bisectRight, t as tickStep, h as ticks, i as tickIncrement, a as ascending, q as quantile$1, d as bisector } from './common/quantile-a7047d6c.js';
-import { c as formatSpecifier, p as precisionFixed, g as precisionRound, e as precisionPrefix, a as formatPrefix, f as format } from './common/precisionRound-0953ea20.js';
-import { d as day, s as sunday, y as year, u as utcDay, a as utcSunday, b as utcYear } from './common/utcYear-07e3c0ef.js';
-import { m as millisecond, s as second, a as minute, h as hour, b as month, u as utcMinute, c as utcHour, d as utcMonth } from './common/utcMonth-ba113139.js';
-import { t as timeFormat, u as utcFormat } from './common/defaultLocale-723337ea.js';
+import { s as sequence, b as bisectRight, j as tickStep, t as ticks, i as tickIncrement, a as ascending, q as quantile$1, e as bisector } from './common/range-7ed04597.js';
+import './common/rgb-33c8dfa4.js';
+import { i as interpolate } from './common/value-742aec79.js';
+import { i as interpolateNumber } from './common/string-25a4a3cd.js';
+import { i as interpolateRound, p as piecewise } from './common/piecewise-d26459b5.js';
+import { c as formatSpecifier, p as precisionFixed, g as precisionRound, e as precisionPrefix, a as formatPrefix, f as format } from './common/precisionRound-bde32877.js';
+import { d as day, s as sunday, y as year, u as utcDay, a as utcSunday, b as utcYear } from './common/utcYear-e8da0d00.js';
+import { m as millisecond, s as second, a as minute, h as hour, b as month, u as utcMinute, c as utcHour, d as utcMonth } from './common/utcMonth-602e59f7.js';
+import { t as timeFormat, u as utcFormat } from './common/defaultLocale-4a49c9cd.js';
 
 function initRange(domain, range) {
   switch (arguments.length) {
@@ -251,7 +250,7 @@ function copy(source, target) {
 function transformer() {
   var domain = unit,
       range = unit,
-      interpolate = interpolateValue,
+      interpolate$1 = interpolate,
       transform,
       untransform,
       unknown,
@@ -269,11 +268,11 @@ function transformer() {
   }
 
   function scale(x) {
-    return isNaN(x = +x) ? unknown : (output || (output = piecewise(domain.map(transform), range, interpolate)))(transform(clamp(x)));
+    return isNaN(x = +x) ? unknown : (output || (output = piecewise(domain.map(transform), range, interpolate$1)))(transform(clamp(x)));
   }
 
   scale.invert = function(y) {
-    return clamp(untransform((input || (input = piecewise(range, domain.map(transform), reinterpolate)))(y)));
+    return clamp(untransform((input || (input = piecewise(range, domain.map(transform), interpolateNumber)))(y)));
   };
 
   scale.domain = function(_) {
@@ -285,7 +284,7 @@ function transformer() {
   };
 
   scale.rangeRound = function(_) {
-    return range = Array.from(_), interpolate = interpolateRound, rescale();
+    return range = Array.from(_), interpolate$1 = interpolateRound, rescale();
   };
 
   scale.clamp = function(_) {
@@ -293,7 +292,7 @@ function transformer() {
   };
 
   scale.interpolate = function(_) {
-    return arguments.length ? (interpolate = _, rescale()) : interpolate;
+    return arguments.length ? (interpolate$1 = _, rescale()) : interpolate$1;
   };
 
   scale.unknown = function(_) {
@@ -353,38 +352,36 @@ function linearish(scale) {
   scale.nice = function(count) {
     if (count == null) count = 10;
 
-    var d = domain(),
-        i0 = 0,
-        i1 = d.length - 1,
-        start = d[i0],
-        stop = d[i1],
-        step;
+    var d = domain();
+    var i0 = 0;
+    var i1 = d.length - 1;
+    var start = d[i0];
+    var stop = d[i1];
+    var prestep;
+    var step;
+    var maxIter = 10;
 
     if (stop < start) {
       step = start, start = stop, stop = step;
       step = i0, i0 = i1, i1 = step;
     }
-
-    step = tickIncrement(start, stop, count);
-
-    if (step > 0) {
-      start = Math.floor(start / step) * step;
-      stop = Math.ceil(stop / step) * step;
+    
+    while (maxIter-- > 0) {
       step = tickIncrement(start, stop, count);
-    } else if (step < 0) {
-      start = Math.ceil(start * step) / step;
-      stop = Math.floor(stop * step) / step;
-      step = tickIncrement(start, stop, count);
-    }
-
-    if (step > 0) {
-      d[i0] = Math.floor(start / step) * step;
-      d[i1] = Math.ceil(stop / step) * step;
-      domain(d);
-    } else if (step < 0) {
-      d[i0] = Math.ceil(start * step) / step;
-      d[i1] = Math.floor(stop * step) / step;
-      domain(d);
+      if (step === prestep) {
+        d[i0] = start;
+        d[i1] = stop;
+        return domain(d);
+      } else if (step > 0) {
+        start = Math.floor(start / step) * step;
+        stop = Math.ceil(stop / step) * step;
+      } else if (step < 0) {
+        start = Math.ceil(start * step) / step;
+        stop = Math.floor(stop * step) / step;
+      } else {
+        break;
+      }
+      prestep = step;
     }
 
     return scale;
@@ -1042,7 +1039,7 @@ function transformer$1() {
     };
   }
 
-  scale.range = range(interpolateValue);
+  scale.range = range(interpolate);
 
   scale.rangeRound = range(interpolateRound);
 
@@ -1181,7 +1178,7 @@ function transformer$2() {
     };
   }
 
-  scale.range = range(interpolateValue);
+  scale.range = range(interpolate);
 
   scale.rangeRound = range(interpolateRound);
 

@@ -1,5 +1,5 @@
-import { a as constant, c as color, i as interpolateRgb } from './rgb-784c3fe6.js';
-import { r as reinterpolate, i as interpolateString } from './string-31fe99e6.js';
+import { a as constant, c as color, i as interpolateRgb } from './rgb-33c8dfa4.js';
+import { i as interpolateNumber, a as interpolateString } from './string-25a4a3cd.js';
 
 function numberArray(a, b) {
   if (!b) b = [];
@@ -27,7 +27,7 @@ function genericArray(a, b) {
       c = new Array(nb),
       i;
 
-  for (i = 0; i < na; ++i) x[i] = interpolateValue(a[i], b[i]);
+  for (i = 0; i < na; ++i) x[i] = interpolate(a[i], b[i]);
   for (; i < nb; ++i) c[i] = b[i];
 
   return function(t) {
@@ -53,7 +53,7 @@ function object(a, b) {
 
   for (k in b) {
     if (k in a) {
-      i[k] = interpolateValue(a[k], b[k]);
+      i[k] = interpolate(a[k], b[k]);
     } else {
       c[k] = b[k];
     }
@@ -65,17 +65,17 @@ function object(a, b) {
   };
 }
 
-function interpolateValue(a, b) {
+function interpolate(a, b) {
   var t = typeof b, c;
   return b == null || t === "boolean" ? constant(b)
-      : (t === "number" ? reinterpolate
+      : (t === "number" ? interpolateNumber
       : t === "string" ? ((c = color(b)) ? (b = c, interpolateRgb) : interpolateString)
       : b instanceof color ? interpolateRgb
       : b instanceof Date ? date
       : isNumberArray(b) ? numberArray
       : Array.isArray(b) ? genericArray
       : typeof b.valueOf !== "function" && typeof b.toString !== "function" || isNaN(b) ? object
-      : reinterpolate)(a, b);
+      : interpolateNumber)(a, b);
 }
 
-export { array as a, date as d, interpolateValue as i, numberArray as n, object as o };
+export { array as a, date as d, interpolate as i, numberArray as n, object as o };

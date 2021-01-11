@@ -1,7 +1,7 @@
-import { n as namespace, m as matcher, s as selector, a as selectorAll, b as selection, c as styleValue } from './index-7aa57c77.js';
-import { c as color, i as interpolateRgb } from './rgb-784c3fe6.js';
-import { r as reinterpolate, i as interpolateString } from './string-31fe99e6.js';
-import { i as interpolateTransformSvg, a as interpolateTransformCss } from './index-e6098f30.js';
+import { n as namespace, m as matcher, s as selector, a as selectorAll, b as selection, d as styleValue } from './index-eed2b97f.js';
+import { c as color, i as interpolateRgb } from './rgb-3745d8f7.js';
+import { i as interpolateNumber, a as interpolateString } from './string-53caa13d.js';
+import { i as interpolateTransformSvg, a as interpolateTransformCss } from './index-c4952bf3.js';
 
 var noop = {value: function() {}};
 
@@ -469,7 +469,7 @@ function tweenValue(transition, name, value) {
 
 function interpolate(a, b) {
   var c;
-  return (typeof b === "number" ? reinterpolate
+  return (typeof b === "number" ? interpolateNumber
       : b instanceof color ? interpolateRgb
       : (c = color(b)) ? (b = c, interpolateRgb)
       : interpolateString)(a, b);
