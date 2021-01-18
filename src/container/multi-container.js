@@ -123,6 +123,15 @@ MultiData(
           ></multi-data-group>
         <slot></slot>
       </div>
+      ${this.renderSVG()}
+      <slot name="footer"></slot>
+      <slot name="svg"></slot>
+      ${this.pattern ? pattern : ''}
+    `;
+  }
+
+  renderSVG() {
+    return html`
       <svg id="svg" part="svg">
         <g transform="translate(${this.leftMargin || 0}, ${this.topMargin || 0})">
           <g id="slot-background" part="background">
@@ -137,11 +146,7 @@ MultiData(
           </g>
         </g>
         <g id="slot-legend" part="legend"></g>
-      </svg>
-      <slot name="footer"></slot>
-      <slot name="svg"></slot>
-      ${this.pattern ? pattern : ''}
-    `;
+      </svg>`;
   }
 
   /**
@@ -178,6 +183,8 @@ MultiData(
       rightMargin: { type: Number, attribute: 'right-margin' },
       bottomMargin: { type: Number, attribute: 'bottom-margin' },
       leftMargin: { type: Number, attribute: 'left-margin' },
+
+
 
       /*
        * `width`  of the chart area. Equals actual width of component - margins
