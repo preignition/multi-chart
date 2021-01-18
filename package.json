@@ -25,7 +25,6 @@
     "index.elements.js",
     "index.class.js"
   ],
-  "type": "module",
   "main": "index.js",
   "module": "index.js",
   "dependencies": {
@@ -34,7 +33,6 @@
     "@morbidick/lit-element-notify": "^1.1.1",
     "@polymer/polymer": "^3.4.1",
     "@preignition/preignition-mixin": "link:../preignition-mixin",
-    "@preignition/preignition-widget": "link:../preignition-widget",
     "@preignition/preignition-util": "link:../preignition-util",
     "@ranfdev/deepobj": "^1.0.2",
     "d3-array": "^2.7.1",
@@ -106,7 +104,6 @@
       "@polymer/polymer/lib/utils/async.js",
       "@polymer/polymer/lib/utils/debounce.js",
       "@preignition/preignition-mixin",
-      "@preignition/preignition-widget",
       "@preignition/preignition-demo",
       "@preignition/preignition-util",
       "@vaadin/router",
@@ -163,7 +160,6 @@
       "@polymer/polymer/lib/utils/async.js",
       "@polymer/polymer/lib/utils/debounce.js",
       "@preignition/preignition-mixin",
-      "@preignition/preignition-widget",
       "@preignition/preignition-demo",
       "@preignition/preignition-util",
       "@vaadin/router",
