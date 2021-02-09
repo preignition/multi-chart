@@ -10,17 +10,6 @@ const ScaleRender = superClass => {
 
   return class extends superClass {
 
-    // static get properties() {
-    //   return {
-
-    //     ...super.properties,
-
-    //     radius: {
-    //       type: Number,
-    //     }
-    //   };
-    // }
-
     getScaleRender(type, axis) {
       return html `
      <d3-scale 
@@ -35,13 +24,6 @@ const ScaleRender = superClass => {
 
         @scale-changed="${e => {this[`${type}Scale`] = e.detail.value; this.refresh();}}"></d3-scale>`;
     }
-
-    // get radius() {
-    //   if (this.width && this.height) {
-    //     return Math.min(this.width, this.height) / 2 * this.scaleFactor;
-    //   }
-    //   return 0;
-    // }
 
     getRange(type) {
       if (type) {

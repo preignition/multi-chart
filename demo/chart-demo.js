@@ -59,7 +59,7 @@ class ChartDemo extends DemoBase {
       </div>
       <fancy-accordion >
           
-          <expansion-panel opened>
+          <expansion-panel>
               <div slot="header">multi-chart-pie</div>
               <vaadin-tabs selected="${this.tabs.indexOf(this.activeTab)}" theme="centered">
                 <vaadin-tab @click=${() => this.activeTab = 'intro'}>Intro</vaadin-tab>
@@ -119,7 +119,7 @@ class ChartDemo extends DemoBase {
               <demo-api-viewer selected="multi-chart-bubble"  .src="${this.src}">` : ''}
           </expansion-panel>
 
-          <expansion-panel >
+          <expansion-panel opened>
               <div slot="header">multi-chart-bar</div>
               <vaadin-tabs selected="${this.tabs.indexOf(this.activeTab)}" theme="centered">
                 <vaadin-tab @click=${() => this.activeTab = 'intro'}>Intro</vaadin-tab>

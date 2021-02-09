@@ -18,7 +18,16 @@ const MultiDrawableSerie = dedupingMixin( superClass => {
         selectSerie: {
           type: Boolean,
           attribute: 'select-serie'
-        }
+        },
+
+        /*
+         * `colorSerie` if true, all elements of the serie will have the same color.
+         * Otherwise, will color serie elements individually
+         */
+        // colorSerie: {
+        //   type: Boolean,
+        //   attribute: 'color-serie'
+        // }
       };
     }
 
@@ -40,14 +49,14 @@ const MultiDrawableSerie = dedupingMixin( superClass => {
      * `drawSerieGroup` builds one level of data  binding -> remove superfluous -> append new -> merge -> return chart
      * We can hence call this function for first grouping all keys and then build individual shapes (see multi-drawable-bubble)
      */
-    drawSerieGroup(data, shapeName, shapeClass, chart, transition) {
+    drawSerieGroup(data, shapeName, shapeClass, chart, transition, keyFn) {
       const isTransition = chart && chart instanceof Transition;
       const cls = chart ? 'shape' : 'shape-group';
       chart = chart ?
         isTransition ?
-        chart.selection().selectAll(`${shapeName}.${shapeClass}`).data(d => d.data || d) :
-        chart.selectAll(`${shapeName}.${shapeClass}`).data(d => d.data || d) :
-        select(this.targetElement).selectAll(`${shapeName}.${shapeClass}`).data(data);
+        chart.selection().selectAll(`${shapeName}.${shapeClass}`).data(d => d.data || d, keyFn) :
+        chart.selectAll(`${shapeName}.${shapeClass}`).data(d => d.data || d, keyFn) :
+        select(this.targetElement).selectAll(`${shapeName}.${shapeClass}`).data(data, keyFn);
 
       chart.exit().remove();
 
@@ -59,7 +68,6 @@ const MultiDrawableSerie = dedupingMixin( superClass => {
         chart = this.applyTransition(chart, transition);
       }
       return chart;
-
     }
 
     /*
@@ -71,7 +79,8 @@ const MultiDrawableSerie = dedupingMixin( superClass => {
         return;
       }
 
-      const chart = this.drawSerieGroup(data, this.shapeName, this.shapeClass, null, this.transition);
+      const keyFn = function(d) { return d ? d.__key__ : this.getAttribute('key');};
+      const chart = this.drawSerieGroup(data, this.shapeName, this.shapeClass, null, this.transition, keyFn);
 
       // Note(cg): individual serie members (e.g. draw individual line or bar) are handled by subclasses .
       return this.drawSerieElement(chart, data);

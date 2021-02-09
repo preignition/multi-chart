@@ -16,8 +16,10 @@ class MultiDrawableRadar extends
     static get hostStyles() {
       return css`
         
-        #drawable.line .shape {
+        #drawable.line .shape:not([fill]) {
           fill: var(--drawable-line-fill);
+        }
+        #drawable.line .shape:not([stroke]) {
           stroke: var(--drawable-line-stroke);
         }
       `;
@@ -99,7 +101,8 @@ class MultiDrawableRadar extends
 
     const {angle, radius } = this;
     if (!this.hideCircles) {
-      const circles = this.drawSerieGroup(data, 'circle', `${this.shapeClass}-circle`, chart, this.transition);
+      const keyFn = function(d) { return d ? d.key : this.getAttribute('key');};
+      const circles = this.drawSerieGroup(data, 'circle', `${this.shapeClass}-circle`, chart, this.transition, keyFn);
       circles
         .attr('cx', function(d, i) {
           return radius(d) * Math.cos(angle(d) - Math.PI / 2);

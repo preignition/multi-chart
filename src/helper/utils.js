@@ -51,12 +51,12 @@ const shapeProperties = (keys, props = {}) => {
 };
 
 // Note(cg): from https://bl.ocks.org/mbostock/7555321.
-const wrap = (text, width) => {
+const wrap = (text, width, lineHeight = 1.1) => {
   text.each(function() {
 
     const text = select(this),
       words = text.text().split(/\s+/).reverse(),
-      lineHeight = 1.1, // ems
+      // lineHeight = 1.1, // ems
       y = text.attr('y'),
       x = text.attr('x'),
       dy = parseFloat(text.attr('dy'));

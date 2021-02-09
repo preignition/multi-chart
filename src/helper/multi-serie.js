@@ -8,15 +8,15 @@ Registerable(
     DoNotSetUndefinedValue(
       LitElement))) {
 
-  /* 
-   * `registerEventDispatch`  the name of the event to be fired when connected. 
-   * A container with multi-register-mixin applied 
+  /*
+   * `registerEventDispatch`  the name of the event to be fired when connected.
+   * A container with multi-register-mixin applied
    * will listen to this event to register the component.
    *
    * @override Registerable
    */
   get registerEventDispatch() {
-    return 'multi-serie-register'
+    return 'multi-serie-register';
   }
 
   render() {
@@ -28,7 +28,7 @@ Registerable(
   getPathRender() {
     return html `
        <multi-accessor 
-        @accessor-changed="${ e => {this.accessor = e.detail.value}}"
+        @accessor-changed="${e => this.accessor = e.detail.value}"
         path="${this.path}" 
         ></multi-accessor>
     `;
@@ -36,7 +36,7 @@ Registerable(
   getKeyPathRender() {
     return html `
        <multi-accessor 
-        @accessor-changed="${ e => this.keyAccessor = e.detail.value}"
+        @accessor-changed="${e => this.keyAccessor = e.detail.value}"
         path="${this.keyPath}" 
         ></multi-accessor>
     `;
@@ -49,13 +49,13 @@ Registerable(
 
       ...super.properties,
 
-      /* 
+      /*
        * `key` the key used for this data serie
        */
       key: { type: String },
 
 
-      /* 
+      /*
        * `label` a label describing the serie
        */
       label: { type: String },
@@ -64,14 +64,14 @@ Registerable(
        * `path` the path from which the value accessor function is built
        * For instance `+value.count` will create `d => {return +d.value.count}` function.
        */
-      path: { type: String , reflect: true},
+      path: { type: String, reflect: true },
 
       subPath: { type: Boolean },
 
-      /* 
-       * `accessor` the accessor function for transforming data. 
+      /*
+       * `accessor` the accessor function for transforming data.
        */
-      accessor: { 
+      accessor: {
         type: Function
       },
 
@@ -84,8 +84,8 @@ Registerable(
         attribute: 'key-path'
       },
 
-      /* 
-       * `keyAccessor` the accessor function for accessiong key. 
+      /*
+       * `keyAccessor` the accessor function for accessiong key.
        * Data will be reshaped as  `[{key: key, label: label, value: data.map(d=>accessor(d))}]
        */
       keyAccessor: {
@@ -93,12 +93,10 @@ Registerable(
         attribute: 'key-accessor'
       },
 
-      /* 
-       * `group` name of the group against which this serie is registeredthe serie
+      /*
+       * `group` name of the group against which this serie is registered
        */
       group: { type: String }
-
-
     };
   }
 }

@@ -31,11 +31,12 @@ class MultiDrawableBubble extends
 
   static get hostStyles() {
     return css `
-      #drawable.bubble .shape {
+      #drawable.bubble .shape:not([fill]) {
         fill: var(--drawable-bubble-fill);
+      }
+      #drawable.bubble .shape:not([stroke]) {
         stroke: var(--drawable-bubble-stroke);
       }
-      
     `;
   }
   render() {
@@ -79,7 +80,8 @@ class MultiDrawableBubble extends
       .attr('class', `${this.shapeClass} selectable`)
       .attr('key', d => d.key);
 
-    chart = this.drawSerieGroup(data, 'circle', this.shapeClass, chart, this.transition);
+    const keyFn = function(d) { return d ? d.key : this.getAttribute('key');};
+    chart = this.drawSerieGroup(data, 'circle', this.shapeClass, chart, this.transition, keyFn);
 
     return chart.attr('cx', this.x || 0)
       .attr('cy', this.y || 0)

@@ -1,11 +1,11 @@
 import { LitElement } from 'lit-element';
 
-import { shapeProperties  } from '../helper/utils.js';
+import { shapeProperties } from '../helper/utils.js';
 import * as brush from 'd3-brush';
 
 const instance = brush.brush();
 const keys = Object.keys(instance || {});
-const props = shapeProperties(keys)
+const props = shapeProperties(keys);
 
 class D3Brush extends LitElement {
 

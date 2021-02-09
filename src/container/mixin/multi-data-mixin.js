@@ -56,7 +56,7 @@
 
       disconnectedCallback() {
         this._wasDisconnected = true;
-        super.disconnectedCallback()
+        super.disconnectedCallback();
       }
 
       _onMultiSerieGroupRegister(e) {

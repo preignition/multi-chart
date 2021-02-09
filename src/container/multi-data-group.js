@@ -1,6 +1,6 @@
 import { timeOut } from '@polymer/polymer/lib/utils/async.js';
 import { Debouncer } from '@polymer/polymer/lib/utils/debounce.js';
-import { extent, range, max, min } from 'd3-array';
+import { extent, range, max, min, sort } from 'd3-array';
 import * as scale from 'd3-scale';
 import { LitElement, html } from 'lit-element';
 import * as accessor from '../helper/accessor.js';
@@ -91,6 +91,21 @@ Registerable(
         attribute: 'process-type'
       },
 
+      /*
+       * `sort` [sort](https://github.com/d3/d3-array/blob/v2.9.1/README.md#sort) function invoked while 
+       * processing data
+       */
+      sort: {
+        type: Function,
+      },
+      /*
+       * `preserveSortOrder` set true to preserve sort order in domain once the first ordinal domain
+       * has been computed. This is useful with dynamic data, to avoid that chart items are permuted.
+       */
+      preserveSortOrder: {
+        attribute: 'preserve-sort-order',
+        type: Boolean,
+      }
     };
   }
   
@@ -100,7 +115,7 @@ Registerable(
   // }
 
   updated(props) {
-    if (props.has('data') || props.has('series')) {
+    if (props.has('data') || props.has('series') || props.has('sort')) {
       this._debouceDataChanged();
     }
     if (props.has('min') || props.has('max')) {
@@ -133,31 +148,36 @@ Registerable(
     if (Array.isArray(this.data) && this.data.length) {
 
       let multiData;
+      let sortedData = this.data;
+
+      // Note(cg): this mutates data.
+      if (this.sort) {
+        sortedData = sort(this.data, this.sort);
+      }
 
       if (this.processType) {
-        multiData = this._processByType(this.processType, this.data);
+        multiData = this._processByType(this.processType, sortedData);
       } else if (this.series && this.series.length) {
-        multiData = this._processSeries();
+        multiData = this._processSeries(sortedData);
       }
 
       // Note(cg): processByType and processSeries returns a new array
       // we need to make sure charts will respond to mutation when
       // no series and no processType (e.g. pie).
-      this._multiData = multiData || [...this.data];
+      this._multiData = multiData || [...sortedData];
       this._callDataChanged(this._multiData);
     }
 
   }
 
-  _processByType(processType, data) {
+  _processByType(processType, sortedData) {
 
     if (processType === 'stack') {
-
       const keyAccessor = this.keyAccessor;
 
         // Note(cg): series and shaper stack data.
         let tmpMax = -Infinity;
-        const _multiData = this.shaper(data).map((data, i) => {
+        const _multiData = this.shaper(sortedData).map((data, i) => {
           const ret = data.map(([y0, y1], ii) => {
             if ((y1 - y0) > tmpMax) {
               tmpMax = (y1 - y0);
@@ -174,7 +194,6 @@ Registerable(
         this._max = this.max ? this.max : tmpMax;
         this._stackedMax = this.max ? this.max : max(_multiData[_multiData.length - 1], d => d[1]);
 
-      // this.setHostDomain(this.keyPosition, this.getOrdinalDomain(this.data, keyAccessor, serie.accessor, serie.continuous););
       const valueScale = this.getHostValue(`${this.valuePosition}Scale`);
       const keyScale = this.getHostValue(`${this.keyPosition}Scale`);
       const isContinuous = keyScale.category === 'continuous';
@@ -183,7 +202,13 @@ Registerable(
         keyScale.interval = this.ordinalScaleInterval;
       }
 
-      this.setHostDomain(this.keyPosition, this.adjustOrdinalDomain(this.getOrdinalDomain(this.data, this.keyAccessor, this.accessor, isContinuous)));
+      // Note(cg): we cache ordinaldomain if sort order is preserved.
+      const ordinalDomain = this.preserveSortOrder && this._ordinalDomain
+        ? this._ordinalDomain
+        : this.getOrdinalDomain(sortedData, this.keyAccessor, this.accessor, isContinuous);
+      this._ordinalDomain = ordinalDomain;
+
+      this.setHostDomain(this.keyPosition, this.adjustOrdinalDomain(ordinalDomain));
       this.setHostDomain(this.valuePosition, [0, this.stacked ? this._stackedMax : this._max]);
 
       this.dispatchEvent(new CustomEvent('data-group-rescaled', {
@@ -212,7 +237,7 @@ Registerable(
       let min = Infinity;
       let max = -Infinity;
 
-      this.data.forEach(d => {
+      sortedData.forEach(d => {
         const value = valueAccessor(d);
         map.set(keyAccessor(d), value);
         if (value < min) {
@@ -247,7 +272,7 @@ Registerable(
     throw new Error(`Trying to process data throught an unknown type (${processType})`);
   }
 
-  _processSeries() {
+  _processSeries(sortedData) {
     // Note(cg): we transform serie data differently for charts that expect stacked data or not.
     const keyAccessor = this.keyAccessor;
 
@@ -259,7 +284,7 @@ Registerable(
         this.log && console.warn('serie is missing a key', serie);
         serie.key = i;
       }
-      const data = this.data.map((d, i) => {
+      const data = sortedData.map((d, i) => {
         return {
           key: keyAccessor(d, i),
           value: serie.accessor(d, i)
@@ -273,8 +298,12 @@ Registerable(
     if (valueDomain[0] === Infinity || valueDomain[1] === -Infinity) {
       throw new Error('problem while computing value domain');
     }
-    const ordinalDomain = this.getOrdinalDomain(this.data, keyAccessor);
-    // const cfg = this.serieConfig[name];
+      
+    // Note(cg): we cache ordinaldomain if sort order is preserved.
+    const ordinalDomain = this.preserveSortOrder && this._ordinalDomain
+      ? this._ordinalDomain
+      : this.getOrdinalDomain(sortedData, keyAccessor);
+
     const valuePosition = this.valuePosition;
     const keyPosition = this.keyPosition;
     const valueScale = this.getHostValue(`${valuePosition}Scale`);
@@ -350,7 +379,7 @@ Registerable(
   }
 
   _callDataChanged() {
-    // XXX(cg): we need to apply dataChanged to registeredItems of the same group 
+    // XXX(cg): we need to apply dataChanged to registeredItems of the same group
     // as this multi-data-group.
     if (this.shallNotify(this._multiData)) {
       this.callRegistered('dataChanged', this._multiData, this.transition);
@@ -359,23 +388,29 @@ Registerable(
 
   getOrdinalDomain(data, keyAccessor, valueAccessor, continuous) {
     // Note(cg): for continuous scales (e.g. timeseries), domain is [min, max].
-    let map = [];
+    let domain = [];
     if (keyAccessor) {
       data.forEach((d, i) => {
         d.__key__ = keyAccessor(d, i);
         if (valueAccessor) {
           d.__value__ = valueAccessor(d, i);
         }
-        map.push(d.__key__);
+        if (d.__key__ === Infinity || d.__key__ === -Infinity) {
+          // Note(cg): we keep track of the fact that
+          // domain key holds Infinity, but remove from domain.
+          domain.hasInfinity = true;
+        } else {
+          domain.push(d.__key__);
+        }
       });
     } else {
-      map = range(data.length);
+      domain = range(data.length);
 
     }
     if (continuous) {
-      map = [map[0], map[map.length - 1]];
+      domain = [domain[0], domain[domain.length - 1]];
     }
-    return map;
+    return domain;
   }
 }
 

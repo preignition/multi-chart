@@ -96,13 +96,10 @@ MultiData(
         mask: var(--multi-highlight-mask);
         fill: var(--multi-highlight-fill);
       }
- 
     `;
   }
 
-
   render() {
-
     return html `
       <slot name="header"></slot>
       <div id="observedNode">
@@ -117,6 +114,8 @@ MultiData(
           .stacked="${this.stacked}"
           .adjustOrdinalDomain="${this.adjustOrdinalDomain}"
           .ordinalScaleInterval="${this.ordinalScaleInterval}"
+          .sort="${this.sort}"
+          .preserveSortOrder="${this.preserveSortOrder}"
           .min="${this.min}"
           .max="${this.max}"
           .data="${this.data}"
@@ -131,7 +130,7 @@ MultiData(
   }
 
   renderSVG() {
-    return html`
+    return html `
       <svg id="svg" part="svg">
         <g transform="translate(${this.leftMargin || 0}, ${this.topMargin || 0})">
           <g id="slot-background" part="background">
@@ -228,6 +227,32 @@ MultiData(
         attribute: 'process-type'
       },
 
+      /*
+       * `decorate` the chart once drawn in draw-mixin. This will be passed to drawable 
+       * elements
+       */
+      decorate: {
+        type: Function
+      },
+
+      /*
+       * `sort` [sort](https://github.com/d3/d3-array/blob/v2.9.1/README.md#sort) function invoked while 
+       * processing data. 
+       * sort is passed to multi-data-group
+       */
+      sort: {
+        type: Function,
+      },
+
+      /*
+       * `preserveSortOrder` set true to preserve sort order in domain once the first ordinal domain
+       * has been computed. This is useful with dynamic data, to avoid that chart items are permuted.
+       */
+      preserveSortOrder: {
+        attribute: 'preserve-sort-order',
+        type: Boolean,
+      }
+
     };
   }
 
@@ -258,7 +283,7 @@ MultiData(
     this.assignSlottedSVG();
     super.firstUpdated(changedProperties);
   }
-  
+
   // disconnectedCallback() {
   //   // TODO(cg): replace multi-removed -> multi-verse-remover
   //   // XXX(cg): this event will never be caught! unregister from host instead like for drawablse

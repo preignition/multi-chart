@@ -1,4 +1,4 @@
-import { s as sequence, b as bisectRight, j as tickStep, t as ticks, i as tickIncrement, a as ascending, q as quantile$1, e as bisector } from './common/range-7ed04597.js';
+import { s as sequence, b as bisectRight, j as tickStep, a as ticks, t as tickIncrement, c as ascending, h as quantileSorted, f as bisector, q as quantile$1 } from './common/range-b63a2053.js';
 import './common/rgb-33c8dfa4.js';
 import { i as interpolate } from './common/value-742aec79.js';
 import { i as interpolateNumber } from './common/string-25a4a3cd.js';
@@ -178,7 +178,7 @@ function point() {
   return pointish(band.apply(null, arguments).paddingInner(1));
 }
 
-function constant(x) {
+function constants(x) {
   return function() {
     return x;
   };
@@ -197,7 +197,7 @@ function identity(x) {
 function normalize(a, b) {
   return (b -= (a = +a))
       ? function(x) { return (x - a) / b; }
-      : constant(isNaN(b) ? NaN : 0.5);
+      : constants(isNaN(b) ? NaN : 0.5);
 }
 
 function clamper(a, b) {
@@ -735,7 +735,7 @@ function quantile() {
   function rescale() {
     var i = 0, n = Math.max(1, range.length);
     thresholds = new Array(n - 1);
-    while (++i < n) thresholds[i - 1] = quantile$1(domain, i / n);
+    while (++i < n) thresholds[i - 1] = quantileSorted(domain, i / n);
     return scale;
   }
 

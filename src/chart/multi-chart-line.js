@@ -36,6 +36,7 @@ class MultiChartLine extends MultiContainer {
       ${super.getContentRender()}
       <multi-drawable-line 
          id="drawable"
+         .decorate="${this.decorate}"
          .log="${this.log}"
          .colorScale="${this.colorScale}"
          .x="${this.x}"

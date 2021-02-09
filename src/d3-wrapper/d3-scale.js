@@ -56,6 +56,7 @@ class D3Scale extends LitElement {
         type: Array,
         hasChanged: hasChanged
       },
+      
       range: {
         type: Array,
         hasChanged: hasChanged
@@ -78,24 +79,22 @@ class D3Scale extends LitElement {
     }
 
     if (!this.scale || props.has('scaleType')) {
-      this.scale = scales[`scale${capitalize(this.scaleType)}`]()
+      this.scale = scales[`scale${capitalize(this.scaleType)}`]();
       // Note(cg): we need a way to know the type of scale (e.g. to know if a scale is contiuous in multi-group)
       this.scale.scaleType = this.scaleType;
       this.scale.category = scaleNames[this.scaleType];
     }
 
     if (this.scale) {
-      this.updateWrapper(props);
+      this.updateWrapper(props, this.__init);
     }
     super.update(props);
   }
 
-  updateWrapper(props) {
-    let shallNotify = this.__init;
-    props.forEach((value, key) => {
-      if ((this[key] !== undefined) && key !== 'scale' && key !== 'scaleType' && this.scale[key]) {
+  updateWrapper(props, shallNotify) {
+    Object.keys(this.scale).filter(key => key !== 'scaleType' && key !== 'category').forEach(key => {
+      if ((this[key] !== undefined)) {
         shallNotify = true;
-        this.log && console.info(`d3-scale ${this.type} updates ${key} to ${JSON.stringify(this[key])}`);
         this.scale[key](this[key]);
       }
     });

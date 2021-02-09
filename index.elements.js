@@ -34,4 +34,5 @@ import './elements/multi-chart-bar.js';
 import './elements/multi-container-axis.js';
 import './elements/multi-container-radar.js';
 import './elements/multi-drawable-bar.js';
+import './elements/multi-drawable-bar-horizontal.js';
 import './elements/multi-drawable-pie.js';

@@ -92,7 +92,9 @@ class MultiDrawablePie extends
   getPieWidth() {
     if (this.pieWidth) {
         const outerRadius = this.getOuterRadius();
-        return (this.pieWidth + '').endsWith('%') ? outerRadius * (1 - parseFloat(this.pieWidth) / 100) : outerRadius - parseFloat(this.pieWidth);
+        return (this.pieWidth + '').endsWith('%') 
+          ? outerRadius * (1 - parseFloat(this.pieWidth) / 100) 
+          : outerRadius - parseFloat(this.pieWidth);
     }
   }
 
@@ -122,7 +124,7 @@ class MultiDrawablePie extends
     const arc = this.arc;
     const colorScale = this.colorScale;
 
-    chart = chart.data(arcs);
+    chart = chart.data(arcs, function(d) { return d ? d.data.key : this.getAttribute('key');});
 
     chart.exit().remove();
 

@@ -16,12 +16,14 @@ class MultiDrawableLine extends
     static get hostStyles() {
       return css`
         
-        #drawable.line .shape {
+        #drawable.line .shape:not([fill])  {
           fill: var(--drawable-line-fill);
+        }
+        #drawable.line .shape:not([stroke])  {
           stroke: var(--drawable-line-stroke);
         }
       `;
-    } ;
+    };
 
   render() {
     return html`

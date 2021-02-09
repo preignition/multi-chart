@@ -112,6 +112,14 @@ DispatchSVG(
         notify: true
       },
 
+      /*
+       * `preventClear` set true to prevent selection to cleat on brush end
+       */
+      preventClear: {
+        type: Boolean,
+        attribute: 'prevent-clear'
+      },
+
       /**
        * true when brush is implemented with a range scale
        * @type {Object}
@@ -173,7 +181,8 @@ DispatchSVG(
         this.log && console.log('brush selection', this.selectedValues);
         this.dispatchEvent(new CustomEvent('multi-select', {
           detail: {
-            isRange: this.isRange,
+            isRange: !!this.isRange,
+            isMulti: false,
             selection: this.selectedValues
           },
           bubbles: true,
@@ -202,9 +211,10 @@ DispatchSVG(
   }
 
   clearSelection() {
-    // this.brush.move(null);
-    if (this.brush && this.brush.move) {
-      select(this.targetElement).call(this.brush.move, null);
+    if (this.brush && !this._clearing) {
+      this._clearing = true;
+      this.brush.clear(select(this.targetElement));
+      delete this._clearing;
     }
     this.selectedValues = [];
   }
@@ -212,7 +222,7 @@ DispatchSVG(
   setBrush(brush) {
     if (brush) {
       var me = this;
-
+      this.brush = brush;
       brush
         .on('start', function() {
           me.onMultiBrushStart();
@@ -262,7 +272,6 @@ DispatchSVG(
         if (this.selectedValues.length !== sel.length || this.selectedValues[0] !== sel[0] || this.selectedValues[1] !== sel[1]) {
           // only call the splice when needed 
           this.selectedValues = [...sel];
-          // this.splice.apply(this, ['selectedValues', 0, this.selectedValues.length + 1].concat(sel));
         }
       }
     }
@@ -270,14 +279,19 @@ DispatchSVG(
 
   onMultiBrushStart() {
     this._refreshContiunousScale(this.xScale);
-    // this.effectiveScale = this._getEffectiveScale();
+    // Note(cg): we need to clear the selection if not done on brushEnd.
+    if (this.preventClear) {
+      this.clearSelection();
+    }
     this.isSelecting = true;
   }
 
   onMultiBrushEnd() {
     if (brushSelection(this.targetElement) && !this._clearing) {
       this._clearing = true;
-      this.clearSelection();
+      if (!this.preventClear) {
+        this.clearSelection();
+      }
     }
 
     delete this._clearing;
@@ -293,17 +307,17 @@ DispatchSVG(
           var step = scale.step();
           range = [range[0] + step / 2, range[1] - step / 2];
         }
-        this.__xContinuous = this.xContinuousScale.domain(extent(scale.domain())).range(range);
+        this._xContinuous = this.xContinuousScale.domain(extent(scale.domain())).range(range);
       } else {
-        this.__xContinuous = null;
+        this._xContinuous = null;
       }
     }
   }
 
   get effectiveScale() {
     return {
-      x: (this.brushType === 'brushY') ? null : this.__xContinuous || this.xScale,
-      y: (this.brushType === 'brushX') ? null : this.__yContinuous || this.yScale,
+      x: (this.brushType === 'brushY') ? null : this._xContinuous || this.xScale,
+      y: (this.brushType === 'brushX') ? null : this._yContinuous || this.yScale,
     };
   }
 }

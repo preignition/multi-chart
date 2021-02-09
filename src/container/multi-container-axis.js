@@ -39,11 +39,16 @@ class MultiContainerAxis extends ScaleRender(MultiContainer) {
     };
   }
 
+  getAxis(type) {
+    return this.renderRoot.querySelector(`multi-axis[type=${type}]`);
+  }
+
   getAxisRender(type) {
     // const tagName = `d3-axis-${type}`;
     return html `
       <multi-axis 
         type="${type}"
+        .decorate="${this[`${type}Decorate`]}"
         .scale="${this[`${type}Scale`]}" 
         .xText="${this[`${type}XText`]}" 
         .yText="${this[`${type}YText`]}" 

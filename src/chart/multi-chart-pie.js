@@ -16,6 +16,7 @@ class MultiChartPie extends MultiContainer {
       return html`
         <multi-drawable-pie 
           .log="${this.log}"
+          .decorate="${this.decorate}"
           .transition="${this.transition}" 
           .value="${this.value}" 
           .valuePath="${this.valuePath}" 

@@ -49,6 +49,7 @@ class D3Axis extends LitElement {
   }
 
   update(props) {
+    let refreshed; 
     this.log && console.info(`d3-axis ${this.type} update`, props);
     if (!this.type && !props.has('type')) {
       this.type = 'bottom';
@@ -59,20 +60,20 @@ class D3Axis extends LitElement {
       this.ticks = this.ticks * 1;
     }
 
-    if (!this.axis || props.has('type')) {
+    if (this.axis || props.has('type')) {
       this.axis = axis[`axis${capitalize(this.type)}`]();
+      refreshed = true;
     }
 
     if (this.axis) {
-      this.updateWrapper(props);
+      this.updateWrapper(props, this.__init || refreshed);
     }
     super.update(props);
   }
 
-  updateWrapper(props) {
-    let shallNotify = this.__init;
-    props.forEach((value, key) => {
-      if ((this[key] !== undefined) && key !== 'axis' && this.axis[key]) {
+  updateWrapper(props, shallNotify) {
+    Object.keys(this.axis).forEach(key => {
+      if ((this[key] !== undefined)) {
         shallNotify = true;
         this.axis[key](this[key]);
       }

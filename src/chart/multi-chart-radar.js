@@ -19,6 +19,7 @@ class MultiChartRadar extends MultiContainerRadar {
        ${super.getContentRender()}
        <multi-drawable-radar 
          id="drawable"
+         .decorate="${this.decorate}"
          .log="${this.log}"
          .colorScale="${this.colorScale}"
          .angle="${this.angle}"

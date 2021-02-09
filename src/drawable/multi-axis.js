@@ -115,15 +115,16 @@ class MultiAxis extends
   }
 
   draw(data) {
-    const sel = select(this.$.axis);
+    let sel = select(this.$.axis);
     if (sel && this.scale && this.axis) {
 
       // Note(cg): we skip transition first time we draw.
       if (this.shallTransition) {
-        sel.transition().call(this.transition).call(this.axis.scale(this.scale));
+        sel = sel.transition().call(this.transition).call(this.axis.scale(this.scale));
       } else {
         sel.call(this.axis.scale(this.scale));
       }
+      return sel;
     }
   }
 

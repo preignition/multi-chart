@@ -2,7 +2,7 @@ import { html, css } from 'lit-element';
 import { default as MultiDrawable } from './multi-drawable.js';
 import { default as DrawableSerie } from './mixin/drawable-serie-mixin.js';
 import { default as Shaper } from './mixin/drawable-shaper-mixin.js';
-import { Line, Stack } from '../d3-wrapper/d3-shape.js';
+import { Stack } from '../d3-wrapper/d3-shape.js';
 import { scaleBand } from 'd3-scale';
 import { transition as Transition} from 'd3-transition';
 
@@ -49,12 +49,13 @@ DrawableSerie(
 
   static get hostStyles() {
     return css `
-      
-      #drawable.bar .shape {
+      #drawable.bar .shape:not([fill]) {
         fill: var(--drawable-bar-fill);
-        stroke: var(--drawable-bar-stroke);
       }
       
+      #drawable.bar .shape:not([stroke]) {
+        stroke: var(--drawable-bar-stroke);
+      }
     `;
   }
   render() {
@@ -108,7 +109,7 @@ DrawableSerie(
        valuePath: {
          type: String,
          attribute: 'value-path'
-         },
+        },
     };
   }
 
@@ -124,12 +125,12 @@ DrawableSerie(
   drawSerieElement(chart, data) {
 
     chart
-      .attr('fill', d => this.colorScale(d.key))
       .attr('class', `${this.shapeClass} ${this.selectSerie ? 'selectable' : ''}`)
+      .attr('fill', d => this.colorScale(d.key))
       .attr('key', d => d.key);
 
-
-    chart = this.drawSerieGroup(data, 'rect', this.shapeClass, chart, this.transition);
+    const keyFn = function(d) { return d ? d[3] : this.getAttribute('key');};
+    chart = this.drawSerieGroup(data, 'rect', this.shapeClass, chart, this.transition, keyFn);
 
     // Note(cg): we add selectable to shape only if selectSerie is not true.
     if (!this.selectSerie) {
@@ -145,25 +146,30 @@ DrawableSerie(
     if (!bandwidth) {
       if (xScale.interval && xScale.interval.range) {
         const d = xScale.domain();
-        bandwidth = scaleBand().domain(xScale.interval.range(d[0], d[1])).range(xScale.range()).padding(0.2).bandwidth;
+        bandwidth = scaleBand().domain(xScale.interval.range(d[0], d[1]))
+          .range(xScale.range())
+          .padding(0.2)
+          .bandwidth;
       } else {
-        bandwidth = scaleBand().domain(data[0].map((d, i) => xScale(d[3] || i))).range(xScale.range()).padding(0.2).bandwidth;
+        bandwidth = scaleBand().domain(data[0].map((d, i) => xScale(d[3] || i)))
+          .range(xScale.range())
+          .padding(0.2)
+          .bandwidth;
       }
       align = bandwidth() / 2;
     }
 
     if (this.stacked) {
       chart = chart
-        .attr('y', d => this.yScale(d[1]) || 0)
-        .attr('height', d => this.yScale(d[0]) - this.yScale(d[1]) || 0);
+            .attr('y', d => this.yScale(d[1]) || 0)
+            .attr('height', d => this.yScale(d[0]) - this.yScale(d[1]) || 0);
 
-      return chart
-        .attr('x', (d, i) => {
-          return xScale(d[3] || i) - align;
-        })
-        .attr('width', bandwidth())
-        .attr('key', d => d[3]);
-      // .attr('index', (d,i) => i);
+     return chart
+          .attr('x', (d, i) => {
+            return xScale(d[3] || i) - align;
+          })
+          .attr('width', bandwidth())
+          .attr('key', d => d[3]);
     }
 
     const n = data.length;

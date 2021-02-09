@@ -7,7 +7,7 @@
     "@polymer/polymer/lib/utils/mixin.js": "./@polymer/polymer/lib/utils/mixin.js",
     "@preignition/preignition-demo": "./@preignition/preignition-demo.js",
     "@preignition/preignition-mixin": "./@preignition/preignition-mixin.js",
-    "@preignition/preignition-widget": "./@preignition/preignition-widget.js",
+    "@preignition/preignition-util": "./@preignition/preignition-util.js",
     "@vaadin/router": "./@vaadin/router.js",
     "@vaadin/vaadin-tabs": "./@vaadin/vaadin-tabs.js",
     "d3-array": "./d3-array.js",

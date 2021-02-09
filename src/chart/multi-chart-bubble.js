@@ -53,6 +53,7 @@ class MultiChartLine extends MultiContainer {
      ></multi-accessor>
       <multi-drawable-bubble 
          id="drawable"
+         .decorate="${this.decorate}"
          .log="${this.log}"
          .colorScale="${this.colorScale}"
          .x="${this.x}"

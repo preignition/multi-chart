@@ -157,7 +157,7 @@ DispatchSVG(
     if (props.has('selected')) {
       this.updateSelected();
     }
-    super.update(props)
+    super.update(props);
   }
 
   dataChanged() {
@@ -175,15 +175,11 @@ DispatchSVG(
     } else {
       this.updateSelected(true);
     }
+  }
 
-    // if (this.selectedItems.length) {
-    //   this.selectedItems.forEach(item => this.select(item));
-    // } else if (this.selected) {
-    //   const s = this.selected;
-    //   this.select(null);
-    //   this.select(s);
-    // }
-
+  clearSelection() {
+    this.selected = null;
+    this.selectedValues = [];
   }
 
   postRemove() {
@@ -231,20 +227,24 @@ DispatchSVG(
       this.select(key);
     }
     // let the world know we have a multi-tap event.
-    this.dispatchEvent(new CustomEvent('multi-tap', { detail: { data: d, index: i, element: el }, bubbles: true, composed: true }));
+    this.dispatchEvent(new CustomEvent('multi-tap', { detail: {
+      data: d,
+      index: i,
+      element: el
+    }, bubbles: true, composed: true }));
   }
 
   select(value) {
     if (this.multi) {
       let wasSelected = false;
-      const selectedValues = this.selectedValues.filter(val => {
+      const selectedValues = this.selectedValues && this.selectedValues.filter(val => {
         if (val === value) {
           wasSelected = true;
-          return false
+          return false;
         }
-        return true
-      })
-      if (!wasSelected) {
+        return true;
+      });
+      if (!wasSelected && selectedValues) {
         selectedValues.push(value);
       }
       this.selectedValues = selectedValues;
@@ -267,9 +267,9 @@ DispatchSVG(
         return true;
       }
       return null;
-    })
+    });
     this.selectedItem = item;
-    this._updateSelected(silent)
+    this._updateSelected(silent);
   }
 
   updateSelectedValues(silent) {
@@ -277,14 +277,14 @@ DispatchSVG(
     const me = this;
     const items = [];
     this.selectableItems.attr(this.selectedAttribute, function(d, i) {
-      if (selected.indexOf(me.getKey(d, this)) > -1) {
+      if (selected && selected.indexOf(me.getKey(d, this)) > -1) {
         items.push(this);
         return true;
       }
       return null;
-    })
+    });
     this.selectedItems = items;
-    this._updateSelected(silent)
+    this._updateSelected(silent);
   }
 
   get _hasSelection() {
@@ -304,6 +304,7 @@ DispatchSVG(
       this.dispatchEvent(new CustomEvent('multi-select', {
         detail: {
           isRange: false,
+          isMulti: this.multi,
           selection: this.multi ? [...this.selectedValues] : this.selected
         },
         bubbles: true,
