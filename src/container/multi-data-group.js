@@ -6,8 +6,7 @@ import { LitElement, html } from 'lit-element';
 import * as accessor from '../helper/accessor.js';
 import { default as Registerable } from '../helper/multi-registerable-mixin.js';
 import { default as Register } from './mixin/multi-register-mixin.js';
-import { DefaultValueMixin, DoNotSetUndefinedValue } from '@preignition/preignition-mixin';
-import { LitNotify } from '@morbidick/lit-element-notify';
+import { LitNotify, DefaultValueMixin, DoNotSetUndefinedValue } from '@preignition/preignition-mixin';
 import { default as dataGroupProps } from './properties/data-group.js';
 
 // Note(cg): yet to do

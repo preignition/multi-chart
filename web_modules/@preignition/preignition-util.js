@@ -1,5 +1,4 @@
-import { d as directive } from '../common/directive-651fd9cf.js';
-import { h as html$2, n as nothing, N as NodePart, A as AttributePart } from '../common/lit-html-f57783b7.js';
+import { h as html$2, n as nothing, N as NodePart, A as AttributePart, d as directive } from '../common/lit-html-61489bf1.js';
 import '../lit-element.js';
 import { unsafeHTML } from '../lit-html/directives/unsafe-html.js';
 import { m as marked_1 } from '../common/marked.esm-c8703765.js';
@@ -1995,19 +1994,394 @@ const translate = (key, values, config) => langChanged(() => get(key, values, co
  */
 const translateUnsafeHTML = (key, values, config) => langChanged(() => unsafeHTML(get(key, values, config)));
 
+class LitState {
+
+    constructor() {
+        this._observers = [];
+        this._initStateVars();
+    }
+
+    addObserver(observer, keys) {
+        this._observers.push({observer, keys});
+    }
+
+    removeObserver(observer) {
+        this._observers = this._observers.filter(observerObj => observerObj.observer !== observer);
+    }
+
+    _initStateVars() {
+        if (!this.constructor.stateVars) return;
+        for (let [key, options] of Object.entries(this.constructor.stateVars)) {
+            this._initStateVar(key, options);
+        }
+    }
+
+    _initStateVar(key, options) {
+
+        options = this._parseOptions(options);
+
+        const stateVar = new options.handler({
+            options: options,
+            recordRead: () => this._recordRead(key),
+            notifyChange: () => this._notifyChange(key)
+        });
+
+        Object.defineProperty(
+            this,
+            key,
+            {
+                get() {
+                    return stateVar.get();
+                },
+                set(value) {
+                    if (stateVar.shouldSetValue(value)) {
+                        stateVar.set(value);
+                    }
+                },
+                configurable: true,
+                enumerable: true
+            }
+        );
+
+    }
+
+    _parseOptions(options) {
+
+        if (!options.handler) {
+            options.handler = StateVar;
+        } else {
+
+            // In case of a custom `StateVar` handler is provided, we offer a
+            // second way of providing options to your custom handler class.
+            //
+            // You can decorate a *method* with `@stateVar()` instead of a
+            // variable. The method must return an object, and that object will
+            // be assigned to the `options` object.
+            //
+            // Within the method you have access to the `this` context. So you
+            // can access other properties and methods from your state class.
+            // And you can add arrow function callbacks where you can access
+            // `this`. This provides a lot of possibilities for a custom
+            // handler class.
+            if (options.propertyMethod && options.propertyMethod.kind === 'method') {
+                Object.assign(options, options.propertyMethod.descriptor.value.call(this));
+            }
+
+        }
+
+        return options;
+
+    }
+
+    _recordRead(key) {
+        stateRecorder.recordRead(this, key);
+    }
+
+    _notifyChange(key) {
+        for (const observerObj of this._observers) {
+            if (!observerObj.keys || observerObj.keys.includes(key)) {
+                observerObj.observer(key);
+            }
+        }    }
+
+}
+
+
+class StateVar {
+
+    constructor(args) {
+        this.options = args.options; // The options given in the `stateVar` declaration
+        this.recordRead = args.recordRead; // Callback to indicate the `stateVar` is read
+        this.notifyChange = args.notifyChange; // Callback to indicate the `stateVar` value has changed
+        this.value = undefined; // The initial value
+    }
+
+    // Called when the `stateVar` on the `State` class is read.
+    get() {
+        this.recordRead();
+        return this.value;
+    }
+
+    // Returns whether the given `value` should be passed on to the `set()`
+    // method. Can be used for validation and/or optimization.
+    shouldSetValue(value) {
+        return this.value !== value;
+    }
+
+    // Called when the `stateVar` on the `State` class is set.
+    set(value) {
+        this.value = value;
+        this.notifyChange();
+    }
+
+}
+
+
+class StateRecorder {
+
+    constructor() {
+        this._log = null;
+    }
+
+    start() {
+        this._log = new Map();
+    }
+
+    recordRead(stateObj, key) {
+        if (this._log === null) return;
+        const keys = this._log.get(stateObj) || [];
+        if (!keys.includes(key)) keys.push(key);
+        this._log.set(stateObj, keys);
+    }
+
+    finish() {
+        const stateVars = this._log;
+        this._log = null;
+        return stateVars;
+    }
+
+}
+
+const stateRecorder = new StateRecorder();
+
+const PREFIX = 'ida';
+const FORM_ENGINE_VERSION = 'v4';
+const TERMS_VERSION = 'v1';
 const LANG = 'en';
 
-const mapStateToProps = state => {
-  return {
-    language: state.language,
+/* eslint-disable max-len */
+
+/**
+ * query: key-value Object from location.search items
+ * Used to fetch value for state vars with `urlParam`
+ */
+const query = window.location.search &&
+  toQuery(window.location.search.substring(1)) || {};
+
+/**
+ * Return an object from location querystring
+ * @param String queryString
+ */
+function toQuery(queryString) {
+
+  // If the query does not contain anything, return an empty object.
+  if (queryString.length === 0) {
+    return {};
+  }
+
+  // Grab the atoms (["test=123", "hejsa=LOL", "wuhuu"])
+  const atoms = queryString.split('&');
+
+  // Split by the values ([["test", "123"], ["hejsa", "LOL"], ["wuhuu"]])
+  const arrayMap = atoms.map(atom => atom.split('='));
+
+  // Assign the values to an object ({ test: "123", hejsa: "LOL", wuhuu: "" })
+  return Object.assign({}, ...arrayMap.map(arr => ({
+    [decodeURIComponent(arr[0])]: (arr.length > 1 ? decodeURIComponent(arr[1]) : '')
+  })));
+}
+
+/**
+ * Local storate handler
+ * The handler will store value to local Storate
+ * options should contain `key`, used to store in localhost
+ * options can also contain `urlParam` to fetch value from location search
+ */
+const localStorageHandlerFactory = prefix => {
+  return class extends StateVar {
+    constructor(args) {
+      super(args);
+      let value = (this.options.urlParam && query[this.options.urlParam]) ||
+        localStorage.getItem(`${prefix}_${this.options.key}`);
+      if (value && (
+          this.options.type === Boolean ||
+          this.options.type === Number ||
+          this.options.type === Object)) {
+        value = JSON.parse(value);
+      }
+      this.value = (
+        (value || value === false || value === 0) ? value : this.options.initialValue
+      );
+    }
+
+    set(value) {
+      super.set(value);
+      localStorage.setItem(`${prefix}_${this.options.key}`, value);
+    }
   };
 };
 
-const mapDispatchToProps = dispatch => {
-  return {
-    set_language: ([lan]) => dispatch({ type: 'SET_LANGUAGE', language: lan }),
-  };
+const LocalStorageHandler = localStorageHandlerFactory(PREFIX);
+
+/**
+ * Firebase Handler
+ * This handler will synchronize state value with Firebase
+ * SHould be used in conjuction with LitFirebaseState
+ * which will handle state sync
+ */
+class FirebaseHandler extends LocalStorageHandler {
+
+  set(value) {
+    super.set(value);
+    if (this.options._ref) {
+      // set value at firebase level
+      this.options._ref.set(value);
+    } else {
+      // we keep track of value being set before sync with firebase is completed
+      this.options._skipSync = true;
+    }
+  }
+}
+
+class LitFirebaseState extends LitState {
+  constructor() {
+    super();
+    this._ref = null;
+  }
+
+  get ref() {
+    return this._ref;
+  }
+
+  set ref(value) {
+    if (this._ref) {
+      this._ref.off();
+      this._reset();
+    }
+    if (value) {
+      this._ref = value;
+      this._ref.on('value', snap => {
+        const {
+          stateVars
+        } = this.constructor;
+        Object.keys(stateVars)
+          .forEach(k => {
+            const val = snap.child(k).val();
+            if (val !== null) {
+              if (!stateVars[k]._skipSync) {
+                this[k] = val;
+              }
+              stateVars[k]._ref = this._ref.child(k);
+              delete stateVars[k]._skipSync;
+            }
+          });
+      });
+    }
+  }
+  _reset() {
+    const {
+      stateVars
+    } = this.constructor;
+    Object.keys(stateVars)
+      .forEach(k => {
+        stateVars[k]._ref = null;
+        this[k] = stateVars.initialValue;
+        delete stateVars[k]._skipSync;
+      });
+  }
+}
+
+// register firebase ref when user are signed-in
+window.firebase && window.firebase.auth().onAuthStateChanged(user => {
+  console.info('USER', user);
+  if (user) {
+    appState.ref = firebase.database().ref(`/userData/appState/${user.uid}`);
+    accessibilityState.ref = firebase.database().ref(`/userData/preference/${user.uid}/accessibility`);
+    appState.uid = user.uid;
+    appState.user = user;
+  } else {
+    appState.ref = null;
+    accessibilityState.ref = null;
+    appState.uid = null;
+    appState.user = null;
+  }
+});
+
+// we want stateVars to be the same object.
+// Otherwise, FirebaseHandler approach does not work
+const appStateVars = {
+  language: {
+    handler: FirebaseHandler,
+    key: 'language',
+    urlParam: 'language',
+    initialValue: 'fr'
+  },
+  uid: {
+    key: 'uid',
+    initialValue: null
+  },
+  direction: {
+    key: 'direction',
+    initialValue: 'rtl'
+  }
 };
+
+class AppState extends LitFirebaseState {
+  static get stateVars() {
+    return appStateVars;
+  }
+}
+const appState = new AppState();
+
+// we want stateVars to be the same object.
+// Otherwise, FirebaseHandler approach does not work
+const accessibilityStateVars = {
+  signlanguage: {
+    handler: FirebaseHandler,
+    key: 'signlanguage',
+    urlParam: 'signlanguage',
+    type: Boolean,
+    initialValue: false
+  },
+  readaloud: {
+    handler: FirebaseHandler,
+    key: 'readaloud',
+    urlParam: 'readaloud',
+    type: Boolean,
+    initialValue: false
+  },
+  easyread: {
+    handler: FirebaseHandler,
+    key: 'easyread',
+    urlParam: 'easyread',
+    type: Boolean,
+    initialValue: false
+  },
+
+};
+
+class AccessibilityState extends LitFirebaseState {
+  static get stateVars() {
+    return accessibilityStateVars;
+  }
+}
+
+const accessibilityState = new AccessibilityState();
+
+//  set attribute at doc level
+appState.addObserver(() => {
+  const {
+    language
+  } = appState;
+  document.documentElement.lang = language;
+  appState.direction = (language === 'ar' || language === 'fa') ? 'rtl' : '';
+}, ['language']);
+
+// setter is not called when invoqued on constructor
+// but we still need to have attribute in sync
+document.documentElement.lang = appState.language;
+
+//  set attribute at doc level
+appState.addObserver(() => {
+  const {
+    direction
+  } = appState;
+  document.documentElement.dir = direction;
+}, ['direction']);
+document.documentElement.dir = appState.direction;
+
+// For the time being, store appState globally
+window._appState = appState;
 
 let translateConfig$1;
 registerTranslateConfig({
@@ -2027,7 +2401,16 @@ registerTranslateConfig({
   }
 });
 // Note(cg): we need to call use early as we need to inject `loaders`, `needLoading` ...
-use(LANG);
+use(appState.language);
+
+const observerFactory = name => () => {
+  const lang = translateConfig$1.currentLang[name];
+  if (lang !== appState.language) {
+    translateConfig$1.needLoading[name] = true;
+  }
+  use(appState.language);
+  translateConfig$1.currentLang[name] = appState.language;
+};
 
 /**
  * mixin enabling component-based translation
@@ -2035,18 +2418,9 @@ use(LANG);
  * @param  {Object} locale      JSON object containing text for initial/defauld language
  * @return {Class}             extended class
  */
-const EnableTranslation = (baseElement, locale, mapState, mapDispatch) => {
+const EnableTranslation = (baseElement, locale) => {
 
   const cls = class extends baseElement {
-
-    static get properties() {
-      return {
-
-        ...super.properties,
-
-        language: { type: String }
-      };
-    }
 
     static get locale() {
       return locale;
@@ -2056,10 +2430,17 @@ const EnableTranslation = (baseElement, locale, mapState, mapDispatch) => {
       super();
       // Note(cg): adding loader first time the class instantiated. .
       if (!translateConfig$1.strings[this.localName]) {
-        translateConfig$1.currentLang[this.localName] = LANG;
+        translateConfig$1.currentLang[this.localName] = appState.language;
         translateConfig$1.strings[this.localName] = locale;
         translateConfig$1.loaders[this.localName] = this.translationLoader();
       }
+      this.__observer = observerFactory(this.localName);
+      appState.addObserver(this.__observer, ['language']);
+    }
+
+    disconnectedCallback() {
+      super.disconnectedCallback();
+      appState.removeObserver(this.__observer);
     }
 
     translationLoader() {
@@ -2077,18 +2458,6 @@ const EnableTranslation = (baseElement, locale, mapState, mapDispatch) => {
       };
     }
 
-    updated(props) {
-      if (props.has('language')) {
-        const lang = translateConfig$1.currentLang[this.localName];
-        translateConfig$1.currentLang[this.localName] = this.language;
-        if (lang !== this.language) {
-          translateConfig$1.needLoading[this.localName] = true;
-        }
-        use(this.language);
-      }
-      super.updated(props);
-    }
-
     translate(key, values) {
       return translate(`${this.localName}.${key}`, values);
     }
@@ -2103,21 +2472,17 @@ const EnableTranslation = (baseElement, locale, mapState, mapDispatch) => {
       return translateUnsafeHTML(`${this.localName}.${key}`, values);
     }
   };
-  return connect(
-     mapState || mapStateToProps,
-     mapDispatch || mapDispatchToProps
-     // Object.assign({}, mapStateToProps, mapState),
-     // Object.assign({}, mapDispatchToProps, mapDispatch)
-    )(cls);
+  return cls;
+
 };
 
-const mapStateToProps$1 = state => {
+const mapStateToProps = state => {
   return {
     token: state.token && state.token.string
   };
 };
 
-const mapDispatchToProps$1 = dispatch => {
+const mapDispatchToProps = dispatch => {
   return {
     set_token: ([token]) => dispatch({ type: 'SET_TOKEN', token: token }),
   };
@@ -2182,8 +2547,8 @@ const DownloadMixin = (baseElement, mapState, mapDispatch) => {
 
   };
   return connect(
-    mapState || mapStateToProps$1,
-    mapDispatch || mapDispatchToProps$1
+    mapState || mapStateToProps,
+    mapDispatch || mapDispatchToProps
   )(cls);
 };
 
@@ -2725,8 +3090,8 @@ const deep = (action, obj, keys, id, key) => {
   return action(obj, id);
 };
 
-const get$1 = (obj, prop) => obj[prop];
-const set = n => (obj, prop) => (obj[prop] = n);
+const _get = (obj, prop) => obj[prop];
+const _set = n => (obj, prop) => (obj[prop] = n);
 
 const GetSet = superClass => {
 
@@ -2737,11 +3102,11 @@ const GetSet = superClass => {
   class Mixin extends superClass {
 
     getProp(path, defaultValue) {
-      return deep(get$1, this, path) || defaultValue;
+      return deep(_get, this, path) || defaultValue;
     }
 
     setProp(path, value) {
-      return deep(set(value), this, path);
+      return deep(_set(value), this, path);
     }
 
     setInput(path, valPath = 'value') {
@@ -2752,6 +3117,9 @@ const GetSet = superClass => {
 
   return Mixin;
 };
+
+const get$1 = (path, obj) => deep(_get, obj, path);
+const set = (path, value, obj) => deep(_set(value), obj, path);
 
 /*
   Mixin adding Firestore facilities for reacting to 
@@ -2848,6 +3216,90 @@ const Firestore = superClass => {
   return Mixin;
 };
 
+/**
+ * ##  Swipable
+ * 
+ * handles swipe
+ * 
+ */
+
+
+let xDown;
+let yDown;
+let time$1;
+
+function handleTouchStart(evt) {
+  const firstTouch = evt.touches[0];
+  xDown = firstTouch.clientX;
+  yDown = firstTouch.clientY;
+  time$1 = Date.now();
+}
+
+function handleTouchMove(evt) {
+  // if (time && Date.now() - time < 180) {
+  //   evt.preventDefault();
+  // }
+}
+
+function handleTouchEnd(evt) {
+  if (!xDown || !yDown || (time$1 && Date.now() - time$1 >= 180)) {
+    return;
+  }
+  // .changedTouches[0]
+  var xUp = evt.changedTouches[0].clientX;
+  var yUp = evt.changedTouches[0].clientY;
+
+  var xDiff = xDown - xUp;
+  var yDiff = yDown - yUp;
+
+  if (Math.abs(xDiff) > Math.abs(yDiff)) { /*most significant*/
+    if (xDiff > 0) {
+      this.onSwipe('left');
+    } else {
+      this.onSwipe('right');
+    }
+  } else {
+    if (yDiff > 0) {
+      this.onSwipe('up');
+    } else {
+      this.onSwipe('down');
+    }
+  }
+  /* reset values */
+  xDown = null;
+  yDown = null;
+}
+
+
+const Swipe = superClass => {
+
+  /*
+   * @polymer
+   * @mixinClass
+   */
+  class Mixin extends superClass {
+
+    connectedCallback() {
+      super.connectedCallback();
+      this.addEventListener('touchstart', handleTouchStart);
+      this.addEventListener('touchmove', handleTouchMove);
+      this.addEventListener('touchend', handleTouchEnd);
+    }
+    disconnectedCallback() {
+      super.disconnectedCallback();
+      this.removeEventListener('touchstart', handleTouchStart);
+      this.removeEventListener('touchmove', handleTouchMove);
+      this.removeEventListener('touchend', handleTouchEnd);
+    }
+
+    onSwipe(swipeType) {
+      throw new Error('on swipe need to be overridden ');
+    }
+  }
+
+  return Mixin;
+};
+
 var dataroot = 'organisation';
 
 /*
@@ -2893,7 +3345,8 @@ const E = generator('E');
 // Note(cg): to be used as missing stuff.
 const EMissing = generator('Missing');
 
-const formEngineVersion = 'v4';
-const termsVersion = 'v1';
+const termsVersion = TERMS_VERSION;
+const formEngineVersion = FORM_ENGINE_VERSION;
+const storagePrefix = PREFIX;
 
-export { DataRoot, DownloadMixin as Download, E, EMissing, Firestore, GetSet, Resizable, EnableTranslation as Translate, formEngineVersion, getter, parse, parseInline, connect as reduxConnect, getStore as reduxStore, resizeTextarea, termsVersion };
+export { DataRoot, DownloadMixin as Download, E, EMissing, Firestore, GetSet, Resizable, Swipe, EnableTranslation as Translate, formEngineVersion, get$1 as get, getter, parse, parseInline, connect as reduxConnect, getStore as reduxStore, resizeTextarea, set, storagePrefix, termsVersion };

@@ -14,8 +14,9 @@
 
 // import { Logger } from './helper/logger-mixin.js';
 import { LitElement } from 'lit-element';
-import { SelectMixin, DefaultValueMixin, DoNotSetUndefinedValue } from '@preignition/preignition-mixin';
-import { LitNotify, LitSync } from '@morbidick/lit-element-notify';
+import { SelectMixin, DefaultValueMixin, DoNotSetUndefinedValue, LitNotify } from '@preignition/preignition-mixin';
+// import { LitNotify } from '@morbidick/lit-element-notify';
+
 
 const deep = (action, obj, keys, id, key) => {
   keys = keys.split('.');
@@ -66,7 +67,7 @@ DefaultValueMixin(
 
 }
 
+// export class MultiSync extends LitSync(Base) {}
+// export class MultiNotifySync extends LitSync(LitNotify(Base)) {}
 export class MultiNotify extends LitNotify(Base) {}
-export class MultiSync extends LitSync(Base) {}
-export class MultiNotifySync extends LitSync(LitNotify(Base)) {}
 export class MultiChartBase extends MultiNotify {}

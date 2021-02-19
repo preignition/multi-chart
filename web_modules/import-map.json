@@ -1,6 +1,5 @@
 {
   "imports": {
-    "@morbidick/lit-element-notify": "./@morbidick/lit-element-notify.js",
     "@polymer/polymer/lib/utils/async.js": "./@polymer/polymer/lib/utils/async.js",
     "@polymer/polymer/lib/utils/case-map.js": "./@polymer/polymer/lib/utils/case-map.js",
     "@polymer/polymer/lib/utils/debounce.js": "./@polymer/polymer/lib/utils/debounce.js",
