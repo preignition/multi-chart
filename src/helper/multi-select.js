@@ -1,7 +1,6 @@
 import { css } from 'lit-element';
 import { select, selectAll } from 'd3-selection';
 import { MultiChartBase } from '../base-class.js';
-// import { LitNotify } from '@morbidick/lit-element-notify';
 // import { DoNotSetUndefinedValue } from '@preignition/preignition-mixin';
 import { default as DispatchSVG } from './dispatch-svg-mixin.js';
 import { default as MultiRegisterable } from './multi-registerable-mixin.js';

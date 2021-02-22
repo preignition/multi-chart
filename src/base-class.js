@@ -15,8 +15,6 @@
 // import { Logger } from './helper/logger-mixin.js';
 import { LitElement } from 'lit-element';
 import { SelectMixin, DefaultValueMixin, DoNotSetUndefinedValue, LitNotify } from '@preignition/preignition-mixin';
-// import { LitNotify } from '@morbidick/lit-element-notify';
-
 
 const deep = (action, obj, keys, id, key) => {
   keys = keys.split('.');
