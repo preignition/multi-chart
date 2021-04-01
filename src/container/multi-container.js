@@ -1,6 +1,6 @@
 import { html, css } from 'lit-element';
 import { CacheId } from '@preignition/preignition-mixin';
-import { Resizable } from '@preignition/preignition-util';
+import { resizable } from '@preignition/preignition-util';
 // import { SVGHelper } from '../helper/svg-helper-mixin.js';
 // import { default as ObserveResize } from './mixin/observe-resize-mixin.js';
 import { default as MultiRegister } from './mixin/multi-register-mixin.js';
@@ -42,7 +42,7 @@ import { valueProperties as dataGroupValueProperties } from './properties/data-g
 
 class MultiContainer extends
 MultiData(
-  Resizable(
+  resizable(
     MultiRegister(
       CacheId(
         Zoomable(
