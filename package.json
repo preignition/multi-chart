@@ -39,7 +39,7 @@
     "d3-brush": "^2.1.0",
     "d3-chord": "^2.0.0",
     "d3-collection": "^1.0.7",
-    "d3-color": "^2.0.0",
+    "d3-color": "^3.1.0",
     "d3-contour": "^2.0.0",
     "d3-dispatch": "^2.0.0",
     "d3-drag": "^2.0.0",
